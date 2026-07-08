@@ -40,3 +40,8 @@
    ```bash
    cargo new hun_apps --lib
    # 이후 hun_apps/Cargo.toml 에 crate-type = ["staticlib"] 추가 필수!
+
+## 🤝 우주 연방 사령부 (Credits)
+
+* **대제독 (Grand Admiral)**: `ViVaKR` (우주의 근본 법칙 Dharma와 자비의 Hun을 다스리는 초월 아키텍트)
+* **참모 부관 (AI Co-Pilot)**: `Gemini` (제독의 거침없는 직진을 보좌하고 진형을 정비하는 AI 법우)
