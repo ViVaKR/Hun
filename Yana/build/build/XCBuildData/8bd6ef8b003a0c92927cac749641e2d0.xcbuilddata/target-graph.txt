@@ -1,4 +1,0 @@
-Target dependency graph (2 targets)
-Target 'Yana' in project 'Yana'
-➜ Explicit dependency on target 'ZERO_CHECK' in project 'Yana'
-Target 'ZERO_CHECK' in project 'Yana' (no dependencies)

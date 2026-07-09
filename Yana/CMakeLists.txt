@@ -1,9 +1,24 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 project(Yana LANGUAGES ASM)
 
 set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build for Apple Silicon" FORCE)
 set(CMAKE_BUILD_TYPE Debug)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+# -------------------------------------------------------------
+# 🦀 Corrosion (Rust <-> CMake 연동)
+# -------------------------------------------------------------
+
+# 1. Corrosion 로드
+include(FetchContent)
+FetchContent_Declare(
+    Corrosion
+    GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+    GIT_TAG v0.6.1
+)
+FetchContent_MakeAvailable(Corrosion)
+
+# 2. Rust crate 임포트 (여기서 hun_core 타겟이 생성됨)
+corrosion_import_crate(MANIFEST_PATH ${CMAKE_SOURCE_DIR}/../Applications/rust/hun_apps/hun_core/Cargo.toml)
 
 # -------------------------------------------------------------
 # 소스 파일 수집
@@ -41,6 +56,9 @@ add_executable(Yana
     ${YANA_DOCS}
     ${YANA_SCRIPTS}
 )
+
+# 4. 링크 (hun_core는 이미 위에서 임포트된 타겟이니 바로 씀)
+target_link_libraries(Yana PRIVATE hun_core)
 
 # 🔑 진짜 "컴파일 안 함" 대상은 헤더/문서/스크립트뿐!
 set_source_files_properties(

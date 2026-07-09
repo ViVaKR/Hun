@@ -1,0 +1,13 @@
+Target dependency graph (5 targets)
+Target 'Yana' in project 'Yana'
+➜ Explicit dependency on target 'cargo-build_hun_core' in project 'Yana'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'Yana'
+Target 'cargo-build_hun_core' in project 'Yana'
+➜ Explicit dependency on target '_cargo-build_hun_core' in project 'Yana'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'Yana'
+Target '_cargo-build_hun_core' in project 'Yana'
+➜ Explicit dependency on target 'cargo-prebuild_hun_core' in project 'Yana'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'Yana'
+Target 'cargo-prebuild_hun_core' in project 'Yana'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'Yana'
+Target 'ZERO_CHECK' in project 'Yana' (no dependencies)

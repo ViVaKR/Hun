@@ -1,0 +1,11 @@
+[package]
+name = "hun_core"
+version = "0.1.0"
+edition = "2024"
+
+# 어셈블리 형님이랑 융합해야 하니
+# 정적 라이브러리로 뽑으라고 명하는 기어
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]

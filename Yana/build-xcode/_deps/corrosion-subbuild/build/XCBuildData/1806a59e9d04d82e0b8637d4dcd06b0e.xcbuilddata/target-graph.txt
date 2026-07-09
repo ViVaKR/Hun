@@ -1,0 +1,7 @@
+Target dependency graph (3 targets)
+Target 'ALL_BUILD' in project 'corrosion-populate'
+➜ Explicit dependency on target 'corrosion-populate' in project 'corrosion-populate'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'corrosion-populate'
+Target 'corrosion-populate' in project 'corrosion-populate'
+➜ Explicit dependency on target 'ZERO_CHECK' in project 'corrosion-populate'
+Target 'ZERO_CHECK' in project 'corrosion-populate' (no dependencies)
