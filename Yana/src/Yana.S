@@ -81,6 +81,9 @@ list_format:
 // __TEXT: 실행 가능한 구역, __text: 실제 기계어 코드가 위치하는 공간
 .section __TEXT,__text,regular,pure_instructions
 
+
+.include "../include/hun.macros.inc"
+
 // ARM64 명령어는 무조건 4바이트(32비트) 크기이므로,
 // 함수의 시작점 주소는 무조건 4바이트 정렬(2^2 = 4)이 되어야 CPU가 뇌정지 없이 쾌속 독해를 합니다!
 .align 2

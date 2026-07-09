@@ -6,50 +6,63 @@ set(CMAKE_BUILD_TYPE Debug)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # -------------------------------------------------------------
-# 소스 파일 수집 (src/ 아래 전부)
+# 소스 파일 수집
 # -------------------------------------------------------------
 file(GLOB_RECURSE YANA_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/src/*.S"
     "${CMAKE_SOURCE_DIR}/src/*.s"
 )
+file(GLOB_RECURSE YANA_LIBS CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/libs/*.S"
+)
+file(GLOB_RECURSE YANA_TESTS CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/tests/*.S"
+)
 
-# 참고용/문서용 파일들 (컴파일은 안 되지만 Xcode에 "보이게"만 등록)
+# 참고/문서용 (진짜 컴파일 안 하는 것들만!)
 file(GLOB_RECURSE YANA_HEADERS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/include/*.h"
+    "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/include/*.inc"
 )
 file(GLOB_RECURSE YANA_DOCS CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/docs/*.md"
 )
-file(GLOB_RECURSE YANA_LIBS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/libs/*.S"
-    "${CMAKE_SOURCE_DIR}/libs/*.c"
-)
 file(GLOB_RECURSE YANA_SCRIPTS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/scripts/*.sh" 
-    "${CMAKE_SOURCE_DIR}/scripts/*.ps1"
+    "${CMAKE_SOURCE_DIR}/scripts/*.sh" "${CMAKE_SOURCE_DIR}/scripts/*.ps1"
 )
 
+# -------------------------------------------------------------
+# 메인 실행파일: src + libs (실제 컴파일 대상)
+#                + 헤더/문서/스크립트 (Navigator 표시용, 컴파일 X)
+# -------------------------------------------------------------
 add_executable(Yana
     ${YANA_SOURCES}
-    ${YANA_HEADERS}   # 헤더도 타겟에 넣어야 Xcode Navigator에 표시됨 (컴파일은 안 됨)
+    ${YANA_LIBS}
+    ${YANA_HEADERS}
     ${YANA_DOCS}
     ${YANA_SCRIPTS}
-    libs/fib.S
-    tests/test.S
 )
 
-# 헤더/문서/스크립트는 빌드 시스템이 "컴파일 대상 아님"으로 인식하게 표시
+# 🔑 진짜 "컴파일 안 함" 대상은 헤더/문서/스크립트뿐!
 set_source_files_properties(
     ${YANA_HEADERS} ${YANA_DOCS} ${YANA_SCRIPTS}
     PROPERTIES HEADER_FILE_ONLY TRUE
 )
 
 # -------------------------------------------------------------
-# 🔑 핵심: 디스크 폴더 구조를 Xcode Navigator에 그대로 반영
+# 🔑 테스트는 별도 실행파일로 분리! (메인 바이너리에 안 섞임)
+# -------------------------------------------------------------
+if(YANA_TESTS)
+    add_executable(YanaTests EXCLUDE_FROM_ALL ${YANA_TESTS})
+    set_target_properties(YanaTests PROPERTIES FOLDER "Yana/Tests")
+endif()
+
+# -------------------------------------------------------------
+# 🔑 Navigator 폴더 구조 반영 (전체 목록 다 포함!)
 # -------------------------------------------------------------
 source_group(
     TREE "${CMAKE_SOURCE_DIR}"
-    FILES ${YANA_SOURCES} ${YANA_HEADERS} ${YANA_DOCS} ${YANA_SCRIPTS}
+    FILES ${YANA_SOURCES} ${YANA_LIBS} ${YANA_TESTS}
+          ${YANA_HEADERS} ${YANA_DOCS} ${YANA_SCRIPTS}
 )
 
 target_include_directories(Yana PRIVATE
