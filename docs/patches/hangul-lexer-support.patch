@@ -1,0 +1,38 @@
+diff --git a/llvm/lib/MC/MCParser/AsmLexer.cpp b/llvm/lib/MC/MCParser/AsmLexer.cpp
+index 8e4b7be98bdb..e9302d3c84a9 100644
+--- a/llvm/lib/MC/MCParser/AsmLexer.cpp
++++ b/llvm/lib/MC/MCParser/AsmLexer.cpp
+@@ -229,9 +229,16 @@ AsmToken AsmLexer::LexHexFloatLiteral(bool NoIntDigits) {
+ }
+ 
+ /// LexIdentifier: [a-zA-Z_$.@?][a-zA-Z0-9_$.@#?]*
++// static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
++//   return isAlnum(C) || C == '_' || C == '$' || C == '.' || C == '?' ||
++//          (AllowAt && C == '@') || (AllowHash && C == '#');
++// }
++
++// 수정본
+ static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
+   return isAlnum(C) || C == '_' || C == '$' || C == '.' || C == '?' ||
+-         (AllowAt && C == '@') || (AllowHash && C == '#');
++         (AllowAt && C == '@') || (AllowHash && C == '#') ||
++         static_cast<unsigned char>(C) >= 0x80;
+ }
+ 
+ AsmToken AsmLexer::LexIdentifier() {
+@@ -874,7 +881,14 @@ AsmToken AsmLexer::LexToken() {
+     // Whether or not the lexer accepts '$', '@', '#' and '?' at the start of
+     // an identifier is target-dependent. These characters are handled in the
+     // respective switch cases.
+-    if (isalpha(CurChar) || CurChar == '_' || CurChar == '.')
++    // if (isalpha(CurChar) || CurChar == '_' || CurChar == '.')
++    //   return LexIdentifier();
++
++    // // Unknown character, emit an error.
++    // return ReturnError(TokStart, "invalid character in input");
++        // 수정본: UTF-8 멀티바이트 문자(한글 등) 식별자 시작 허용
++    if (isalpha(CurChar) || CurChar == '_' || CurChar == '.' ||
++        static_cast<unsigned char>(CurChar) >= 0x80)
+       return LexIdentifier();
+ 
+     // Unknown character, emit an error.
