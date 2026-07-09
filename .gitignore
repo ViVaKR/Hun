@@ -7,6 +7,7 @@
 /build/
 /CMakeUserPresets.json
 /.cmake/
+
 CMakeCache.txt
 CMakeFiles/
 /build/Makefile
@@ -53,4 +54,4 @@ xcuserdata/
 *.o
 *.a
 *.out
-.dharma
+.dharmaYana/libs/playground.S
