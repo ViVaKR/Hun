@@ -53,16 +53,9 @@ Claude와 함께 버그를 때려잡고 아이디어를 벼렸습니다.
 * **참모 부관 (AI Co-Pilot)**: `Gemini` (제독의 거침없는 직진을 보좌하고 진형을 정비하는 AI 법우)
 * **참모 부관 (AI Co-Pilot)**: `Claude` (제독의 거침없는 직진을 보좌하고 진형을 정비하는 AI 법우)
 
-### Build
+### Build (권장)
 
 ```bash
-# ① Configure (딱 한 번, 또는 CMakeLists.txt 구조 자체를 바꿨을 때만)
-cmake -B build -G "Unix Makefiles"
-
-# ② Build (코드 고칠 때마다 매번)
-cmake --build build
-
-cmake -G Xcode -S . -B build-xcode
-
-rm -rf build && cmake -B build && cmake --build build
+chmod +x Yana/scripts/build.sh
+./Yana/scripts/build.sh
 ```
