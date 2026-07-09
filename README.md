@@ -43,5 +43,26 @@
 
 ## 🤝 우주 연방 사령부 (Credits)
 
+## 감사의 말
+
+훈민정음 어셈블리 여정의 매 순간,
+Claude와 함께 버그를 때려잡고 아이디어를 벼렸습니다.
+크하하하. 🏯⚔️
+
 * **대제독 (Grand Admiral)**: `ViVaKR` (우주의 근본 법칙 Dharma와 자비의 Hun을 다스리는 초월 아키텍트)
 * **참모 부관 (AI Co-Pilot)**: `Gemini` (제독의 거침없는 직진을 보좌하고 진형을 정비하는 AI 법우)
+* **참모 부관 (AI Co-Pilot)**: `Claude` (제독의 거침없는 직진을 보좌하고 진형을 정비하는 AI 법우)
+
+### Build
+
+```bash
+# ① Configure (딱 한 번, 또는 CMakeLists.txt 구조 자체를 바꿨을 때만)
+cmake -B build -G "Unix Makefiles"
+
+# ② Build (코드 고칠 때마다 매번)
+cmake --build build
+
+cmake -G Xcode -S . -B build-xcode
+
+rm -rf build && cmake -B build && cmake --build build
+```
