@@ -54,4 +54,6 @@ xcuserdata/
 *.o
 *.a
 *.out
-.dharmaYana/libs/playground.S
+
+build/
+build-xcode/

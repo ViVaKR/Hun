@@ -88,6 +88,12 @@ target_include_directories(Yana PRIVATE
 )
 
 target_compile_options(Yana PRIVATE $<$<COMPILE_LANGUAGE:ASM>:-g>)
-target_link_options(Yana PRIVATE "-Wl,-no_warn_duplicate_libraries")
+target_link_options(Yana PRIVATE 
+    "-Wl,-no_warn_duplicate_libraries"
+    "-Wl,-w" # 링커 경고 전체 무음 처리
+)
 
 set_target_properties(Yana PROPERTIES FOLDER "Yana")
+
+
+# rm -rf build-xcode && cmake -B build-xcode -G Xcode && cmake --build build-xcode --config Debug

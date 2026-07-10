@@ -99,8 +99,7 @@ crate-type = ["staticlib"]
 [dependencies]
 ```
 
-
-1. 빌드 (프로젝트 루즈) 
+1. 빌드 (프로젝트 루트) 
 
 ```bash
 
@@ -110,7 +109,6 @@ chmod +x Yana/scripts/build.sh
 
 # 커맨드라인 빌드 (XCode/lldb 포함)
 cd Yana/
-
 rm -rf build
 cmake -B build -G "Unix Makefiles"
 cmake --build build

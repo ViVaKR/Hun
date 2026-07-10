@@ -3,9 +3,9 @@
 
 .global _calc
 .align 2
+
+_calc:
     push_pair x19, x20
     // TODO
     pop_pair x19, x20
-_calc:
-    
-    
+    ret

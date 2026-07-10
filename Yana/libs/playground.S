@@ -1,0 +1,690 @@
+//  playground.S
+//  Yana
+//  Created by 김범준 on 7/10/26.
+
+// =============================================================================
+//  제목: Apple Silicon (ARM64/macOS) 표준 사격훈련 교본소 (playground.s)
+//  작성: 대제독의 민정기어 사령부
+// =============================================================================
+
+// -------------------------------------------------------------
+// [영역 1] 전역 심볼 선언 (Global Symbols)
+// -------------------------------------------------------------
+.global _playground
+
+// -------------------------------------------------------------
+// [__TEXT,__cstring,cstring_literals] 읽기 전용 데이터 섹션 (코드 및 문자열 상수 구역)
+// 수정 불가능한 구역, 문자열 리터럴 전용 공간
+// -------------------------------------------------------------
+.section __TEXT,__cstring,cstring_literals
+
+.align 3
+// ARM64에서 문자열(포인터)은 기본적으로 2^3=8바이트 정렬을 해주는 것이 뼈대 안정성에 좋습니다.
+// .asciz 는 맨끝에 널 문자 (\0) 를 자동으로 붙여 줌
+format_str: .asciz "%lld + %lld = %lld\n"
+format_for_loop: .asciz "%lld 회 합계 %lld\n"
+float_format_str: .asciz "%.2f + %.2f = %.3f\n"
+loop_format: .asciz "데이터 %lld 번째 값: %.3f\n"
+loop_format_decimal: .asciz "데이터 %lld 번째 값: %lldf\n"
+format_function_call: .asciz "[function call result] %d + %d = %d\n"
+format_delegate: .asciz "[Delegate Callback Result] 연산 결과: %d\n"
+helloworld: .asciz "Hello, World\n"
+
+// -------------------------------------------------------------
+// [__DATA,__bss] 초기화되지 않은 전역변수 또는 0으로 초기화된 변수가 위치하는 곳
+// 실제 바이너리 파일 용량을 차지하지 않음
+// 프로그램이 메모리에 로드될 때 0으로 깨끗하게 채워짐
+// 예시 : `int a; int b = 0;`
+// 단축지시어 : `.bss`
+// -------------------------------------------------------------
+.section __DATA,__bss
+
+// -------------------------------------------------------------
+// [__DATA,__const] 프로그램이 실행된 후 동적링크(Dynamic Linking) 시점에 딱 한 번 값이 써지고 그 이후에는 읽기 전용
+// 포인터 테이블 또는 특수한 상수 (닷넷의 static readonly)
+// 예시 :   함수 포이터 테이블(vtable/디스패치 테이블)
+//          "다른 심볼의 주소"를 담아야 해서 프로그램 로드 시점(동적 링킹)에 실제 주소가 확정되어야 하는 데이터
+// 단축지시어 : `.const`
+// -------------------------------------------------------------
+.section __DATA,__const
+.align 3
+
+// # 델리게이트가 가리킬 실제 연산 부대 주소들을 테이블로 박아둠
+delegate_addition:       .quad _callback_add
+delegate_subtraction:    .quad _callback_sub
+
+// -------------------------------------------------------------
+// [__DATA] 읽고 쓰기가 가능한 데이터 섹션 (변수 및 배열 구역)
+// __DATA,__data
+// 초기화된 전역변수(Global Variables)와 정적변수(Static Variables) 자 저장되는 곳
+// 예시 : `int a = 10;` 처럼 선언과 동시에 값이 할당된 변수들이 여기에 속함
+// 단축지시어 : `.data`
+// -------------------------------------------------------------
+.section __DATA,__data
+
+// 배열 데이터 공간
+// 메모리 정렬 (Memoroy Alignment)
+// .align 1 --> 2^1 = 2 바이트 정렬
+// .align 2 --> 2^2 = 4 바이트 정렬 (32비트 정수용)
+// .align 3 --> 2^3 = 8 바이트 정렬 (64비트 정수 및 실수용)
+
+// 8바이트 정렬 (2^3 = 8)
+// 실수형 배열 공간 (64비트 Double은 8바이트 정렬)
+.align 3
+huge_data: .double 150.5, -23.45, 3.141592, 150.5, -23.45
+huge_data_end:
+
+// 정수 배열 //
+// 4바이트 정렬 (2^2 = 4)
+// 정수형 배열 공간 (32비트 int는 4바이트 정렬)
+.align 2
+list_data: .int 1, 2, 3, 4, 5, 6, 7, 8, 9
+list_data_end:
+
+// 문자열은 보통 8바이트 정렬이 안전합니다
+.align 3
+list_format: .asciz "Index [%lld]: Value = %d\n"
+
+// -------------------------------------------------------------
+// [영역 4] 진짜 명령어가 실행되는 코드 섹션 (Code 구역)
+// __TEXT,__text
+// 실행 가능한 구역, 실제 기계어 코드가 위치하는 공간
+// ARM64 명령어는 무조건 4바이트(32비트) 크기이므로,
+// 함수의 시작점 주소는 무조건 4바이트 정렬(2^2 = 4)이 되어야 CPU가 뇌정지 없이 쾌속 독해를 합니다!
+// 단축 지시어 : `.text`
+// -------------------------------------------------------------
+.section __TEXT,__text,regular,pure_instructions
+.include "../include/hun.macros.inc"
+
+.align 2
+_playground:
+
+
+    // -----------------------------------------------------------------------------------------------------
+    // [프롤로그]  독서실 전 대역(X19~X28) 및 FP/LR 완벽 바리케이드 백업
+    //            총 12개 레지스터 * 8바이트 = 96바이트 공간을 스택에 확보하며 순차 백업!
+    //            ARM64 스택은 반드시 16바이트 배수로 움직여야 하므로 96은 아주 완벽한 정렬!
+    //  x9 ~ x15     (자유구역) - 쓰고 버려도 무탈한 레지스터 범위
+    // x19 ~ x28    (독서실) - 레지스터는 한번 값이 정해지면 함수를 다녀와도 절대 로 변하지 않는 안전지대 지정하자 정함
+    //              다만 이 주소에 낙서를 하고 싶은 함수(Callee) 가 있더면 백업하고 나올때 원상 복구 하자 약속
+    // -------------------------------------------------------------------------------------------------------
+    
+    // 1단계: [FP, LR] 백업  (기준점 확보)
+    // 확보되는 메모리의 양 : 96바이트
+    // 96 x 8 = 768bit
+    // 64bit 레지스트리 지준 - 12개의 방이 만들어짐
+    
+    // ARM64 레지스터 하나는 8바이트 (64비트)
+    // stp 는 한번에 레지스터 2개 (총 16바이트)를 묶어 스택메모리로 쏘아 보내는 특공대..
+    // 메모리 버스(Bus) 폭에 딱 맞춰 16바이트 광대역으로 밀어 넣기 때문에 속도가 빠름
+    
+    // [sp, #-96]!  : 스택포인터 이동 공간 확보
+    //      현재 주소를 가리키던 스택 포인터(sp)값에서 96을 뺌
+    //      계산 후 스택주소가 밑으로 툭 떨어지면서
+    //      기존 스택 위쪽으로 정확히 96바이트 만큼의 새로운 빈 공간이 개장됨
+    //      맨끝에 붙은 느낌표(!)는 "계산 끝났으면 sp 값을 진짜 96 떨어진 주소로 업데이트 해라" 지시
+    // x29, x30 : 데이터 저장
+    //      그렇게 확보된 96바이트 공간의 맨 밑바닥부터 시작해서
+    //      x29 (8바이트)와 x30(8바이트) 총 16바이트를 방금 만든 주차장에 탁 집어 넣음
+    // 그럼 남은 80바이트는?
+    //      그 80바이트 공간에다가 아까 만든 --> stp x19, x20, [sp, #16] 같은 4개의 명령어로
+    //      독서실 멤버 10명 (10 * 8바이트 = 80바이트) 를 차곡차곡 채워 넣는 것임..
+    // 왜 하필 '96' 일까?
+    //      ARM64 하드웨어에는 "스택포인터(sp)를 움직일 때는 무조건 16의 배수로 움직여라 라는 철칙
+    //      (16-byte Alignment) 이 있음
+
+    stp x29, x30, [sp, #-96]!
+    
+    //  현재 스택의 바닥을 FP 로 고정
+    mov x29, sp
+    
+    // 2단계 : [독서실] 멤버들 차례로 저축
+    stp x19, x20, [sp, #16]
+    stp x21, x22, [sp, #32]
+    stp x23, x24, [sp, #48]
+    stp x25, x26, [sp, #64]
+    stp x27, x28, [sp, #80]
+    
+    // -------------------------------------------------------------
+    // [본진 사격 개시]
+    // 이제 x19 ~ x28은 제독님 마음대로 낙서하고 부숴 먹어도 절대 안전지대!
+    // -------------------------------------------------------------
+    
+    // ===> [ 실행할 로직 선택 ] <=== //
+    
+    // (1) rust
+    // b _run_rust_start
+    
+    // (2) 정수배열
+    // b _loop_int_start
+    
+    // (3) 반복구문
+    // b _for_loop_start
+    
+    // (4) 실수배열
+    // b _loop_float_start
+    
+    // (5) 부호가 있는 나눗셈
+    // b _calc_sdiv
+    
+    // 6. 덧셈
+    // b _csel_demo
+    
+    // 7. 함수 호출
+    // b _function_call_start
+    
+    // 12. 델리게이트
+    b _delegate_demo_start
+// ==========================================
+// 12단계. Delegate / Callback (함수 포인터 호출 훈련)
+
+// [ 모델링 : C# delegate ]
+// using System;
+// class Program
+// {
+//    // 1. 델리게이트(함수 포인터 형식) 선언
+//    delegate int CalcDelegate(int a, int b);
+//
+//    static void Main()
+//    {
+//        int x19 = 30;
+//        int x20 = 20;
+//
+//        // 2. __DATA,__const 세션에 주소 박아놓은 것처럼 함수 맵핑!
+//        CalcDelegate delAddition = _callback_add;
+//        CalcDelegate delSubtraction = _callback_sub;
+//
+//        // 3. blr x10 격발! (레지스터에 주소만 바꿔 끼우며 호출)
+//        int result1 = delAddition(x19, x20);       // C# 내부적으로 함수 주소 찾아가 실행 (50)
+//        Console.WriteLine($"[Result] {result1}");
+//
+//        int result2 = delSubtraction(x19, x20);    // 똑같은 변수인데 동작이 바뀜 (10)
+//        Console.WriteLine($"[Result] {result2}");
+//    }
+//
+//    // 델리게이트가 가리키는 실제 하위 부대(Callee)
+//    static int _callback_add(int a, int b) => a + b;
+//    static int _callback_sub(int a, int b) => a - b;
+//}
+// ==========================================
+_delegate_demo_start:
+    // # [상황] x19, x20의 데이터를 가지고 어떤 연산을 할지 '동적(콜백)'으로 결정하고 싶다!
+    mov x19, #30
+    mov x20, #20
+
+    // -------------------------------------------------------------
+    // 🔥 [신공 1: 덧셈 델리게이트 장전 및 격발]
+    // -------------------------------------------------------------
+    //# 1) 주소 낚아채기 신공으로 덧셈 콜백 함수의 주소가 적힌 방을 찾음
+    adrp x9, delegate_addition@PAGE
+    add x9, x9, delegate_addition@PAGEOFF
+    
+    //# 2) 그 방에 적힌 실제 함수의 절대 주소를 x10 레지스터로 인출! (포인터 역참조)
+    ldr x10, [x9]
+    
+    //# 3) 인자 세팅 (x0, x1)
+    mov x0, x19
+    mov x1, x20
+    
+    //# 4) 🔥 격발!! x10에 들어있는 주소로 bl 점프 (C#의 delegate.Invoke() 와 동일!)
+    blr x10                     //# _callback_add 로 진격! 다녀오면 x0에 50이 담김.
+    mov x21, x0                 //# 결과 보관
+
+    //# 5) 애플 규격 표준 출력 격발
+    adrp x0, format_delegate@PAGE
+    add x0, x0, format_delegate@PAGEOFF
+    sub sp, sp, #16
+    str w21, [sp, #0]
+    bl _printf
+    add sp, sp, #16
+
+
+    // # -------------------------------------------------------------
+    // # 🔥 [신공 2: 뺄셈 델리게이트 장전 및 격발]
+    // # 똑같은 호출 흐름인데 레지스터에 담긴 주소만 바꾸면 동작이 바뀐다네!
+    // # -------------------------------------------------------------
+    //# 1) 이번엔 뺄셈 콜백 주소 장전!
+    adrp x9, delegate_subtraction@PAGE
+    add x9, x9, delegate_subtraction@PAGEOFF
+    ldr x10, [x9]
+    
+    // # 2) 데이터 주입 후 격발!
+    mov x0, x19
+    mov x1, x20
+    blr x10                     // # _callback_sub 로 진격! 다녀오면 x0에 10이 담김.
+    mov x21, x0
+
+    // # 3) 출력
+    adrp x0, format_delegate@PAGE
+    add x0, x0, format_delegate@PAGEOFF
+    sub sp, sp, #16
+    str w21, [sp, #0]
+    bl _printf
+    add sp, sp, #16
+
+    b _terminate
+
+// -------------------------------------------------------------
+// 델리게이트가 호출할 실제 서브 함수 부대 (Callee)
+// -------------------------------------------------------------
+_callback_add:
+    add x0, x0, x1
+    ret
+
+_callback_sub:
+    sub x0, x0, x1
+    ret
+// ==========================================
+// 11단계. function call (함수 호출 훈련)
+// ==========================================
+_function_call_start:
+    # 1. 호출할 함수에 던질 인자 세팅
+    mov x19, #102
+    mov x20, #105
+    
+    mov x0, x19
+    mov x1, x20
+    bl _function_call
+    
+    mov x21, x0                 // 결과값(207)을 x21에 저장
+    
+    # 2. 포맷 문자열 주소 낚아채기
+    adrp x0, format_function_call@PAGE
+    add x0, x0, format_function_call@PAGEOFF
+    
+    # -------------------------------------------------------------
+    # 🔥 [대제독의 애플 전용 가변인자 스택 격발 신공]
+    # -------------------------------------------------------------
+    # 1) 기존 독서실/FP 통장을 보호하기 위해 sp를 '추가로' 32바이트 확장하네! (16의 배수)
+    sub sp, sp, #32
+    
+    # 2) 새로 확보한 청정 구역 스택에 printf가 긁어갈 인자들을 차례로 탑재!
+    #    애플 printf 규격에 맞춰 하위 32비트 값(w)들을 안전하게 저장하네.
+    str w19, [sp, #0]           // %d 첫 번째 자리 (102) -> sp의 새 바닥
+    str w20, [sp, #8]           // %d 두 번째 자리 (105)
+    str w21, [sp, #16]          // %d 세 번째 자리 (207)
+    
+    bl _printf                  // 격발! (스택 오염이 전혀 없으므로 완벽 작동)
+    add sp, sp, #32
+    b _terminate                // 이제 복귀 주소(lr)가 안전하니 깔끔하게 퇴근!
+    
+_function_call:
+    add x0, x0, x1
+    ret
+
+// 1. rust
+_run_rust_start:
+    mov x0, #108
+    bl _call_from_dharma
+    b _terminate
+   
+// 2. int array loop
+_loop_int_start:
+    // 1. 시작주소와 끝 주소 로드
+    adrp x19, list_data@PAGE
+    add x19, x19, list_data@PAGEOFF
+    
+    adrp x9, list_data_end@PAGE
+    add x9, x9, list_data_end@PAGEOFF
+    
+    // 2. 원소 갯수 계산
+    sub x20, x9, x19    // 전체바이트 수 계산
+    lsr x20, x20, #2    // 4바이트 씩이므로 4로 나눔 (Shift Right 2번)
+    
+    mov x21, #1         // 카운터 시작값
+    b _loop_int
+
+// (2) loop int
+_loop_int:
+    // 3. 데이터 읽기 및 포인터 이동
+    // ldr w22 (32비트 정수)를 사용하고 주소를 4바이트 증가시킴
+    ldr w22, [x19], #4
+    
+    // 4. printf 호출 준비
+    adrp x0, list_format@PAGE
+    add x0, x0, list_format@PAGEOFF
+    
+    sub sp, sp, #32
+    str x21, [sp, #0]       // 첫번째 인자 %lld (Count)
+    // [중요]w22에 담긴 32비트값을 64비트 레지스터로 확장하여 저장
+    // printf의 %d는 보통 4바이트를 기대하지만, 스택에 저장할 때는 8바이트 단위를 맞추는 게 안전
+    sxtw x22, w22       // 32비트 정수를 64비트로 부호 확장
+    str x22, [sp, #8]   // 두번째 인자 %d (배열의 값)
+    
+    bl _printf
+    add sp, sp, #32
+    
+    // 5. 루프제어
+    add x21, x21, #1        // 순서 번호 증가
+    subs x20, x20, #1       //  남은 횟수 감소 및 상태 플래그 업데이트
+    b.ne _loop_int          // 0이 아니면 게속 반복
+    
+    b _terminate
+
+// (1) for loop
+_for_loop_start:
+    mov x19, #0      // 누적합계
+    mov x20, #1      // 루프카운터
+
+    b _for_loop
+
+// (2) for loop
+_for_loop:
+    cmp x20, #11 // x1 값과 11을 비교
+    b.ge _terminate
+    
+    adrp x0, format_for_loop@PAGE
+    add x0, x0, format_for_loop@PAGEOFF
+    
+    add x19, x19, x20      // 합계 누적
+    
+    mov x1, x20  // 현재 카운터
+    mov x2, x19     // 합계
+    
+    
+    sub sp, sp, #32
+    str x1, [sp, #0]
+    str x2, [sp, #8]
+    
+    
+    bl _printf
+    add sp, sp, #32
+    
+    //  카운터 증가
+    add x20, x20, #1
+    b _for_loop
+    
+    
+// (1) Loop
+_loop_float_start:
+    adrp x19, huge_data@PAGE
+    add x19, x19, huge_data@PAGEOFF
+    
+    adrp x9, huge_data_end@PAGE
+    add  x9, x9, huge_data_end@PAGEOFF
+    // [준비물 2] 🚨 무식한 숫자 #3 대신 자동 계산된 상수(.equ)를 대입!
+    // 이제 데이터 섹션에 .double을 100만 개 추가해도 이 코드는 손댈 필요가 없습니다!
+    // mov x20,#3
+    // mov x21, #1     // 몇 번째 출력인지 세어줄 카운터 (1부터 시작)
+    sub x20, x9, x19       // 바이트 수 (런타임에 실제 주소 빼기 → 안전!)
+    lsr x20, x20, #3       // ÷ 8 = 원소 개수
+    mov x21, #1
+    
+    b _loop_float
+    
+// (2) Loop
+_loop_float:
+    // [필살기 작동] 현재 x19가 가리키는 주소에서 실수(8바이트)를 d0에 읽고,
+    // x19 주소를 자동으로 +8 바이트 이동시킵니다! (다음 데이터를 바라봄)
+    ldr d0, [x19], #8
+    
+    // printf 호출을 위한 스택 세팅 (애플 법령 준수)
+    // 포맷 스트링 인자 배치: x0(포맷), 그 뒤로 가변 인자는 스택에!
+    adrp x0, loop_format@PAGE
+    add x0, x0, loop_format@PAGEOFF
+    
+    sub sp, sp, #32
+    str x21, [sp, #0]   // 첫 번째 %lld 자리에 들어갈 정수 (몇 번째인가?)
+    str d0, [sp, #8]    // 두 번째 %.3f 자리에 들어갈 실수 값
+    
+    bl _printf       //  출력
+    add sp, sp, #32
+    
+    // 다음 바퀴를 위한 카운더 조절
+    add x21, x21, #1    // 출력순서 + 1
+    sub x20, x20, #1    // 남은횟수 - 1
+    
+    // [조건부 분기] 남은 횟수(x20)가 0이 아니면(Non-Zero) 다시 루프 처음으로 점프!
+    cbnz x20, _loop_float
+    b _terminate
+   
+// 5. 부호가 있는 나눗셈
+_calc_sdiv:
+    mov x9, #150
+    mov x10, #-23
+    scvtf d0, x9        // x9(150) -> d0 (150.0)
+    scvtf d1, x10       // x10 (-23) -> d1 (-23.0)
+    fdiv d2, d0, d1     // d2 = 150.0 / -23.0 (-6.5217...)
+    b _printf_float_demo
+
+// 6. 덧셈
+_calc_add:
+    // 밖에서 계산을 열심히 수행함 (여기서 x9, x10, x11이 채워짐)
+    mov x9, #120   // 첫번째 수
+    mov x10, #34     // 두번째 수
+    add x11, x9, x10   // x21 = 154 (합계)
+    
+    b _printf_demo
+ 
+// -------------------------------------------------------------
+// 1001. CSEL
+// -------------------------------------------------------------
+_csel_demo:
+    
+    mov x0, #45
+    mov x1, 44
+    cmp x0, x1
+    csel x2, x0, x1, gt
+    b _terminate
+
+// -------------------------------------------------------------
+// 1. Carry 관련 가산 (ADC, ADCS)
+// -------------------------------------------------------------
+_adc_demo:
+    // C(Carry) 플래그를 세우기 위해 의도적으로 오버플로우 유도
+    mov x0, #0xFFFFFFFFFFFFFFFF
+    adds x0, x0, #1            // 0xFF... + 1 = 0 이 되면서 Carry 발생 (C=1)
+    
+    mov x1, #5
+    mov x2, #10
+    adc x3, x1, x2             // x3 = x1 + x2 + Carry(1) = 16 이 됨!
+    b _extend_demo
+
+// -------------------------------------------------------------
+// 2. 비트 확장 연산 (ADD extended register, SXTB, SXTH, SXTW)
+// -------------------------------------------------------------
+_extend_demo:
+    mov x0, #0xFF             // 8비트 부호 있는 값 -1에 해당 (0x000000FF)
+    
+    // SXTB (Signed Extend Byte): 8비트 부호 비트를 64비트 전체로 채움
+    sxtb x1, w0                // x1은 0xFFFFFFFFFFFFFFFF (-1)이 됨
+    
+    // ADD와 결합해서 사용 (extended register)
+    mov x2, #10
+    add x3, x2, w0, sxtb       // x3 = 10 + (-1) = 9
+    b _bitfield_demo
+
+// -------------------------------------------------------------
+// 3. 비트필드 조작 (BFI, BFXIL, UBFIZ, UBFX)
+// -------------------------------------------------------------
+_bitfield_demo:
+    mov x0, #0x1234
+    
+    // BFXIL (Bitfield Extract and Insert Low): x0의 비트 4부터 4개 비트를 x1의 하위로 추출
+    bfxil x1, x0, #4, #4       // x1의 하위 4비트에 0x3이 들어감
+    
+    // BFI (Bitfield Insert): x1의 값을 x0의 특정 위치에 삽입
+    mov x2, #0xF
+    mov x3, #0x0000
+    bfi x3, x2, #8, #4         // x3의 8번째 비트부터 4비트 공간에 0xF를 삽입 -> 0xF00이 됨
+    b _cond_compare_demo
+
+// -------------------------------------------------------------
+// 4. 조건부 비교 및 선택 (CCMP, CSEL, CSET)
+// -------------------------------------------------------------
+_cond_compare_demo:
+    mov x0, #10
+    mov x1, #20
+    
+    cmp x0, x1                 // x0 < x1 (결과: Less Than / LO)
+    
+    // CCMP (Conditional Compare): 이전 비교 결과가 참(LT)일 때만 x0와 10을 다시 비교
+    // 참이 아니면 플래그를 지정한 값(nzcv)으로 강제 세팅
+    ccmp x0, #10, #0, lt
+    
+    // CSEL (Conditional Select): EQ(같음) 조건이 참이면 x1을, 거짓이면 x0를 x2에 대입
+    csel x2, x1, x0, eq        // x2 = x1 (20)이 됨
+    
+    // CSET (Conditional Set): LT 조건이 참이면 1, 거짓이면 0을 x3에 대입
+    cset x3, lt                // x3 = 1
+    b _div_mul_demo
+
+// -------------------------------------------------------------
+// 5. 나눗셈 및 곱셈 (SDIV, UDIV, MADD, MSUB)
+// -------------------------------------------------------------
+_div_mul_demo:
+    mov x0, #-100
+    mov x1, #10
+    sdiv x2, x0, x1            // 부호 있는 나눗셈: x2 = -10
+    
+    // MADD (Multiply-Add): x3 = (x1 * x2) + x0
+    madd x3, x1, x2, x0        // x3 = (10 * -10) + (-100) = -200
+    
+    // MSUB (Multiply-Subtract): x4 = x0 - (x1 * x2)
+    msub x4, x1, x2, x0        // x4 = -100 - (10 * -10) = 0
+    b _terminate
+
+
+_if_demo:
+    
+    mov x0, #1
+    mov x1, #2
+    cmp x0, x1
+    bgt _greater
+    b _terminate
+
+_greater:
+    mov x2, #1
+    b _terminate
+
+_ror_demo:
+    mov x0, #0b11111111
+    ror x0, x0, 4
+    b _terminate
+    
+_lsl_demo:
+    
+    mov x0, #0b00000001
+    lsl x0, x0, #3
+    
+    b _terminate
+
+_lsr_demo:
+    mov x0, #0b00011000
+    mov x1, x0
+    lsr x1, x1, #2
+    
+    b _terminate
+    
+_mvn_demo:
+    mov x0, #0b1101
+    mvn x0, x0
+    b _terminate
+    
+_eor_demo:
+    mov x0, #0b1111
+    mov x1, #0b1010
+    eor x2, x0, x1
+    b _terminate
+    
+_or_demo:
+    mov x0, #0xFF
+    mov x1, 43
+    orr x2, x0, x1
+    b _terminate
+    
+_and_demo:
+    mov x0, #0xFF
+    mov x1, #0x34
+    and x2, x0, x1
+    b _terminate
+
+
+_printf_svc:
+
+    // stdout
+    mov x0, #1
+    
+    // ❌ 국경을 넘지 못해 에러가 난 흥부가 기가 막힐 코드
+    // adr x1, helloworld      // address of 'hello world' string
+    
+    // ⚡ [해결] 애플의 보안 국경을 완벽하게 넘나드는 정석 두 줄 족보!
+    adrp x1, helloworld@PAGE
+    add  x1, x1, helloworld@PAGEOFF
+    
+    mov x2, #12             // length of 'hello world' string
+    mov x16, #4             // 4 - write(int fd, user_addr_t cbuf, user_size_t nbyte); }
+    
+    svc 0
+    b _terminate
+ 
+_printf_float_demo:
+    // 1. 포맷 스트링의 주소는 여전히 첫 번째 정수 레지스터인 x0에 넣는다네.
+    adrp x0, float_format_str@PAGE
+    add x0, x0, float_format_str@PAGEOFF
+    
+    // 2. printf의 실수형 인자 (%f)들은 d0, d1, d2 레지스터에 순서대로 매핑되어야 하네!
+    // 다행히 위에서 연산 결과를 이미 d0, d1, d2에 순서대로 담아놓았기 때문에
+    // 여기서는 따로 레지스터를 옮길 필요 없이 바로 호출하면 된다네!
+    // (만약 순서가 꼬였다면 fmov d0, d_target 등으로 맞춰줘야 함)
+    
+    // 가변 인자 함수 규칙에 다라.. d레지스터의 값을 x 레지스터로 이동
+    fmov x1, d0                 // d0(150.0)의 비트 값을 x1에 복사
+    fmov x2, d1                 // d1(-23.0)의 비트 값을 x2에 복사
+    fmov x3, d2                 // d2(-6.5217...)의 비트 값을 x3에 복사
+    sub sp, sp, #32
+    str x1, [sp, #0]
+    str x2, [sp, #8]
+    str x3, [sp, #16]
+
+    bl _printf
+    add sp, sp, #32
+    mov x0, #0
+    b _terminate
+
+_printf_demo:
+    
+    // 2. printf C style 함수 호출 준비
+    // AAPCS 규약에 따라:
+    // x0: 첫번째 인자 (포맷 스트링의 주소)
+    // x1: 두번째 인자 (포맷 스트링의 %d 자리에 들어갈 값)
+    adrp x0, format_str@PAGE    // 포맷 스트링이 위치한 페이지 주소로드
+    add x0, x0, format_str@PAGEOFF  // 페이지 내의 오프셋 더해서 최종 주소 완성
+
+    mov x1, x9                 // 첫 번째 %d에 들어갈 값 (120) -> x1
+    mov x2, x10                 // 두 번째 %d에 들어갈 값 (34) -> x2
+    mov x3, x11                 // 세 번째 %d에 들어갈 값 (154) -> x3
+    
+    sub sp, sp, #32
+    str x1, [sp, #0]
+    str x2, [sp, #8]
+    str x3, [sp, #16]
+    
+    // 3. C  라이브러리의 printf 함수 호출
+    bl _printf
+    add sp, sp, #32
+    mov x0, #0
+    b _terminate
+
+// -------------------------------------------------------------
+// 6. 종료 (에필로그 및 리턴)
+// -------------------------------------------------------------
+_terminate:
+
+    // -------------------------------------------------------------
+    // [에필로그] 퇴근 준비! 역순으로 완벽하게 원상 복구
+    // 1단계: 독서실 멤버들 그대로 복원
+    // -------------------------------------------------------------
+    ldp x19, x20, [sp, #16]
+    ldp x21, x22, [sp, #32]
+    ldp x23, x24, [sp, #48]
+    ldp x25, x26, [sp, #64]
+    ldp x27, x28, [sp, #80]
+
+    // Main 함수의 반환값 (Exit Code 0)
+    mov x0, #0
+    // 🍏 [수정완료] 프롤로그의 #-96과 정확히 대칭되도록 #96으로 탈출!
+    // FP, LR을 복원함과 동시에 스택을 깔끔하게 96바이트 위로 들어 올려 원상 복구합니다.
+    ldp x29, x30, [sp], #96
+    ret
+    

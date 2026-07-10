@@ -12,7 +12,7 @@ echo "⚡ [Yana 빌드 스크립트] 프로젝트 루트: ${PROJECT_ROOT}"
 cmake -G Xcode -S "${PROJECT_ROOT}" -B "${BUILD_DIR_XCODE}"
 
 # 2. 🔑 실제 빌드
-# cmake --build build 
+# cmake --build build
 cmake --build "${BUILD_DIR}" --config Debug
 
 # 3. 빌드 성공 여부 확인 후 자동 실행
@@ -31,10 +31,12 @@ fi
 # --> 커맨드라인 검증 (매번 빠르게 확인할 때)
 # 1. rm -rf build
 # 2. cmake -B build -G "Unix Makefiles"
-# 3. cmake --build build
+# 3. cmake --build build --config Debug
 
 # --> Xcode/lldb 디버깅용
 # 1. rm -rf build-xcode
 # 2. cmake -B build-xcode -G Xcode
 # 3. cmake --build build-xcode --config Debug
+
+# --> Open project with XCode
 # 4. open build-xcode/Yana.xcodeproj
