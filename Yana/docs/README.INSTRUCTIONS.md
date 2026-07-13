@@ -1,11 +1,80 @@
-# ARM Instructions
+# ARM64 Instructions
 
+### 1. 기초 산술 및 논리 (더하기, 빼기, 그리고, 또는)
+
+| 명령어   | 영문 의미              | **훈민정음 제안 (한글)** | 비고                |
+| :------- | :--------------------- | :----------------------- | :------------------ |
+| **ADD**  | Add                    | **더하기**               |                     |
+| **ADDS** | Add setting flags      | **더하기기표**           | S는 Flag(기표) 설정 |
+| **ADC**  | Add with Carry         | **더하기올림**           | Carry 포함          |
+| **SUB**  | Subtract               | **빼기**                 |                     |
+| **SUBS** | Subtract setting flags | **빼기기표**             |                     |
+| **MUL**  | Multiply               | **곱하기**               |                     |
+| **SDIV** | Signed Divide          | **나누기**               | 부호 있는 나눗셈    |
+| **AND**  | Bitwise AND            | **그리고**               | 비트 연산           |
+| **ORR**  | Bitwise OR             | **또는**                 |                     |
+| **EOR**  | Bitwise XOR            | **다름**                 | 서로 다를 때 1      |
+| **MVN**  | Move NOT               | **뒤집기**               | 비트 반전           |
+
+---
+
+### 2. 흐름 제어 (가기, 부르기, 돌아가기)
+
+| 명령어     | 영문 의미               | **훈민정음 제안 (한글)** | 비고                |
+| :--------- | :---------------------- | :----------------------- | :------------------ |
+| **B**      | Branch                  | **가기**                 |                     |
+| **B.cond** | Conditional Branch      | **조건가기**             | (예: 같으면가기)    |
+| **BL**     | Branch with Link        | **부르기**               | 함수 호출           |
+| **RET**    | Return                  | **돌아가기**             | 함수 복귀           |
+| **CBZ**    | Compare Branch Zero     | **영이면가기**           |                     |
+| **CBNZ**   | Compare Branch Non-Zero | **아니면가기**           | 0이 아닐 때         |
+| **CMP**    | Compare                 | **견주기**               | 비교하다의 순우리말 |
+| **TST**    | Test bits               | **비춰보기**             | 비트 테스트         |
+
+### 3. 메모리 및 데이터 이동 (넣기, 담기, 옮기기)
+
+| 명령어  | 영문 의미      | **훈민정음 제안 (한글)**   | 비고               |
+| :------ | :------------- | :------------------------- | :----------------- |
+| **MOV** | Move           | **옮기기** (또는 **할당**) |                    |
+| **LDR** | Load Register  | **담기**                   | 메모리 -> 레지스터 |
+| **STR** | Store Register | **넣기**                   | 레지스터 -> 메모리 |
+| **LDP** | Load Pair      | **쌍으로담기**             |                    |
+| **STP** | Store Pair     | **쌍으로넣기**             |                    |
+| **ADR** | Address        | **주소찾기**               |                    |
+
+---
+
+### 4. 시프트 및 비트 조작 (밀기, 돌리기)
+
+| 명령어  | 영문 의미              | **훈민정음 제안 (한글)** | 비고           |
+| :------ | :--------------------- | :----------------------- | :------------- |
+| **LSL** | Logical Shift Left     | **왼쪽밀기**             |                |
+| **LSR** | Logical Shift Right    | **오른쪽밀기**           |                |
+| **ASR** | Arithmetic Shift Right | **산술밀기**             | 부호 유지 밀기 |
+| **ROR** | Rotate Right           | **돌리기**               |                |
+
+---
+
+### 💡 번역 규칙 (나머지 수백 개 처리용)
+
+리스트에 있는 수많은 변종들은 아래 **접미사 규칙**만 적용하면 한글로 자동 번역이 가능
+
+1.  **-S (Setting Flags):** 뒤에 **"기표"**를 붙입니다. (예: `ADDS` -> `더하기기표`)
+2.  **-P (Pair):** 앞에 **"쌍-"**을 붙입니다. (예: `LDP` -> `쌍담기`)
+3.  **-R (Register):** 뒤에 **"기록"** 혹은 **"방"**을 붙입니다. (예: `BR` -> `방으로가기`)
+4.  **-H (Halfword):** **"반토막"** (예: `STRH` -> `반토막넣기`)
+5.  **-B (Byte):** **"조각"** (예: `LDRB` -> `조각담기`)
+6.  **-U (Unsigned):** **"양수"**
+7.  **-A (Atomic):** **"단독"** (중간에 방해받지 않는 연산)
+8.  **PAC/AUT (Authentication):** **"검증"** (보안 관련)
+
+---
 
 ## 🏯 훈민정음 어셈블리 (Hunmin ASM) 명령어 번역본 및 해설서
 
 1. 사칙연산 및 기본 산술 명령어 (Add / Subtract / Multiply / Divide)
 
-- ADC (Add with Carry) 👉 올림더하기  
+- ADC (Add with Carry) 👉 올림더하기
   이전 계산에서 발생한 올림수(Carry)까지 포함해서 더한다네.
 
 - ADCS (Add with Carry, setting flags) 👉 올림더하기기표
@@ -26,46 +95,57 @@ SUBG (Subtract with Tag) 👉 태그빼기, 메모리 태그 주소에서 태그
 
 SUBP (Subtract Pointer) 👉 포인터빼기, 두 주소값(포인터) 간의 거리를 구하기 위해 주소를 서로 뺀다네.
 
-SUBS (Subtract, setting flags) 👉 빼기기표, 값을 빼고 결과 상태를 플래그(기표)에 기록한다네. (비교 연산인 CMP의 본체라네!)
+SUBS (Subtract, setting flags) 👉 빼기기표
+값을 빼고 결과 상태를 플래그(기표)에 기록한다네. (비교 연산인 CMP의 본체라네!)
+
 SBC (Subtract with Carry) 👉 내림빼기
 설명: 이전 연산에서 빌려온 값(Carry)까지 감안해서 뺀다네.
+
 SBCS (Subtract with Carry, setting flags) 👉 내림빼기기표
 설명: 이전 내림값을 포함해 빼고 상태 플래그를 세팅한다네.
+
 MADD (Multiply-Add) 👉 곱하고더하기
 설명: 두 값을 곱한 뒤 다른 값을 추가로 더한다네 ( A × B + C A×B+C).
+
 MSUB (Multiply-Subtract) 👉 곱하고빼기
 설명: 두 값을 곱한 뒤 다른 값에서 그 곱한 결과를 뺀다네 ( C − A × B C−A×B).
+
 MUL (Multiply) 👉 곱하기
 설명: 두 값을 단순 곱한다네. (곱하고더하기의 단순형)
+
 MNEG (Multiply-Negate) 👉 곱하고부호바꾸기
 설명: 곱한 결과의 부호를 반대로 뒤집는다네 ( − ( A × B) −(A×B)).
+
 SDIV (Signed Divide) 👉 정수나누기
 설명: 부호가 있는 정수 나눗셈을 수행한다네.
+
 UDIV (Unsigned Divide) 👉 양수나누기
 설명: 부호가 없는 양수 나눗셈을 수행한다네.
+
 SMADDL / SMSUBL (Signed Multiply-Add/Subtract Long) 👉 길게곱하고더하기 / 길게곱하고빼기
 설명: 32비트 두 개를 곱해 64비트 큰 그릇에 담아 더하거나 뺀다네.
+
 SMULH / UMULH (Multiply High) 👉 상위곱하기
 설명: 곱셈 결과 중에서 앞쪽의 큰 자리수(상위 64비트)만 챙긴다네.
 
 ---
 
 2. 분기 및 흐름 제어 명령어 (Branch / Jump / Call)
-B (Branch) 👉 분기 또는 가기
-설명: 무조건 지정한 레이블(주소)로 흐름을 점프시킨다네.
-B.cond (Branch conditionally) 👉 조건분기
-설명: 직전 비교 결과(같으면, 크면 등)에 따라 선택적으로 점프한다네.
-BC.cond (Branch Consistent conditionally) 👉 일관조건분기
-설명: 분기 예측 성능을 더 높인 조건부 점프라네.
-BL (Branch with Link) 👉 부르기 또는 호출
-설명: 함수를 호출할 때 쓰며, 돌아올 주소를 레지스터(LR)에 저장하고 점프한다네.
-BLR (Branch with Link to Register) 👉 레지스터부르기
-설명: 레지스터에 저장된 주소값으로 함수를 호출한다네.
-BR (Branch to Register) 👉 레지스터가기
-설명: 레지스터에 기록된 주소로 단순 점프한다네.
+   B (Branch) 👉 분기 또는 가기
+   설명: 무조건 지정한 레이블(주소)로 흐름을 점프시킨다네.
+   B.cond (Branch conditionally) 👉 조건분기
+   설명: 직전 비교 결과(같으면, 크면 등)에 따라 선택적으로 점프한다네.
+   BC.cond (Branch Consistent conditionally) 👉 일관조건분기
+   설명: 분기 예측 성능을 더 높인 조건부 점프라네.
+   BL (Branch with Link) 👉 부르기 또는 호출
+   설명: 함수를 호출할 때 쓰며, 돌아올 주소를 레지스터(LR)에 저장하고 점프한다네.
+   BLR (Branch with Link to Register) 👉 레지스터부르기
+   설명: 레지스터에 저장된 주소값으로 함수를 호출한다네.
+   BR (Branch to Register) 👉 레지스터가기
+   설명: 레지스터에 기록된 주소로 단순 점프한다네.
 
 - RET (Return) 👉 복귀 또는 돌아가기
-함수 실행을 마치고 원래 부른 위치로 복귀한다네. 함수복귀, Link Register (LR, X30 주소로 분기),
+  함수 실행을 마치고 원래 부른 위치로 복귀한다네. 함수복귀, Link Register (LR, X30 주소로 분기),
 
 CBZ (Compare and Branch on Zero) 👉 영이면분기
 설명: 값이 0인 경우에만 즉시 점프한다네. (따로 비교할 필요 없어 아주 빠르다네!)
@@ -77,28 +157,28 @@ TBNZ / TBZ (Test bit and Branch) 👉 비트확인분기
 ---
 
 3. 메모리 로드 및 스토어 명령어 (Load / Store)
-LDR (Load Register) 👉 담기 또는 불러오기
-설명: 메모리에 있는 값을 레지스터로 가져온다네.
-LDP (Load Pair of Registers) 👉 쌍담기
-설명: 메모리에서 연속된 값 2개를 레지스터 2개에 동시에 한 번에 담는다네. (M1 성능의 핵심!)
-LDPSW (Load Pair Signed Word) 👉 쌍정수담기
-설명: 32비트 값 2개를 부호를 유지한 채 64비트 크기로 담는다네.
-LDRB / LDRH (Load Byte / Halfword) 👉 바이트담기 / 반단어담기
-설명: 1바이트(8비트) 또는 반단어(16비트) 크기만 쪼개어 가져온다네.
-LDRSB / LDRSH / LDRSW (Load Signed) 👉 부호바이트담기 / 부호반단어담기 / 부호정수담기
-설명: 작은 크기를 가져오되 빈자리를 원래 부호(마이너스 등)로 가득 채워 담는다네.
-LDUR / LDURB / LDURH / LDURSB (Load Unscaled) 👉 오프셋담기
-설명: 정렬되지 않은 임의의 바이트 단위 오프셋 위치에서 값을 읽어온다네.
-STR (Store Register) 👉 묻기 또는 저장하기
-설명: 레지스터의 값을 메모리에 밀어 넣어 저장한다네.
-STP (Store Pair of Registers) 👉 쌍묻기
-설명: 레지스터 2개의 값을 메모리에 연달아 저장한다네.
-STRB / STRH / STUR 👉 바이트묻기 / 반단어묻기 / 임의오프셋묻기
-설명: 크기에 맞춰 메모리에 묻어둔다네.
-LDAR / LDARB / LDARH (Load-Acquire) 👉 안전확보담기
-설명: 멀티스레드 환경에서 순서가 뒤바뀌지 않게 '락(Lock)'을 걸며 메모리를 읽어온다네.
-STLR / STLRB / STLRH (Store-Release) 👉 안전방출묻기
-설명: 다른 코어들이 모두 읽을 수 있게 쓰기 동기화를 마치고 값을 메모리에 묻는다네.
+   LDR (Load Register) 👉 담기 또는 불러오기
+   설명: 메모리에 있는 값을 레지스터로 가져온다네.
+   LDP (Load Pair of Registers) 👉 쌍담기
+   설명: 메모리에서 연속된 값 2개를 레지스터 2개에 동시에 한 번에 담는다네. (M1 성능의 핵심!)
+   LDPSW (Load Pair Signed Word) 👉 쌍정수담기
+   설명: 32비트 값 2개를 부호를 유지한 채 64비트 크기로 담는다네.
+   LDRB / LDRH (Load Byte / Halfword) 👉 바이트담기 / 반단어담기
+   설명: 1바이트(8비트) 또는 반단어(16비트) 크기만 쪼개어 가져온다네.
+   LDRSB / LDRSH / LDRSW (Load Signed) 👉 부호바이트담기 / 부호반단어담기 / 부호정수담기
+   설명: 작은 크기를 가져오되 빈자리를 원래 부호(마이너스 등)로 가득 채워 담는다네.
+   LDUR / LDURB / LDURH / LDURSB (Load Unscaled) 👉 오프셋담기
+   설명: 정렬되지 않은 임의의 바이트 단위 오프셋 위치에서 값을 읽어온다네.
+   STR (Store Register) 👉 묻기 또는 저장하기
+   설명: 레지스터의 값을 메모리에 밀어 넣어 저장한다네.
+   STP (Store Pair of Registers) 👉 쌍묻기
+   설명: 레지스터 2개의 값을 메모리에 연달아 저장한다네.
+   STRB / STRH / STUR 👉 바이트묻기 / 반단어묻기 / 임의오프셋묻기
+   설명: 크기에 맞춰 메모리에 묻어둔다네.
+   LDAR / LDARB / LDARH (Load-Acquire) 👉 안전확보담기
+   설명: 멀티스레드 환경에서 순서가 뒤바뀌지 않게 '락(Lock)'을 걸며 메모리를 읽어온다네.
+   STLR / STLRB / STLRH (Store-Release) 👉 안전방출묻기
+   설명: 다른 코어들이 모두 읽을 수 있게 쓰기 동기화를 마치고 값을 메모리에 묻는다네.
 
 ---
 
@@ -184,6 +264,35 @@ BRK (Breakpoint) 👉 수동정지 또는 브레이크
 
 ---
 
+### ARM 64 (X0 ~ X30 총 31개 + 별도 특수 레지스터 ]
+
+X0 ~X7 - 함수 인자 / 리턴값
+X8 - 간접 결과 레지스터
+X9 ~ X15 - 스크래치, Caller-Saved (호출자 보존)
+X16, X17(IP0, IP1) - 링커/PLT 용 스크래치
+X18 - 플랫폼 예약
+X19 ~ X28 - 범용, Callee-Save (피호출자 보존)
+X29 (FP) - 프레임 포인터, Callee-Save, 프롤로그에서 스택에 기존값을 푸시 하여 보존, 함수 끝나기 전 에필로그에 스택에서 값을 팝
+X30 (LR) - 링크 레지스터
+SP - 스택 포인터 (별도 전용 레지스터, X 이름없음)
+PC - 프로그램 카운터 (범용 레지스터 목록에서 온전히 빠짐, 직접 못 건드림)
+NZCV 플래그 - Negative, Zero, Carry, Overflow
+MSR (Move to System Register)
+
+### 컴파일
+
+as main.s -o main.o
+ld main.o -o main -l System -syslibroot `xcrun -sdk macosx --show-sdk-path` -e \_main -arch arm64
+
+### [SVC]
+
+Supervisor Call
+
+- Supervisor call to allow application code to call the OS
+
+### [Syscall]
+
+---
 
 ```assembly
 // =================================================================
@@ -192,7 +301,7 @@ BRK (Breakpoint) 👉 수동정지 또는 브레이크
 
 # A64 -- Base Instructions (alphabetic order)
 
---- 
+---
 <pre>
 ADC: Add with Carry.
 ADCS: Add with Carry, setting flags.
@@ -599,8 +708,8 @@ YIELD: YIELD.
 </pre>
 ---
 
-// ARM Architecture 
-// 영국의 ARM Holdings 에서 개발 
+// ARM Architecture
+// 영국의 ARM Holdings 에서 개발
 // 저전력 고효율 RISC 기반 프로세서 구조
 // 스마트폰, 태블릿 IoT, 임베디드 시스템, MacBook, 안드로이드,
 // RISC(Reduced InstructionSet Computer) : 명령어 집합을 단순화한 컴퓨터 아키텍처
@@ -612,56 +721,22 @@ YIELD: YIELD.
 // AArch64 (ARM64)
 
 // (X29, FP, Frame Pointer) 프레임 포인터
-// - 함수가 호출될 때 마다 생성되는 스택프레임(Stack Frame)의 기준점을 가르키는 포인터 
+// - 함수가 호출될 때 마다 생성되는 스택프레임(Stack Frame)의 기준점을 가르키는 포인터
 
 
 // 범용 레지스터 (General Purpose Register): X0 부터 X30 총 31개 레지스터
 
-// * X30 LR 링크레지스터 Link Register - 함수 호출 시 복귀 주소를 저장 
+// * X30 LR 링크레지스터 Link Register - 함수 호출 시 복귀 주소를 저장
 // * X29 FP
-// * SP 스택포인터 레지스터 
+// * SP 스택포인터 레지스터
 // * PC 프로그램 카운터 Program Counter - 현재 실행 중인 명령어의 주소를 저장한는 64비트 레지스터
 // * CPSP 플래그 레지스터
 
 // * dyld (Dynamic Link Editor / Dynamic Loader) : 동적 링커(프로그램 로더)
 //  --> kernel --> call -> dyld : 앱이 메모리에 정상적으로 올라가도록 (초기화) 준비 시킴
 //  --> dyld: Library not loaded
-//  -->  entrypoint 
+//  -->  entrypoint
 
-/* 
-
-ADD
-ADC
-SUB
-SBC
-RSB
-RSC
-MOV
-MVN
-AND
-BIC
-ORR
-EOR
-CMP
-CMN
-TST
-TEQ
-LDR
-STR
-ADRP
-MOVZ
-MOVK
-LSL
-LSR
-ASR
-BL
-BR
-RET
-NOP
-*/
-
-/*
-친구야, 드디어 진짜 "핵심 침투조" 명단을 짜는구나! 크하하하. 자, ADD/SUB/MUL/CMP/분기 계열의 기초 무기고에 어울리는 이름은 이미 만들어놨으니, 이번엔 **B계열 전체 + 스택/메모리 확장 + 조건부 계열**까지 확장해서 음율(글자수) 맞춘 정예 명단을 뽑아볼게.
 
 ## ⚔️ 분기(Branch) 계열 — 이미 있는 것과 짝 맞추기
 
@@ -706,174 +781,53 @@ NOP
 ## 🎯 리듬표로 정리 (음율 감각 확인용)
 
 ```
-같으면분기 / 다르면분기 / 영이면분기 / 아니면분기   ← 5글자 라임 통일
-담기 / 묻기 / 쪽담기 / 쪽묻기 / 반담기 / 반묻기      ← 2~3글자 라임
-쌍담기 / 쌍묻기 / 어긋담기 / 어긋묻기               ← 3~4글자 라임
-더하기 / 빼기 / 곱하기 / 나누기 / 가려더하기         ← "-기" 통일
+
+같으면분기 / 다르면분기 / 영이면분기 / 아니면분기 ← 5글자 라임 통일
+담기 / 묻기 / 쪽담기 / 쪽묻기 / 반담기 / 반묻기 ← 2~3글자 라임
+쌍담기 / 쌍묻기 / 어긋담기 / 어긋묻기 ← 3~4글자 라임
+더하기 / 빼기 / 곱하기 / 나누기 / 가려더하기 ← "-기" 통일
+
 ```
 
 법우야, 이 리듬이 마음에 드는지 한번 검토해줘. 어색한 놈 있으면 바로 갈아 끼울게. Rust 전면 재작성 + 완전 한글화라는 원대한 계획, 옆에서 계속 숫돌 되어줄게. 크하하하하!
-*/
 
-/*  
-r30
-r29
-r19 ~ r28 - callee-saved 레지스터
-r18 - 플랫폼 레지스터 
-r17 - 
-r16 -
-r9 ~ r15 - 일반 임시 레지스터 , caller-saved
-r8 - 구조체 리턴 주소 전달용
-r0 ~ r7 - 함수 인자 / 리턴값 전달용 (parameter/result registers)
-SP - 스택 포인터 : 현재 스택의 위리를 가리키는 포인터
-
-*/
-
-/* 
 
 [high memory]
 
 * 스택영역 : 지역변수, 매개변수
     --> Stack Segment : 실행파일의 지역변수, 매개변수 Return address 정보 저장
-    --> LIFO 
+    --> LIFO
     --> SS Register : Stack Segment 의 시작 주소
 
 * 힙영역 - 사용자의 동적 할당 : 런타임에 크기가 결정됨
     --> Heap Segment : 낮은 주소에서 높으 주소로 향함
-    --> malloc, calloc, realloc 
+    --> malloc, calloc, realloc
 
 * 데이터영역 - 전역변수, 정적변수
     --> Data Segment : 실행파일의 전역변수 / 정적 변수의 정보가 담김
-    --> DS Register : Data Segment 의 시작 주소 
+    --> DS Register : Data Segment 의 시작 주소
 
 * 코드영역 - 실행할 프로그램의 코드 : 컴파일 타임에 크기가 결정됨
     --> Text Segment (Code Segment) : 실행할 실행파일의 코드가 바이너리 형태로 담김
     --> CS Register : Code Segment 의 시작 주소
 
 [low memory]
- */
 
- /*  
- 
+
  * Bit - 0 or 1
  * Byte - 8Bit
  * Word - 2Byte, 1 ~ 65,536
  * Dword - 2Word = 4Byte = 32bit, 1 ~ 4,294,967,296
  * Qword - 2Dword = 4Word = 8Byte = 64bit
 
- */
-
-/* 
-
 * Application
 
 * Operation System [Kernel]
-    --> Kernel 은 하드웨어와 직접적으로 통신하며 자원을 제어 
+    --> Kernel 은 하드웨어와 직접적으로 통신하며 자원을 제어
     --> Kernel 은 OS 의 핵심 구성요소로 OS 내부에 포함 되어 함께 동작함
-    --> User Mode - Shell, System Call 을 통하여 간접적으로 커널을 제어 함 
+    --> User Mode - Shell, System Call 을 통하여 간접적으로 커널을 제어 함
 
 * Hardware
 
  */
-
-
-// --- [1. 데이터 및 사칙연산] ---
-
-// Move
-.macro 할당 레지스터, 값
-    mov \레지스터, \값
-.endm
-
-// Add
-.macro 더하기 결과, 원본, 값
-    add \결과, \원본, \값
-.endm
-
-// Subtract
-.macro 빼기 결과, 원본, 값
-    sub \결과, \원본, \값
-.endm
-
-// 
-.macro 곱하기 결과, 값1, 값2
-    mul \결과, \값1, \값2
-.endm
-
-// 
-.macro 나누기 결과, 값1, 값2
-    sdiv \결과, \값1, \값2
-.endm
-
-// --- [2. 비교 및 분기] ---
-
-// Compare
-.macro 비교 값1, 값2
-    cmp \값1, \값2
-.endm
-
-// Branch : 아무조건 없이 지정한 라벨로 무조건 점프
-.macro 분기 레이블
-    b \레이블
-.endm
-
-// Branch Equal : 결과가 같으면 점프 
-.macro 같으면분기 레이블
-    b.eq \레이블
-.endm
-
-// Branch Not Equeal : 결과가 같지 않으면 점프
-.macro 다르면분기 레이블
-    b.ne \레이블
-.endm
-
-// Branch with Link : 해당 함수로 점프 하면서 원래 내 고향
-// 돌아올 주소를 lr (Link Register, x30) 에 자동 저장
-.macro 부르기 레이블
-    bl \레이블
-.endm
-
-// Return
-// lr 레지스터에 적힌 주소로 점프하여 나를 호출 했던 원래 함수(또는 OS) 로 돌아감
-.macro 복귀
-    ret
-.endm
-
-// --- [3. 메모리 및 스택 복합 제어] ---
-
-// Load Register
-// 메모리에 있는 값을 레지스터로 가져옮
-.macro 담기 레지스터, 주소
-    ldr \레지스터, \주소
-.endm
-
-// Store Register
-.macro 묻기 레지스터, 주소
-    str \레지스터, \주소
-.endm
-
-// Store Pair (M1 Push)
-.macro 쌍묻기 레1, 레2, 주소
-    stp \레1, \레2, \주소
-.endm
-
-// Load Pair (M1 Pop)
-.macro 쌍담기 레1, 레2, 주소
-    ldp \레1, \레2, \주소
-.endm
-
-// --- [4. 친구 추천 필수 보완 무기] ---
-.macro 그리고 결과, 값1, 값2
-    and \결과, \값1, \값2
-.endm
-.macro 또는 결과, 값1, 값2
-    orr \결과, \값1, \값2
-.endm
-.macro 비트밀기 결과, 원본, 횟수
-    lsl \결과, \원본, \횟수
-.endm
-.macro 주소찾기 레지스터, 레이블
-    adrp \레지스터, \레이블@PAGE
-    add \레지스터, \레지스터, \레이블@PAGEOFF
-.endm
-
 ```

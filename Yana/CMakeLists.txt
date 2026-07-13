@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
 
-# 🔑 [야단치기 1번 해결] Corrosion과 시스템 링킹을 위해 C, CXX를 반드시 포함!
+# 🔑 Corrosion과 시스템 링킹을 위해 C, CXX를 반드시 포함!
 project(Yana LANGUAGES C CXX ASM)
 
 set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build for Apple Silicon" FORCE)
-set(CMAKE_BUILD_TYPE Debug)
+
+if(NOT CMAKE_BUILD_TYPE)
+ set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+set(YANA_ASSET_DIR ${CMAKE_SOURCE_DIR}/assets)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # -------------------------------------------------------------
@@ -44,6 +49,8 @@ add_executable(Yana
     ${YANA_SCRIPTS}
 )
 
+target_include_directories(Yana PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
 # Rust의 hun_core 라이브러리와 결합
 target_link_libraries(Yana PRIVATE hun_core)
 
@@ -70,18 +77,40 @@ source_group(
           ${YANA_HEADERS} ${YANA_DOCS} ${YANA_SCRIPTS}
 )
 
-target_include_directories(Yana PRIVATE "${CMAKE_SOURCE_DIR}/include")
-
 # 디버깅 심볼 활성화 (-g)
-target_compile_options(Yana PRIVATE $<$<COMPILE_LANGUAGE:ASM>:-g>)
 
-# 🔑 [야단치기 3번 해결] Xcode가 오해하지 않도록 링커 인자를 개별 분리 처리!
-target_link_options(Yana PRIVATE 
+target_compile_options(
+    Yana PRIVATE
+    $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:ASM>>:-g>
+)
+
+# 🔑 Xcode가 오해하지 않도록 링커 인자를 개별 분리 처리!
+target_link_options(Yana PRIVATE
     "-Wl,-no_warn_duplicate_libraries"
     "-Wl,-w"
 )
 
 set_target_properties(Yana PROPERTIES FOLDER "Yana")
+
+# assets
+file(GLOB_RECURSE YANA_ASSETS
+    CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/assets/*"
+)
+
+source_group(
+    TREE "${CMAKE_SOURCE_DIR}/assets"
+    PREFIX "Assets"
+    FILES ${YANA_ASSETS}
+)
+
+set_source_files_properties(
+    ${YANA_ASSETS}
+    PROPERTIES HEADER_FILE_ONLY TRUE
+)
+
+target_sources(Yana PRIVATE ${YANA_ASSETS})
+
 
 # =============================================================================
 # 🔑 [대제독의 Xcode 네비게이터 무결점 정화 신공]
@@ -90,12 +119,12 @@ if(TARGET hun_core)
     set_target_properties(hun_core PROPERTIES FOLDER "Rust_Cargo_Targets")
 endif()
 
-foreach(rust_target 
+foreach(rust_target
     _cargo-build_hun_core
     cargo-build_hun_core
-    cargo-clean_hun_core 
-    cargo-prebuild_hun_core 
-    cargo-clean 
+    cargo-clean_hun_core
+    cargo-prebuild_hun_core
+    cargo-clean
     cargo-prebuild
 )
     if(TARGET ${rust_target})
@@ -109,3 +138,17 @@ endif()
 if(TARGET ZERO_CHECK)
     set_property(TARGET ZERO_CHECK PROPERTIES FOLDER "CMake_Internal")
 endif()
+
+
+# assets 복사
+add_custom_command(
+    TARGET Yana POST_BUILD
+
+    COMMAND
+        ${CMAKE_COMMAND}
+        -E copy_directory
+        ${YANA_ASSET_DIR}
+        $<TARGET_FILE_DIR:Yana>/assets
+
+    COMMENT "Copying assets..."
+)

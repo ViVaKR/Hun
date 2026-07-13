@@ -1,11 +1,25 @@
+//  calc.s
+//  Created by 김범준 on 7/6/26.
 
-.include "../include/hun.macros.inc"
+.global _add_numbers
+.global _sub_numbers
+.global _mul_numbers
+.global _div_numbers
 
-.global _calc
 .align 2
 
-_calc:
-    push_pair x19, x20
-    // TODO
-    pop_pair x19, x20
+_add_numbers:
+    add x0, x0, x1
+    ret
+
+_sub_numbers:
+    sub x0, x0, x1
+    ret
+
+_mul_numbers:
+    mul x0, x0, x1
+    ret
+
+_div_numbers:
+    sdiv x0, x0, x1
     ret
