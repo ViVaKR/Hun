@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
-project(Yana LANGUAGES ASM)
+
+# 🔑 [야단치기 1번 해결] Corrosion과 시스템 링킹을 위해 C, CXX를 반드시 포함!
+project(Yana LANGUAGES C CXX ASM)
 
 set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build for Apple Silicon" FORCE)
 set(CMAKE_BUILD_TYPE Debug)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # -------------------------------------------------------------
 # 🦀 Corrosion (Rust <-> CMake 연동)
 # -------------------------------------------------------------
-
-# 1. Corrosion 로드
 include(FetchContent)
 FetchContent_Declare(
     Corrosion
@@ -17,37 +18,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Corrosion)
 
-# 2. Rust crate 임포트 (여기서 hun_core 타겟이 생성됨)
+# Rust crate 임포트 (hun_core 타겟 생성)
 corrosion_import_crate(MANIFEST_PATH ${CMAKE_SOURCE_DIR}/../Applications/rust/hun_apps/hun_core/Cargo.toml)
 
 # -------------------------------------------------------------
-# 소스 파일 수집
+# 소스 파일 수집 (현재는 편의상 GLOB 유지, CONFIGURE_DEPENDS 장착)
 # -------------------------------------------------------------
-file(GLOB_RECURSE YANA_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*.S"
-    "${CMAKE_SOURCE_DIR}/src/*.s"
-)
-file(GLOB_RECURSE YANA_LIBS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/libs/*.S"
-)
-file(GLOB_RECURSE YANA_TESTS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/tests/*.S"
-)
+file(GLOB_RECURSE YANA_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.S" "${CMAKE_SOURCE_DIR}/src/*.s")
+file(GLOB_RECURSE YANA_LIBS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/libs/*.S" "${CMAKE_SOURCE_DIR}/libs/*.s")
+file(GLOB_RECURSE YANA_TESTS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/tests/*.S" "${CMAKE_SOURCE_DIR}/tests/*.s")
 
-# 참고/문서용 (진짜 컴파일 안 하는 것들만!)
-file(GLOB_RECURSE YANA_HEADERS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/include/*.inc"
-)
-file(GLOB_RECURSE YANA_DOCS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/docs/*.md"
-)
-file(GLOB_RECURSE YANA_SCRIPTS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/scripts/*.sh" "${CMAKE_SOURCE_DIR}/scripts/*.ps1"
-)
+# 참고/문서용 (컴파일 제외 대상)
+file(GLOB_RECURSE YANA_HEADERS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/include/*.inc")
+file(GLOB_RECURSE YANA_DOCS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/docs/*.md")
+file(GLOB_RECURSE YANA_SCRIPTS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/scripts/*.sh" "${CMAKE_SOURCE_DIR}/scripts/*.ps1")
 
 # -------------------------------------------------------------
-# 메인 실행파일: src + libs (실제 컴파일 대상)
-#                + 헤더/문서/스크립트 (Navigator 표시용, 컴파일 X)
+# 메인 실행파일 구성
 # -------------------------------------------------------------
 add_executable(Yana
     ${YANA_SOURCES}
@@ -57,17 +44,17 @@ add_executable(Yana
     ${YANA_SCRIPTS}
 )
 
-# 4. 링크 (hun_core는 이미 위에서 임포트된 타겟이니 바로 씀)
+# Rust의 hun_core 라이브러리와 결합
 target_link_libraries(Yana PRIVATE hun_core)
 
-# 🔑 진짜 "컴파일 안 함" 대상은 헤더/문서/스크립트뿐!
+# 🔑 비컴파일 대상 명확히 격리
 set_source_files_properties(
     ${YANA_HEADERS} ${YANA_DOCS} ${YANA_SCRIPTS}
     PROPERTIES HEADER_FILE_ONLY TRUE
 )
 
 # -------------------------------------------------------------
-# 🔑 테스트는 별도 실행파일로 분리! (메인 바이너리에 안 섞임)
+# 테스트 빌드 분리
 # -------------------------------------------------------------
 if(YANA_TESTS)
     add_executable(YanaTests EXCLUDE_FROM_ALL ${YANA_TESTS})
@@ -75,7 +62,7 @@ if(YANA_TESTS)
 endif()
 
 # -------------------------------------------------------------
-# 🔑 Navigator 폴더 구조 반영 (전체 목록 다 포함!)
+# Xcode Navigator 트리 구조 정화
 # -------------------------------------------------------------
 source_group(
     TREE "${CMAKE_SOURCE_DIR}"
@@ -83,28 +70,26 @@ source_group(
           ${YANA_HEADERS} ${YANA_DOCS} ${YANA_SCRIPTS}
 )
 
-target_include_directories(Yana PRIVATE
-    "${CMAKE_SOURCE_DIR}/include"
-)
+target_include_directories(Yana PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
+# 디버깅 심볼 활성화 (-g)
 target_compile_options(Yana PRIVATE $<$<COMPILE_LANGUAGE:ASM>:-g>)
+
+# 🔑 [야단치기 3번 해결] Xcode가 오해하지 않도록 링커 인자를 개별 분리 처리!
 target_link_options(Yana PRIVATE 
     "-Wl,-no_warn_duplicate_libraries"
-    "-Wl,-w" # 링커 경고 전체 무음 처리
+    "-Wl,-w"
 )
 
 set_target_properties(Yana PROPERTIES FOLDER "Yana")
+
 # =============================================================================
 # 🔑 [대제독의 Xcode 네비게이터 무결점 정화 신공]
-# 타겟 존재 여부를 확인하여 IDE 붉은 줄(오류)을 원천 차단하고 격리함!
 # =============================================================================
-
-# 1. 메인 Rust 타겟 격리
 if(TARGET hun_core)
     set_target_properties(hun_core PROPERTIES FOLDER "Rust_Cargo_Targets")
 endif()
 
-# 2. Corrosion 내부 빌드 타겟들 안전하게 격리 (존재할 때만 적용)
 foreach(rust_target 
     _cargo-build_hun_core
     cargo-build_hun_core
@@ -118,11 +103,9 @@ foreach(rust_target
     endif()
 endforeach()
 
-# 3. CMake 내부 기본 타겟 격리
 if(TARGET ALL_BUILD)
     set_property(TARGET ALL_BUILD PROPERTIES FOLDER "CMake_Internal")
 endif()
 if(TARGET ZERO_CHECK)
     set_property(TARGET ZERO_CHECK PROPERTIES FOLDER "CMake_Internal")
 endif()
-# rm -rf build-xcode && cmake -B build-xcode -G Xcode && cmake --build build-xcode --config Debug
