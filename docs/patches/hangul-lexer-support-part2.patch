@@ -1,0 +1,104 @@
+diff --git a/llvm/lib/MC/MCParser/AsmLexer.cpp b/llvm/lib/MC/MCParser/AsmLexer.cpp
+index 8e4b7be98bdb..e9302d3c84a9 100644
+--- a/llvm/lib/MC/MCParser/AsmLexer.cpp
++++ b/llvm/lib/MC/MCParser/AsmLexer.cpp
+@@ -229,9 +229,16 @@ AsmToken AsmLexer::LexHexFloatLiteral(bool NoIntDigits) {
+ }
+ 
+ /// LexIdentifier: [a-zA-Z_$.@?][a-zA-Z0-9_$.@#?]*
++// static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
++//   return isAlnum(C) || C == '_' || C == '$' || C == '.' || C == '?' ||
++//          (AllowAt && C == '@') || (AllowHash && C == '#');
++// }
++
++// 수정본
+ static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
+   return isAlnum(C) || C == '_' || C == '$' || C == '.' || C == '?' ||
+-         (AllowAt && C == '@') || (AllowHash && C == '#');
++         (AllowAt && C == '@') || (AllowHash && C == '#') ||
++         static_cast<unsigned char>(C) >= 0x80;
+ }
+ 
+ AsmToken AsmLexer::LexIdentifier() {
+@@ -874,7 +881,14 @@ AsmToken AsmLexer::LexToken() {
+     // Whether or not the lexer accepts '$', '@', '#' and '?' at the start of
+     // an identifier is target-dependent. These characters are handled in the
+     // respective switch cases.
+-    if (isalpha(CurChar) || CurChar == '_' || CurChar == '.')
++    // if (isalpha(CurChar) || CurChar == '_' || CurChar == '.')
++    //   return LexIdentifier();
++
++    // // Unknown character, emit an error.
++    // return ReturnError(TokStart, "invalid character in input");
++        // 수정본: UTF-8 멀티바이트 문자(한글 등) 식별자 시작 허용
++    if (isalpha(CurChar) || CurChar == '_' || CurChar == '.' ||
++        static_cast<unsigned char>(CurChar) >= 0x80)
+       return LexIdentifier();
+ 
+     // Unknown character, emit an error.
+diff --git a/llvm/lib/MC/MCParser/AsmParser.cpp b/llvm/lib/MC/MCParser/AsmParser.cpp
+index e0ad48f6e193..139c41527b0f 100644
+--- a/llvm/lib/MC/MCParser/AsmParser.cpp
++++ b/llvm/lib/MC/MCParser/AsmParser.cpp
+@@ -1780,6 +1780,13 @@ bool AsmParser::parseStatement(ParseStatementInfo &Info,
+     IDVal = "";
+   }
+ 
++  // Hangul Assembly Directive translation
++  if (IDVal == "공개") IDVal = ".global";
++  else if (IDVal == "줄맞춤") IDVal = ".align";
++  else if (IDVal == "코드영역") IDVal = ".text";
++  else if (IDVal == "데이터영역") IDVal = ".data";
++  else if (IDVal == "외부참조") IDVal = ".extern";
++
+   // Handle conditional assembly here before checking for skipping.  We
+   // have to do this so that .endif isn't skipped in a ".if 0" block for
+   // example.
+diff --git a/llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp b/llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp
+index 55f4aa4c509c..b5ac80c16d4a 100644
+--- a/llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp
++++ b/llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp
+@@ -3007,7 +3007,22 @@ ParseStatus AArch64AsmParser::tryParseScalarRegister(MCRegister &RegNum) {
+   if (Tok.isNot(AsmToken::Identifier))
+     return ParseStatus::NoMatch;
+ 
+-  std::string lowerCase = Tok.getString().lower();
++  std::string regName = Tok.getString().str();
++  if (regName.rfind("연산처_", 0) == 0) {
++    std::string numPart = regName.substr(10); // len("연산처_") = 10 in UTF-8: 연(3)+산(3)+처(3)+_(1) = 10 bytes
++    regName = "x" + numPart;
++  } else if (regName.rfind("단연산처_", 0) == 0) {
++    std::string numPart = regName.substr(13); // len("단연산처_") = 13 in UTF-8: 단(3)+연(3)+산(3)+처(3)+_(1) = 13 bytes
++    regName = "w" + numPart;
++  } else if (regName == "참조쌓임터") {
++    regName = "sp";
++  } else if (regName == "기본참조터") {
++    regName = "x29";
++  } else if (regName == "돌아갈길") {
++    regName = "x30";
++  }
++
++  std::string lowerCase = StringRef(regName).lower();
+   MCRegister Reg = matchRegisterNameAlias(lowerCase, RegKind::Scalar);
+   if (!Reg)
+     return ParseStatus::NoMatch;
+@@ -5252,6 +5267,19 @@ bool AArch64AsmParser::areEqualRegs(const MCParsedAsmOperand &Op1,
+ bool AArch64AsmParser::parseInstruction(ParseInstructionInfo &Info,
+                                         StringRef Name, SMLoc NameLoc,
+                                         OperandVector &Operands) {
++  // Hangul Assembly Mnemonic translation
++  Name = StringSwitch<StringRef>(Name)
++             .Case("할당하기", "mov")
++             .Case("더하기", "add")
++             .Case("빼기", "sub")
++             .Case("나누기", "sdiv")
++             .Case("곱하기", "mul")
++             .Case("쌍으로저장", "stp")
++             .Case("쌍으로읽기", "ldp")
++             .Case("분기실행", "bl")
++             .Case("돌아가기", "ret")
++             .Default(Name);
++
+   Name = StringSwitch<StringRef>(Name.lower())
+              .Case("beq", "b.eq")
+              .Case("bne", "b.ne")
