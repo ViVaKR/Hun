@@ -153,7 +153,7 @@ _playground:
     // ===> [ 실행할 로직 선택 ] <=== //
     
     // (1) rust
-    // b _run_rust_start
+    b _run_rust_start
     
     // (2) 정수배열
     // b _loop_int_start
@@ -174,8 +174,17 @@ _playground:
     // b _function_call_start
     
     // 12. 델리게이트
-    b _delegate_demo_start
+    // b _delegate_demo_start
 // ==========================================
+
+// 1. rust
+_run_rust_start:
+    // 할당하기    연산처_0, #108
+    // 분기실행    _call_from_dharma
+    mov x0, #108
+    bl _call_from_dharma
+    b _terminate
+    
 // 12단계. Delegate / Callback (함수 포인터 호출 훈련)
 
 // [ 모델링 : C# delegate ]
@@ -312,11 +321,7 @@ _function_call:
     add x0, x0, x1
     ret
 
-// 1. rust
-_run_rust_start:
-    mov x0, #108
-    bl _call_from_dharma
-    b _terminate
+
    
 // 2. int array loop
 _loop_int_start:

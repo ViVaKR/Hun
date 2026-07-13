@@ -9,7 +9,9 @@ BUILD_DIR_XCODE="${PROJECT_ROOT}/build-xcode"
 echo "⚡ [Yana 빌드 스크립트] 프로젝트 루트: ${PROJECT_ROOT}"
 
 # 1. CMake 구성 (Configure)
-cmake -G Xcode -S "${PROJECT_ROOT}" -B "${BUILD_DIR_XCODE}"
+cmake -G Xcode \
+  -DCMAKE_ASM_COMPILER=/Users/viv/GitWorkspace/llvm-project/build/bin/llvm-mc \
+  -S "${PROJECT_ROOT}" -B "${BUILD_DIR_XCODE}"
 
 # 2. 🔑 실제 빌드
 # cmake --build build

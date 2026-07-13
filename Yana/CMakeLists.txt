@@ -94,6 +94,35 @@ target_link_options(Yana PRIVATE
 )
 
 set_target_properties(Yana PROPERTIES FOLDER "Yana")
+# =============================================================================
+# 🔑 [대제독의 Xcode 네비게이터 무결점 정화 신공]
+# 타겟 존재 여부를 확인하여 IDE 붉은 줄(오류)을 원천 차단하고 격리함!
+# =============================================================================
 
+# 1. 메인 Rust 타겟 격리
+if(TARGET hun_core)
+    set_target_properties(hun_core PROPERTIES FOLDER "Rust_Cargo_Targets")
+endif()
 
+# 2. Corrosion 내부 빌드 타겟들 안전하게 격리 (존재할 때만 적용)
+foreach(rust_target 
+    _cargo-build_hun_core
+    cargo-build_hun_core
+    cargo-clean_hun_core 
+    cargo-prebuild_hun_core 
+    cargo-clean 
+    cargo-prebuild
+)
+    if(TARGET ${rust_target})
+        set_target_properties(${rust_target} PROPERTIES FOLDER "Rust_Cargo_Targets")
+    endif()
+endforeach()
+
+# 3. CMake 내부 기본 타겟 격리
+if(TARGET ALL_BUILD)
+    set_property(TARGET ALL_BUILD PROPERTIES FOLDER "CMake_Internal")
+endif()
+if(TARGET ZERO_CHECK)
+    set_property(TARGET ZERO_CHECK PROPERTIES FOLDER "CMake_Internal")
+endif()
 # rm -rf build-xcode && cmake -B build-xcode -G Xcode && cmake --build build-xcode --config Debug
