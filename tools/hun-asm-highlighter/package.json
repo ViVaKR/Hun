@@ -4,12 +4,16 @@
   "license": "MIT",
   "displayName": "Hun ARM64 한글 어셈블리 강조",
   "description": "훈(Hun) 프로젝트 전용 - 한글 니모닉과 섹션 매크로를 인식하는 문법 강조",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ViVaKR/Hun.git"
+    "url": "https://github.com/ViVaKR/Hun.git",
+    "directory": "tools/hun-asm-highlighter"
   },
   "publisher": "buddham-hq",
+  "author": {
+    "name": "BM. KIM BUM JUN"
+  },
   "engines": {
     "vscode": "^1.75.0"
   },
