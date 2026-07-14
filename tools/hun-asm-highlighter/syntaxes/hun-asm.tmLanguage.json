@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Hun ARM64 Assembly",
+  "scopeName": "source.hun-asm",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#directives" },
+    { "include": "#section-macros" },
+    { "include": "#hangul-mnemonics" },
+    { "include": "#standard-mnemonics" },
+    { "include": "#registers" },
+    { "include": "#numbers" },
+    { "include": "#labels" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.hun-asm", "match": "//.*$" },
+        { "name": "comment.block.hun-asm", "begin": "/\\*", "end": "\\*/" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.hun-asm",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [{ "name": "constant.character.escape.hun-asm", "match": "\\\\." }]
+    },
+    "directives": {
+      "comment": ".section, .global, .macro, .equ 등 내장 지시어",
+      "name": "keyword.control.directive.hun-asm",
+      "match": "\\.(global|section|align|include|macro|endmacro|endm|equ|asciz|ascii|quad|long|int|double|float|byte|word|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
+    },
+    "section-macros": {
+      "comment": "우리가 직접 만든 섹션 매크로 (section_macros.inc)",
+      "name": "keyword.other.section-macro.hun-asm",
+      "match": "\\b(CODE_SECTION|STRING_SECTION|RODATA_SECTION|FLOAT4_SECTION|FLOAT8_SECTION|DATA_SECTION|DELEGATE_TABLE_SECTION|BSS_SECTION|COMMON_SECTION)\\b"
+    },
+    "hangul-mnemonics": {
+      "comment": "AArch64HangulAliases.td 에 정의된 한글 니모닉 전체",
+      "name": "keyword.control.mnemonic.hangul.hun-asm",
+      "match": "(할당|부정|실수이동|적재|저장|쌍적재|쌍저장|페이지주소|더함|뺌|자리올림더함|자리올림|나눔|곱더함|곱뺌|실수나눔|정수변환|비교|조건비교|조건택|조건셋|돌아감|불러감|주소불러감|뜀|큼이면뜀|영아니면뜀|명령호출|그리고|또는|배타적|왼쉬프트|오른쉬프트|돌림|부호확장|비트추출|비트삽입)(?=\\s)"
+    },
+    "standard-mnemonics": {
+      "comment": "표준 AArch64 니모닉 (자주 쓰는 것 위주, 필요시 계속 추가)",
+      "name": "keyword.control.mnemonic.hun-asm",
+      "match": "\\b(mov|mvn|fmov|ldr|str|ldp|stp|adrp|add|sub|adds|adc|sdiv|udiv|madd|msub|fdiv|fmul|scvtf|fcvtzs|cmp|ccmp|csel|cset|ret|bl|blr|b|b\\.eq|b\\.ne|b\\.gt|b\\.lt|b\\.ge|b\\.le|bgt|blt|beq|bne|cbz|cbnz|svc|wfe|wfi|nop|and|orr|eor|lsl|lsr|ror|sxtb|sxth|sxtw|bfxil|bfi|ubfx|ubfiz)\\b"
+    },
+    "registers": {
+      "name": "variable.language.register.hun-asm",
+      "match": "\\b([xwd]([0-9]|[12][0-9]|3[01])|sp|xzr|wzr|fp|lr|pc)\\b"
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.hex.hun-asm", "match": "#?0[xX][0-9a-fA-F]+" },
+        { "name": "constant.numeric.binary.hun-asm", "match": "#?0[bB][01]+" },
+        { "name": "constant.numeric.decimal.hun-asm", "match": "#-?[0-9]+" }
+      ]
+    },
+    "labels": {
+      "comment": "한글 라벨(함수야:) 포함, 모든 유니코드 식별자 라벨 지원",
+      "name": "entity.name.function.label.hun-asm",
+      "match": "^\\s*[\\p{L}_.$][\\p{L}0-9_.$]*:"
+    }
+  }
+}
