@@ -2,7 +2,7 @@
 //  Created by 김범준 on 7/7/26.
 //  5개 콜스택 데모
 
-.global _chain_func
+.global _chains
 .align 2
 
 _chain_func:

@@ -1,5 +1,3 @@
-//  quicksort.s
-//
 //  Created by 김범준 on 7/7/26.
 //  퀵정렬 - 재귀 + 분할정복
 
