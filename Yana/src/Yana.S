@@ -12,14 +12,14 @@ LITERAL8_SECTION
 CSTRING_SECTION
 format_str: .asciz "Hello, ARM64 Assembly! ==> %d\n"
 menu_title: .asciz "\n=== Yana 메뉴 ===\n"
-menu_format: .asciz "%d: %s\n"              // 번호와 메뉴 이름을 동적으로 출력할 포맷
+menu_format: .asciz "%d: %s\n" // 번호와 메뉴 이름을 동적으로 출력할 포맷
 input_prompt: .asciz "원하는 메뉴를 선택하세요: "
 scanf_format: .asciz "%d"
 
 // 💡 사용자 눈높이에 맞춰 선택 범위를 1부터 출력하도록 포맷 변경!
 str_forloop: .asciz "for loop 합계구하기"
 str_csel: .asciz "csel 삼항연산"
-str_getitems: .asciz "정수배열 요소 가져오기"
+str_welcome_rust: .asciz "Welcome Rust"
 str_exit: .asciz "프로그램 종료"
 
 err_format: .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
@@ -28,10 +28,10 @@ CONST_SECTION
 CONST_DATA_SECTION
 menu_table:
     //      함수주소                문자열주소
-    .quad _menu_forloop,        str_forloop     // [0]
-    .quad _menu_getitems,       str_getitems    // [1]
-    .quad _menu_csel,           str_csel        // [2]
-    .quad _menu_exit,           str_exit        // [3]
+    .quad _menu_forloop,        str_forloop     // 1
+    .quad _menu_csel,           str_csel        // 2
+    .quad _menu_welcome_rust,    str_welcome_rust // 3
+    .quad _menu_exit,           str_exit        // 
 menu_table_end:
 
 command_table:
@@ -46,6 +46,7 @@ _main:
     stp x19, x20, [sp, #16]
     stp x21, x22, [sp, #32]
     mov x29, sp
+
 
     // 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트)
     adrp x10, menu_table@PAGE

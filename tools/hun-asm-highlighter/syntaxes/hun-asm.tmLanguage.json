@@ -45,7 +45,7 @@
     "section-macros": {
       "comment": "섹션 지정용 매크로 호출 (CODE_SECTION, CSTRING_SECTION 등). support.function = 미리 만들어둔 걸 '갖다 쓰는' 자리",
       "name": "support.function.macro.section.hun-asm",
-      "match": "\\b[A-Z][A-Z0-9]*_SECTION\\b"
+      "match": "\\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_SECTION\\b"
     },
 
     "func-macros": {
