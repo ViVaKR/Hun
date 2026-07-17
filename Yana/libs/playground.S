@@ -310,8 +310,6 @@ _function_call:
     add x0, x0, x1
     ret
 
-
-
 // 2. int array loop
 _loop_int_start:
     // 1. 시작주소와 끝 주소 로드
@@ -354,39 +352,6 @@ _loop_int:
     b.ne _loop_int          // 0이 아니면 게속 반복
 
     b _terminate
-
-// (1) for loop
-_for_loop_start:
-    mov x19, #0      // 누적합계
-    mov x20, #1      // 루프카운터
-
-    b _for_loop
-
-// (2) for loop
-_for_loop:
-    cmp x20, #11 // x1 값과 11을 비교
-    b.ge _terminate
-
-    adrp x0, format_for_loop@PAGE
-    add x0, x0, format_for_loop@PAGEOFF
-
-    add x19, x19, x20      // 합계 누적
-
-    mov x1, x20  // 현재 카운터
-    mov x2, x19     // 합계
-
-
-    sub sp, sp, #32
-    str x1, [sp, #0]
-    str x2, [sp, #8]
-
-
-    bl _printf
-    add sp, sp, #32
-
-    //  카운터 증가
-    add x20, x20, #1
-    b _for_loop
 
 
 // (1) Loop

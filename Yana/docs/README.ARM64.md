@@ -629,3 +629,66 @@ NOP (No Operation) : 쉬기
 - +---------+
 
 ---
+
+### _scanf 표준 구현
+
+```assembly
+// -------------------------------------------------------------
+// [데이터 구역] 서식 지정자 문자열
+// -------------------------------------------------------------
+.section __TEXT,__cstring,cstring_literals
+
+str_input_msg:  .asciz "\n메뉴 번호를 입력하세요: "
+fmt_scan_int:   .asciz "%d"               // 정수 입력 서식
+str_result_msg: .asciz "선택하신 번호는 %d번입니다.\n"
+
+
+// -------------------------------------------------------------
+// [실행 코드 구역]
+// -------------------------------------------------------------
+.section __TEXT,__text,regular,pure_instructions
+.align 2
+.global _main
+
+_main:
+    // 1. 프롤로그 및 스택 공간 확보 (총 32바이트 할당)
+    // x29, x30 저장에 16바이트 사용하고, 나머지 16바이트는 scanf용 지역변수 공간으로 활용
+    stp     x29, x30, [sp, #-32]!
+    mov     x29, sp
+
+    // 2. 안내 문구 출력
+    adrp    x0, str_input_msg@PAGE
+    add     x0, x0, str_input_msg@PAGEOFF
+    bl      _printf
+
+    // 3. _scanf 호출 준비
+    // x0: 서식 지정자 ("%d") 주소
+    adrp    x0, fmt_scan_int@PAGE
+    add     x0, x0, fmt_scan_int@PAGEOFF
+
+    // x1: 값을 저장할 메모리 주소 (현재 함수의 스택 공간 활용)
+    // [sp, #16] 위치를 4바이트 정수 변수 공간으로 임시 사용합니다.
+    add     x1, sp, #16
+    
+    bl      _scanf
+
+    // 4. 입력받은 값 확인 및 레지스터로 로드
+    // scanf가 성공하면 [sp, #16] 위치에 사용자가 입력한 숫자가 들어옵니다.
+    // ldrsw는 32비트 정수를 64비트 레지스터(w0 -> x0)로 부호 확장하며 읽어옵니다.
+    ldrsw   x1, [sp, #16]      // x1 = 입력받은 메뉴 번호 (예: 0, 1, 2)
+
+    // 5. 검증 출력 (선택하신 번호는 X번입니다)
+    // 백업을 위해 x1의 값을 x19 같은 안전한 레지스터에 옮겨두거나 바로 printf로 출력
+    mov     x19, x1            // 입력값 복사본 저장
+    
+    adrp    x0, str_result_msg@PAGE
+    add     x0, x0, str_result_msg@PAGEOFF
+    // x1은 이미 위에서 ldrsw로 채워졌으므로 그대로 printf의 두 번째 인자로 전달됨
+    bl      _printf
+
+    // 6. 에필로그 및 종료
+    mov     x0, #0             // 리턴값 0
+    ldp     x29, x30, [sp], #32
+    ret
+
+```
