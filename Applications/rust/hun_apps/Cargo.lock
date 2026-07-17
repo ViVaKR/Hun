@@ -23,7 +23,7 @@ name = "hun_core"
 version = "0.1.0"
 
 [[package]]
-name = "hun_text_runner"
+name = "hun_test_runner"
 version = "0.1.0"
 dependencies = [
  "cc",

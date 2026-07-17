@@ -1,11 +1,11 @@
 [package]
-name = "hun_text_runner"
+name = "hun_test_runner"
 version = "0.1.0"
 edition = "2024"
 
-[[bin]]
+[lib]
 name="hun_test_runner"
-path="src/main.rs"
+path="src/lib.rs"
 
 [build-dependencies]
 cc="1"
