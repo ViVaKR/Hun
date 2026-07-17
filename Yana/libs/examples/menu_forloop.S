@@ -34,6 +34,5 @@ _loop:
 
 _terminate:
   ldp x19, x20, [sp, #16]
-  mov x0, x1
   ldp x29, x30, [sp], #32
   ret

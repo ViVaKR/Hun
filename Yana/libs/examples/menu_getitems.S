@@ -10,5 +10,3 @@ _menu_getitems:
   stp x19, x20, [sp, #16]
 
   FUNC_EXIT_DEFAULT
-  
-

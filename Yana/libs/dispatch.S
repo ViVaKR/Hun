@@ -65,4 +65,4 @@ _op_table:
     .quad _div_numbers
 
 msg_format:
-    .asciz "\xe2\x9a\x99\xef\xb8\x8f 연산[%lld]: %lld, %lld -> %lld\n"
+    .asciz "연산[%lld]: %lld, %lld -> %lld\n"
