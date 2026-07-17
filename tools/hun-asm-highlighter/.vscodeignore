@@ -1,0 +1,9 @@
+.vscode/**
+.vscode-test/**
+.gitignore
+*.vsix
+hun_icon.svg
+node_modules/**
+**/*.map
+.DS_Store
+DEVELOPMENT.md

@@ -59,7 +59,7 @@ build/
 build-xcode/
 
 # tools 폴더 자체는 탐색하되, 내부의 모든 파일(*)을 무시
-tools/
+tools/*
 
 # 단, hun-asm-highlighter 폴더와 그 안의 내용물은 예외로 추적!
 !tools/hun-asm-highlighter/

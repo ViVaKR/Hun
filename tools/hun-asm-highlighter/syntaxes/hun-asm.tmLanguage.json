@@ -1,0 +1,84 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Hun ARM64 Assembly",
+  "scopeName": "source.hun-asm",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#directives" },
+    { "include": "#macro-definition" },
+    { "include": "#section-macros" },
+    { "include": "#func-macros" },
+    { "include": "#hangul-mnemonics" },
+    { "include": "#standard-mnemonics" },
+    { "include": "#registers" },
+    { "include": "#numbers" },
+    { "include": "#labels" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-slash.hun-asm", "match": "//.*$" },
+        { "name": "comment.block.hun-asm", "begin": "/\\*", "end": "\\*/" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.hun-asm",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [{ "name": "constant.character.escape.hun-asm", "match": "\\\\." }]
+    },
+    "directives": {
+      "comment": ".section, .global, .macro, .equ 등 내장 지시어",
+      "name": "keyword.control.directive.hun-asm",
+      "match": "\\.(global|section|align|include|macro|endmacro|endm|equ|asciz|ascii|quad|long|int|double|float|byte|word|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
+    },
+
+    "macro-definition": {
+      "comment": "매크로 '정의' 자리 (.macro 앞에 오는 이름). entity.name = 선언/정의",
+      "match": "^\\s*([\\p{L}_.$][\\p{L}0-9_.$]*)\\s+(?=\\.macro\\b)",
+      "captures": {
+        "1": { "name": "entity.name.function.macro.definition.hun-asm" }
+      }
+    },
+
+    "section-macros": {
+      "comment": "섹션 지정용 매크로 호출 (CODE_SECTION, CSTRING_SECTION 등). support.function = 미리 만들어둔 걸 '갖다 쓰는' 자리",
+      "name": "support.function.macro.section.hun-asm",
+      "match": "\\b[A-Z][A-Z0-9]*_SECTION\\b"
+    },
+
+    "func-macros": {
+      "comment": "함수 프롤로그/에필로그 매크로 호출 (FUNC_START, FUNC_EXIT, FUNC_EXIT_LIGHT 등)",
+      "name": "support.function.macro.func.hun-asm",
+      "match": "\\bFUNC_[A-Z0-9_]*\\b"
+    },
+
+    "hangul-mnemonics": {
+      "comment": "AArch64HangulAliases.td 에 정의된 한글 니모닉 전체. (?<![\\p{L}0-9_.$]) 왼쪽 경계 추가: '임시저장' 같은 더 긴 단어의 일부로 '저장'만 잘못 매칭되는 것을 방지",
+      "name": "keyword.control.mnemonic.hangul.hun-asm",
+      "match": "(?<![\\p{L}0-9_.$])(할당|부정|실수이동|적재|저장|쌍적재|쌍저장|페이지주소|더함|뺌|자리올림더함|자리올림|나눔|곱더함|곱뺌|실수나눔|정수변환|비교|조건비교|조건택|조건셋|돌아감|불러감|주소불러감|뜀|큼이면뜀|영아니면뜀|명령호출|그리고|또는|배타적|왼쉬프트|오른쉬프트|돌림|부호확장|비트추출|비트삽입)(?=\\s)"
+    },
+    "standard-mnemonics": {
+      "comment": "긴 토큰(b.eq 등)을 짧은 토큰(b)보다 먼저 배치. Oniguruma alternation은 왼쪽부터 순서대로 매칭을 시도하므로, 'b'가 먼저 있으면 'b.eq'는 절대 매칭되지 않고 'b'만 강조되는 버그가 있었음",
+      "name": "keyword.control.mnemonic.hun-asm",
+      "match": "\\b(mov|mvn|fmov|ldr|str|ldp|stp|adr|adrp|add|sub|adds|adc|sdiv|udiv|madd|msub|fdiv|fmul|scvtf|fcvtzs|cmp|ccmp|csel|cset|ret|bl|blr|b\\.eq|b\\.ne|b\\.gt|b\\.lt|b\\.ge|b\\.le|beq|bne|bgt|blt|bge|ble|b|cbz|cbnz|svc|wfe|wfi|nop|and|orr|eor|lsl|lsr|ror|sxtb|sxth|sxtw|bfxil|bfi|ubfx|ubfiz)\\b"
+    },
+    "registers": {
+      "name": "variable.language.register.hun-asm",
+      "match": "\\b([xwd]([0-9]|[12][0-9]|3[01])|sp|xzr|wzr|fp|lr|pc)\\b"
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.hex.hun-asm", "match": "#?0[xX][0-9a-fA-F]+" },
+        { "name": "constant.numeric.binary.hun-asm", "match": "#?0[bB][01]+" },
+        { "name": "constant.numeric.decimal.hun-asm", "match": "#-?[0-9]+" }
+      ]
+    },
+    "labels": {
+      "comment": "한글 라벨(함수야:) 포함, 모든 유니코드 식별자 라벨 지원",
+      "name": "entity.name.function.label.hun-asm",
+      "match": "^\\s*[\\p{L}_.$][\\p{L}0-9_.$]*:"
+    }
+  }
+}
