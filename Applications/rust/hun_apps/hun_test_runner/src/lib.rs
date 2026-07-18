@@ -1,4 +1,5 @@
 // hun_test_runner/src/lib.rs
+#![allow(dead_code)] // ⚠️ 주의: 느낌표(!)가 꼭 들어가야 파일 전체에 적용되네!
 
 // 빌드 스크립트(build.rs)가 컴파일한 어셈블리 정적 라이브러리를 연동합니다.
 #[link(name = "hun_test_asm", kind = "static")]
