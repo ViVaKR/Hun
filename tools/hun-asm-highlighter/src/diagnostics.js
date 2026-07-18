@@ -1,7 +1,7 @@
 // diagnostics.js
 // 훈-ASM(Hun ARM64) 문서에 대한 아주 기본적인 정적 검사.
 //
-// 지금 잡아내는 것들 (친구 톤으로 알려줌):
+// 지금 잡아내는 것들 (친구 톤):
 //  1) LDP/STP (쌍적재/쌍저장): 오프셋 정렬(8 또는 4의 배수) + 인코딩 가능 범위(imm7)
 //  2) LDR/STR (적재/저장)   : 오프셋 정렬 + 범위 (unsigned-offset 형태 / pre-post-index 형태)
 //  3) 존재하지 않는 레지스터 이름 (x31, w99 같은 것)
@@ -33,7 +33,8 @@ function parseRegister(tok) {
   if (t === 'lr') return { width: 64, name: 'lr' };
   if (t === 'xzr') return { width: 64, name: 'xzr' };
   if (t === 'wzr') return { width: 32, name: 'wzr' };
-  const m = /^([xw])([0-9]{1,2})$/.exec(t);
+
+  const m = /^([xwd])([0-9]{1,2})$/.exec(t);
   if (m) {
     const num = parseInt(m[2], 10);
     if (num >= 0 && num <= 30) {

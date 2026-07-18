@@ -34,13 +34,21 @@ function activate(context) {
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(LANGUAGE_ID, {
       provideHover(document, position) {
-        const range = document.getWordRangeAtPosition(position, /[\p{L}][\p{L}0-9_.]*/u);
+        // 영문, 한글, 숫자, 점(.)까지 포함해서 단어 범위를 명확히 지정
+        const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
         if (!range) return;
-        const word = document.getText(range);
+
+        // 대소문자 꼬임 방지를 위해 무조건 소문자로 변환하여 장부 검색!
+        const word = document.getText(range).trim().toLowerCase();
+
         const info = MNEMONIC_MAP[word];
-        if (!info) return;
+        if (!info) return; // 장부에 없으면 패스
+
         const md = new vscode.MarkdownString();
-        md.appendMarkdown(`**${word}** → \`${info.english}\`\n\n${info.desc}`);
+        // 원래 본문에 적혀있던 글자 형태 그대로 보여주기 위해 오리지널 텍스트 추출
+        const originalWord = document.getText(range);
+
+        md.appendMarkdown(`**${originalWord}** → \`${info.english.toUpperCase()}\`\n\n${info.desc}`);
         return new vscode.Hover(md, range);
       },
     })
