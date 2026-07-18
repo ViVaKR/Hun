@@ -7,7 +7,7 @@
 /build/
 /CMakeUserPresets.json
 /.cmake/
-
+dist/
 CMakeCache.txt
 CMakeFiles/
 /build/Makefile
