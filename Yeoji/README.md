@@ -70,4 +70,25 @@ Yeoji/
 
 ---
 
-나무아미타불 🙏
+## QEMU 
+
+> QEMU 가상 머신에 ARM64 어셈블리 커널 코드를 얹어 실제로 구동(부팅)할 때 
+> 한 방에 각 잡을 수 있는 초경량 QEMU ARM64 부팅 명령 플래그
+
+```bash
+# M1 맥북의 하드웨어 가속(hvf)을 받아 가상 ARM64 환경을 초고속으로 띄우는 신공!
+qemu-system-aarch64 \
+  -M virt \
+  -cpu host \
+  -accel hvf \
+  -m 1024 \
+  -nographic \
+  -kernel 무결점_커널_바이너리.bin
+
+# 그래픽 화면까지 QEMU로 직접 띄워 테스트할 때 
+# -nographic을 빼고 -display cocoas 같은 맥 전용 옵션을 달아주면 미려한 창이 똭 튀어나옴 
+```
+
+---
+
+### 나무아미타불 🙏
