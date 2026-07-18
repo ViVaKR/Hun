@@ -54,7 +54,6 @@ _main:
     stp x21, x22, [sp, #32]
     mov x29, sp
 
-
     // 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트)
     adrp x10, menu_table@PAGE
     add x10, x10, menu_table@PAGEOFF
@@ -114,7 +113,7 @@ _main:
     add x0, x0, scanf_format@PAGEOFF
     adrp x1, user_input@PAGE
     add x1, x1, user_input@PAGEOFF
-
+    
     sub sp, sp, #16
     str x1, [sp, #0]
     bl _scanf

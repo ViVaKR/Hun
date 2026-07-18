@@ -15,7 +15,7 @@ _menu_welcome_rust:
   mov x29, sp
 
   mov x0, #108
-  bl _call_from_dharma
+  bl _welcome_rust
 
   adrp x0, to_print_message@PAGE
   add x0, x0, to_print_message@PAGEOFF
