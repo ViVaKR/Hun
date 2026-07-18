@@ -10,28 +10,35 @@ BSS_SECTION
 LITERAL4_SECTION
 LITERAL8_SECTION
 CSTRING_SECTION
+
 format_str: .asciz "Hello, ARM64 Assembly! ==> %d\n"
 menu_title: .asciz "\n=== Yana 메뉴 ===\n"
 menu_format: .asciz "%d: %s\n" // 번호와 메뉴 이름을 동적으로 출력할 포맷
 input_prompt: .asciz "원하는 메뉴를 선택하세요: "
 scanf_format: .asciz "%d"
 
-// 💡 사용자 눈높이에 맞춰 선택 범위를 1부터 출력하도록 포맷 변경!
+// 제목 문자열
+err_format: .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
+
+str_exit: .asciz "프로그램 종료"
 str_forloop: .asciz "for loop 합계구하기"
 str_csel: .asciz "csel 삼항연산"
 str_welcome_rust: .asciz "Welcome Rust"
-str_exit: .asciz "프로그램 종료"
-
-err_format: .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
+str_if_else: .asciz "if else statement"
+str_string_to_integer: .asciz "문자열을 정수로"
+str_readline: .asciz "scanf 두개의 정수입력 후 합계 구하기"
 
 CONST_SECTION
 CONST_DATA_SECTION
 menu_table:
-    //      함수주소                문자열주소
-    .quad _menu_forloop,        str_forloop     // 1
-    .quad _menu_csel,           str_csel        // 2
-    .quad _menu_welcome_rust,    str_welcome_rust // 3
-    .quad _menu_exit,           str_exit        // 
+     // 함수주소, 문자열주소
+    .quad _menu_exit, str_exit                          //  
+    .quad _menu_forloop, str_forloop                    // 1
+    .quad _menu_csel, str_csel                          // 2
+    .quad _menu_welcome_rust, str_welcome_rust          // 3
+    .quad _menu_if_else, str_if_else                    // 4
+    .quad _string_to_integer, str_string_to_integer     // 5
+    .quad _readline, str_readline                       // 6
 menu_table_end:
 
 command_table:
@@ -89,7 +96,7 @@ _main:
 
     bl _printf
 
-    add sp, sp, 16
+    add sp, sp, #16
 
     add x19, x19, #16       // 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
     add x21, x21, #1        // i++
