@@ -1,16 +1,19 @@
 #include "yeoji_section_macros.inc"
 
 CONST_DATA_SECTION
-.align 3
 command_table:
     .quad routine_playground    // 인덱스 0: 플레이그라운드
     .quad routine_fib           // 인덱스 1: 진짜 피보나치 실행!
     .quad routine_quicksort     // 인덱스 2: 퀵정렬
 command_table_end:
 
-CODE_SECTION
-.align 2
+CSTRING_SECTION
+play_msg:    .asciz "\n 🚀 [어셈블리] -> 플레이그라운드 활성화!\n\n"
+fib_msg:     .asciz "\n 📊 [어셈블리 진짜 수열 연산 결과] ==> 연산된 피보나치 수: "
+quick_msg:   .asciz "\n 🎯 [어셈블리] -> 퀵정렬 알고리즘 완료!\n\n"
+newline_msg: .asciz "\n\n"
 
+CODE_SECTION
 .global asm_vector_branch
 .extern uart_puts
 .extern uart_putc
@@ -122,10 +125,3 @@ routine_quicksort:
     bl      uart_puts
     ldp     x29, x30, [sp], #16
     ret
-
-CSTRING_SECTION
-.align 3
-play_msg:    .asciz "\n 🚀 [어셈블리] -> 플레이그라운드 활성화!\n\n"
-fib_msg:     .asciz "\n 📊 [어셈블리 진짜 수열 연산 결과] ==> 연산된 피보나치 수: "
-quick_msg:   .asciz "\n 🎯 [어셈블리] -> 퀵정렬 알고리즘 완료!\n\n"
-newline_msg: .asciz "\n\n"

@@ -6,10 +6,13 @@ volatile unsigned int *const UART0_FR = (unsigned int *)(UART0_BASE + 0x18);
 int test_global_variable;
 
 extern long long _asm_get_current_el(void);
-// 🔑 인자를 두 개(명령어 인덱스, 뒤의 서브 매개변수 값) 받도록 개조!
 extern void asm_vector_branch(long long index, long long arg);
+extern void asm_enable_timer(unsigned int ticks);
+extern unsigned int asm_get_timer_freq(void);
+extern void uart_puts(const char *s);
 
 void uart_putc(char c) { *UART0_DR = c; }
+
 void uart_puts(const char *s)
 {
   while (*s)
@@ -35,6 +38,44 @@ int baremetal_strcmp(const char *s1, const char *s2)
     s2++;
   }
   return *(unsigned char *)s1 - *(unsigned char *)s2;
+}
+
+void test_timer_heartbeat(void)
+{
+  uart_puts("\n⏳ [커널] 시스템 타이머 시동을 준비하네...\n");
+
+  unsigned int freq = asm_get_timer_freq();
+  asm_enable_timer(freq);
+  uart_puts("⚡ [커널] 심장이 뛰기 시작했네! (타이머 On)\n");
+
+  unsigned int loop_count = 0;
+
+  while (1)
+  {
+    // 🔑 [정화 포인트] CPU 규격에 맞게 웅장한 64비트 방을 준비합니다!
+    unsigned long long ctrl;
+
+    // 수식어 %w0를 떼어내고, 순수한 %0으로 64비트 전체를 직격으로 긁어옵니다.
+    __asm__ volatile("mrs %0, cntp_ctl_el0" : "=r"(ctrl));
+
+    // 64비트 방에서 2번째 비트(ISTATUS)를 검사하는 것은 32비트 때와 완전히 동일합니다!
+    if (ctrl & (1 << 2))
+    {
+      loop_count++;
+      if (loop_count == 1)
+        uart_puts("💓 [심장박동] 쿵... (1초 경과)\n");
+      else if (loop_count == 2)
+        uart_puts("💓 [심장박동] 쾅... (2초 경과)\n");
+      else if (loop_count == 3)
+      {
+        uart_puts("💓 [심장박동] 쿠콰콰쾅! 타이머 제어 테스트 완료\n\n");
+        break;
+      }
+
+      // 다음 1초를 위해 다시 타이머 재장전!
+      asm_enable_timer(freq);
+    }
+  }
 }
 
 // -------------------------------------------------------------
@@ -65,13 +106,23 @@ void yeoji_shell_execute(char *cmd_line)
     arg_val = *arg_str - '0';
   }
 
-  // 명령어 해석 대국 출발!
+  // 명령어 해석 출발!
   if (baremetal_strcmp(cmd, "도움말") == 0)
   {
     uart_puts("\n========= [ 여지 OS 커맨드 쉘 도움말 ] =========\n");
     uart_puts("  * 도움말 - 명령어 목록 출력\n");
     uart_puts("  * 청소   - .bss 청소 상태 재확인\n");
     uart_puts("  * 바둑   - 어셈블리 연동 (예: '바둑 1' 치면 진짜 피보나치 계산!)\n");
+    uart_puts("  * 종료   - 쉘을 닫고 안전하게 회군\n\n");
+    uart_puts("==================================================\n\n");
+  }
+  else if (baremetal_strcmp(cmd, "help") == 0)
+  {
+    uart_puts("\n========= [ 여지 OS 커맨드 쉘 도움말 ] =========\n");
+    uart_puts("  * 도움말 / help - 명령어 목록 출력\n");
+    uart_puts("  * 청소 / clean  - .bss 청소 상태 재확인\n");
+    uart_puts("  * 바둑   - 어셈블리 연동 (예: '바둑 1' 치면 진짜 피보나치 계산!)\n");
+    uart_puts("  * 종료   - 쉘을 닫고 안전하게 회군\n\n");
     uart_puts("==================================================\n\n");
   }
   else if (baremetal_strcmp(cmd, "청소") == 0)
@@ -97,6 +148,15 @@ void yeoji_shell_execute(char *cmd_line)
       asm_vector_branch(0, 0); // 기본 플레이그라운드 호출!
     }
   }
+  // 🔑 [신설 2] '종료' 명령어 활성화!
+  else if (baremetal_strcmp(cmd, "종료") == 0)
+  {
+    uart_puts("\n🚪 [종료] Yeoji-Shell을 닫고 커널 본진으로 복귀하네.\n");
+    uart_puts("💤 [시스템] CPU를 영원한 수면(WFE) 상태로 전환하네... 안녕!\n\n");
+
+    // ⚡ 현재 쉘 함수를 즉시 탈출!
+    return;
+  }
   else if (baremetal_strcmp(cmd, "") == 0)
   {
   }
@@ -115,6 +175,8 @@ void kernel_main(void)
   uart_puts("   여지 OS (Yeoji OS) - v0.0.3 (8,9순위 완전체 결합)\n");
   uart_puts("==================================================\n\n");
 
+  // 🔑 [출격 완료] 쉘이 뜨기 전, 베어메탈의 심장박동을 먼저 요란하게 확인합니다!
+  test_timer_heartbeat();
   char cmd_buffer[128];
   int buf_idx = 0;
 
@@ -155,5 +217,11 @@ void kernel_main(void)
         uart_putc(input_char);
       }
     }
+  } // 쉘의 while(1) 대루프가 끝나는 지점
+
+  // [완벽할 종료 안착] 쉘 루프가 탈출되면 이곳으로 떨어짐
+  while (1)
+  {
+    __asm__ volatile("wfe"); // CPU 를 저전력 절전 수면 상태로 동결![cite: 1]
   }
 }
