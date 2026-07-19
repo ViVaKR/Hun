@@ -1,0 +1,31 @@
+{
+  "name": "yeoji-forest",
+  "displayName": "yeoji-forest",
+  "description": "여지(如地)의 숲 색감을 담은 다크 테마",
+  "version": "1.0.3",
+  "publisher": "buddham-hq",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "author": {
+    "name": "BM.KIM BUM JUN"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ViVaKR/Hun"
+  },
+  "icon": "images/yeoji_icon_128.png",
+  "license": "MIT",
+  "contributes": {
+    "themes": [
+      {
+        "label": "Yeoji Forest",
+        "uiTheme": "vs-dark",
+        "path": "./themes/Yeoji Forest-color-theme.json"
+      }
+    ]
+  }
+}
