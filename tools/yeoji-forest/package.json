@@ -1,9 +1,13 @@
 {
   "name": "yeoji-forest",
-  "displayName": "yeoji-forest",
+  "displayName": "Yeoji Forest (여지의 숲)",
   "description": "여지(如地)의 숲 색감을 담은 다크 테마",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "buddham-hq",
+  "galleryBanner": {
+    "color": "#2B3339",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.125.0"
   },
@@ -15,8 +19,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ViVaKR/Hun"
+    "url": "https://github.com/ViVaKR/Hun.git",
+    "directory": "tools/yeoji-forest"
   },
+  "keywords": [
+    "theme",
+    "color-theme",
+    "dark",
+    "forest",
+    "korean",
+    "buddhist"
+  ],
   "icon": "images/yeoji_icon_128.png",
   "license": "MIT",
   "contributes": {
