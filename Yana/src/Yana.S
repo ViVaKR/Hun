@@ -27,6 +27,7 @@ str_welcome_rust: .asciz "Welcome Rust"
 str_if_else: .asciz "if else statement"
 str_string_to_integer: .asciz "문자열을 정수로"
 str_readline: .asciz "scanf 두개의 정수입력 후 합계 구하기"
+str_delegate: .asciz "델리게이트 함수 호출"
 
 CONST_SECTION
 CONST_DATA_SECTION
@@ -39,6 +40,7 @@ menu_table:
     .quad _menu_if_else, str_if_else                    // 4
     .quad _string_to_integer, str_string_to_integer     // 5
     .quad _readline, str_readline                       // 6
+    .quad _menu_delegate, str_delegate                  // 7
 menu_table_end:
 
 command_table:
