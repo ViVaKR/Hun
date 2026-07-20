@@ -1,12 +1,85 @@
 {
   "name": "Yeoji Forest",
+
+  // ============================================================
+  //  workbench UI 색상 (에디터 "밖" 전체 - 사이드바/상태바/탭/터미널 등)
+  //  기존엔 4개만 정의돼 있어서 나머지는 VS Code 기본 다크 테마 색이
+  //  그대로 새어 나오고 있었음. 기존 팔레트(#9ECE6A 초록, #5CD8E0 청록,
+  //  #E8DCC0 살구빛 글자, #272E33 배경)를 기준으로 확장함.
+  //  마음에 안 드는 값은 hex만 자유롭게 조정하면 됨.
+  // ============================================================
   "colors": {
+    // ---- 1. 기본 에디터 ----
     "editor.background": "#272E33",
     "editor.foreground": "#E8DCC0",
+    "editor.lineHighlightBackground": "#2E363B",
+    "editor.selectionBackground": "#3E4B47",
+    "editor.selectionHighlightBackground": "#3E4B4780",
+    "editor.wordHighlightBackground": "#3E4B4750",
+    "editor.findMatchBackground": "#9ECE6A55",
+    "editor.findMatchHighlightBackground": "#9ECE6A25",
+    "editorCursor.foreground": "#9ECE6A",
+    "editorWhitespace.foreground": "#3A454A",
+    "editorLineNumber.foreground": "#5A6B62",
+    "editorLineNumber.activeForeground": "#E8DCC0",
+    "editorIndentGuide.background1": "#3A454A",
+    "editorIndentGuide.activeBackground1": "#5CD8E0",
+
+    // ---- 2. 사이드바 / 액티비티 바 ----
+    "activityBar.background": "#20262A",
+    "activityBar.foreground": "#E8DCC0",
+    "activityBar.inactiveForeground": "#5A6B62",
     "activityBarBadge.background": "#9ECE6A",
-    "sideBarTitle.foreground": "#A9B7AE"
+    "activityBarBadge.foreground": "#20262A",
+    "sideBar.background": "#232A2E",
+    "sideBar.foreground": "#B9C4BC",
+    "sideBarTitle.foreground": "#A9B7AE",
+    "sideBarSectionHeader.background": "#20262A",
+
+    // ---- 3. 상태 바 ----
+    "statusBar.background": "#20262A",
+    "statusBar.foreground": "#B9C4BC",
+    "statusBar.debuggingBackground": "#FF7AC6",
+    "statusBar.debuggingForeground": "#20262A",
+    "statusBar.noFolderBackground": "#20262A",
+
+    // ---- 4. 탭 / 에디터 그룹 ----
+    "tab.activeBackground": "#272E33",
+    "tab.inactiveBackground": "#20262A",
+    "tab.activeForeground": "#E8DCC0",
+    "tab.inactiveForeground": "#5A6B62",
+    "tab.border": "#1B2023",
+    "editorGroupHeader.tabsBackground": "#20262A",
+
+    // ---- 5. 터미널 (ANSI 색상) ----
+    "terminal.background": "#272E33",
+    "terminal.foreground": "#E8DCC0",
+    "terminal.ansiRed": "#FF6B70",
+    "terminal.ansiGreen": "#9ECE6A",
+    "terminal.ansiYellow": "#FFCB6B",
+    "terminal.ansiBlue": "#5CD8E0",
+    "terminal.ansiMagenta": "#FF7AC6",
+    "terminal.ansiCyan": "#5CD8E0",
+
+    // ---- 6. Git 데코레이션 (탐색기에서 변경 파일 색) ----
+    "gitDecoration.addedResourceForeground": "#9ECE6A",
+    "gitDecoration.modifiedResourceForeground": "#FFCB6B",
+    "gitDecoration.deletedResourceForeground": "#FF6B70",
+
+    // ---- 7. 기타 ----
+    "focusBorder": "#5CD8E0",
+    "scrollbarSlider.background": "#3A454A80",
+    "scrollbarSlider.hoverBackground": "#3A454AC0"
   },
+
+  // ============================================================
+  //  tokenColors: 코드 안의 문법 요소 색칠
+  //  ★ 값/순서는 원본 그대로 유지 (시각적 결과 변화 없음).
+  //     아래 "// ===== N. ... =====" 구획 주석만 추가해서
+  //     스크롤하면서 지금 뭘 보고 있는지 바로 알 수 있게 함.
+  // ============================================================
   "tokenColors": [
+    // ===== 1. 기본 텍스트 (주석 / 변수 / 색상값 / 오류) =====
     {
       "name": "Comment",
       "scope": ["comment", "punctuation.definition.comment"],
@@ -36,6 +109,8 @@
         "foreground": "#FF6B70"
       }
     },
+
+    // ===== 2. 키워드 & 연산자 & 태그 =====
     {
       "name": "Keyword, Storage",
       "scope": ["keyword", "storage.type", "storage.modifier"],
@@ -70,6 +145,8 @@
         "foreground": "#FF9E5E"
       }
     },
+
+    // ===== 3. 함수 / 클래스 / 속성 =====
     {
       "name": "Function, Special Method",
       "scope": [
@@ -224,6 +301,8 @@
         "foreground": "#5FE0A8"
       }
     },
+
+    // ===== 4. Git / Diff 마크업 =====
     {
       "name": "Inserted",
       "scope": ["markup.inserted"],
@@ -245,6 +324,8 @@
         "foreground": "#FF7AC6"
       }
     },
+
+    // ===== 5. 정규식 / 이스케이프 / 링크 / 데코레이터 =====
     {
       "name": "Regular Expressions",
       "scope": ["string.regexp"],
@@ -282,6 +363,8 @@
         "foreground": "#FF6B70"
       }
     },
+
+    // ===== 6. JSON 중첩 깊이별 키 색상 (레벨 0~8) =====
     {
       "name": "JSON Key - Level 0",
       "scope": ["source.json meta.structure.dictionary.json support.type.property-name.json"],
@@ -361,6 +444,8 @@
         "foreground": "#9ECE6A"
       }
     },
+
+    // ===== 7. Markdown =====
     {
       "name": "Markdown - Plain",
       "scope": ["text.html.markdown", "punctuation.definition.list_item.markdown"],
