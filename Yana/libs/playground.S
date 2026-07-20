@@ -1,8 +1,8 @@
-//  Created by 김범준 on 7/10/26.
-// =============================================================================
+//  Created by 김범준 on 2026. 7. 10
+// =================================================================
 //  제목: Apple Silicon (ARM64/macOS) 표준 사격훈련 교본소 (playground.s)
 //  작성: 대제독의 민정기어 사령부
-// =============================================================================
+// =================================================================
 
 .include "section_macros.inc"
 
@@ -21,39 +21,36 @@ format_str:           .asciz "%lld + %lld = %lld\n"
 format_for_loop:      .asciz "%lld 회 합계 %lld\n"
 float_format_str:     .asciz "%.2f + %.2f = %.3f\n"
 loop_format:          .asciz "데이터 %lld 번째 값: %.3f\n"
-loop_format_decimal:  .asciz "데이터 %lld 번째 값: %lld\n"  ; ★ 'f' 오타 수정!
+loop_format_decimal:  .asciz "데이터 %lld 번째 값: %lld\n"
 format_function_call: .asciz "[function call result] %d + %d = %d\n"
 format_delegate:      .asciz "[Delegate Callback Result] 연산 결과: %d\n"
 helloworld:           .asciz "Hello, World\n"
-list_format:          .asciz "Index [%lld]: Value = %d\n"    ; ★ DATA_SECTION에서 이쪽으로 구금 조치!
+list_format:          .asciz "Index [%lld]: Value = %d\n"
 
 // -------------------------------------------------------------
 // [0으로 초기화된 변수] __DATA,__bss
 // -------------------------------------------------------------
 BSS_SECTION
-// 예시 1) 32비트(4바이트) 정수형 카운터 변수 공간 확보
+// 예시 1 32비트(4바이트) 정수형 카운터 변수 공간 확보
 // C언어 대응: int shoot_count = 0;
 .align 2
-shoot_count:
-    .space 4        ; 4바이트 크기 공간 확보 (실행 시 0으로 채워짐)
+shoot_count: .space 4 // 4바이트 크기 공간 확보 (실행 시 0으로 채워짐)
 
 // 예시 2) 64비트(8바이트) 정밀 실수형 변수 공간 확보
 // C언어 대응: double target_distance = 0.0;
 .align 3
-target_distance:
-    .space 8        ; 8바이트 크기 공간 확보
+target_distance: .space 8 // 8바이트 크기 공간 확보
 
 // 예시 3) 포인터 주소를 임시 저장할 64비트(8바이트) 공간 확보
 // C언어 대응: void* current_callback = NULL;
 .align 3
-current_callback:
-    .space 8        ; ARM64 주소값은 무조건 8바이트!
+current_callback: .space 8 // ARM64 주소값은 무조건 8바이트!
 
 // 예시 4) 사용자 입력이나 데이터를 임시로 담을 1024바이트 버퍼 대용량 공간
 // C언어 대응: char input_buffer[1024] = {0,};
-.align 3             ; 대용량 버퍼는 8바이트 정렬해두면 CPU가 읽을 때 아주 쾌적함!
-input_buffer:
-    .space 1024     ; 1024바이트(1KB) 통 크게 확보!
+.align 3
+                            // 대용량 버퍼는 8바이트 정렬해두면 CPU가 읽을 때 아주 쾌적함!
+input_buffer: .space 1024 // 1024바이트(1KB) 통 크게 확보!
 input_buffer_end:
 
 // -------------------------------------------------------------
@@ -68,13 +65,13 @@ CONST_DATA_SECTION
 DATA_SECTION
 
 // 64비트 실수형(Double) 배열 공간 (8바이트 정렬)
-           .align  3
+.align  3
 huge_data: .double 150.5, -23.45, 3.141592, 150.5, -23.45
 huge_data_end:
 
 // 32비트 정수형(int) 배열 공간 (4바이트 정렬)
-           .align 2
-list_data: .int   1, 2, 3, 4, 5, 6, 7, 8, 9
+.align 2
+list_data: .int 1, 2, 3, 4, 5, 6, 7, 8, 9
 list_data_end:
 
 // -------------------------------------------------------------
@@ -93,49 +90,11 @@ _playground:
 	stp	x25, x26, [sp, #64]
 	stp	x27, x28, [sp, #80]
     
-	b	_function_call_start
+	b	_loop_int_start
 
-// ==========================================
-// function call (함수 호출 훈련)
-// ==========================================
-_function_call_start:
-    # 1. 호출할 함수에 던질 인자 세팅
-	mov	x19, #102
-	mov	x20, #105
-
-	mov	x0, x19
-	mov	x1, x20
-	bl	_function_call
-
-	mov	x21, x0                 // 결과값(207)을 x21에 저장
-
-    # 2. 포맷 문자열 주소 낚아채기
-	adrp	x0, format_function_call@PAGE
-	add	x0, x0, format_function_call@PAGEOFF
-
-    # -------------------------------------------------------------
-    # 🔥 [대제독의 애플 전용 가변인자 스택 격발 신공]
-    # -------------------------------------------------------------
-    # (1) 기존 독서실/FP 통장을 보호하기 위해 sp를 '추가로' 32바이트 확장하네! (16의 배수)
-	sub	sp, sp, #32
-
-    # (2) 새로 확보한 청정 구역 스택에 printf가 긁어갈 인자들을 차례로 탑재!
-    #    애플 printf 규격에 맞춰 하위 32비트 값(w)들을 안전하게 저장하네.
-	str	w19, [sp, #0]           // %d 첫 번째 자리 (102) -> sp의 새 바닥
-	str	w20, [sp, #8]           // %d 두 번째 자리 (105)
-	str	w21, [sp, #16]          // %d 세 번째 자리 (207)
-
-	bl	_printf                  // 격발! (스택 오염이 전혀 없으므로 완벽 작동)
-	add	sp, sp, #32
-	b	_terminate                // 이제 복귀 주소(lr)가 안전하니 깔끔하게 퇴근!
-
-_function_call:
-	add	x0, x0, x1
-    ret
-
-// 2. int array loop
+// array loop (int)
 _loop_int_start:
-    // 1. 시작주소와 끝 주소 로드
+    
 	adrp	x19, list_data@PAGE
 	add	x19, x19, list_data@PAGEOFF
 
@@ -161,8 +120,10 @@ _loop_int:
 
 	sub	sp, sp, #32
 	str	x21, [sp, #0]       // 첫번째 인자 %lld (Count)
+
     // [중요]w22에 담긴 32비트값을 64비트 레지스터로 확장하여 저장
-    // printf의 %d는 보통 4바이트를 기대하지만, 스택에 저장할 때는 8바이트 단위를 맞추는 게 안전
+    // printf의 %d는 보통 4바이트를 기대하지만, 
+    // 스택에 저장할 때는 8바이트 단위를 맞추는 게 안전
 	sxtw	x22, w22       // 32비트 정수를 64비트로 부호 확장
 	str	x22, [sp, #8]   // 두번째 인자 %d (배열의 값)
 
