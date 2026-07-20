@@ -120,3 +120,26 @@ build(hun-core): build.rs에서 Yana/tests 동적 탐색 기능 구현
 docs(hun-asm-highlighter): README.md 진단 기능 항목 업데이트
 chore: .gitignore에 tools/ vsix 제외 규칙 추가
 ```
+
+### release link
+
+```bash
+1. 코드 수정 완료 (extension.js, package.json 버전 올리기 등)
+        ↓
+2. git add && git commit
+        ↓
+3. git push origin main          ← 커밋이 원격에 먼저 올라가 있어야 함
+        ↓
+4. vsce package                  ← .vsix 로컬 생성, 파일 목록 확인
+        ↓
+5. (선택) 로컬에서 .vsix 직접 설치해서 실제 동작 테스트
+        ↓
+6. git tag hun-asm-highlighter-v2.1.0    ← 방금 push된 커밋을 가리킴
+        ↓
+7. git push origin hun-asm-highlighter-v2.1.0   ← 태그를 원격에 push
+        ↓
+8. GitHub → Releases → "Draft a new release" → 방금 push한 태그 선택 → .vsix 파일 첨부 → Publish
+        ↓
+9. vsce publish                  ← 마켓플레이스/Open VSX에 배포
+
+```
