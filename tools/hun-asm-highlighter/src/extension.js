@@ -36,10 +36,13 @@ function findLabelInDocument(document, name) {
 //    - 명령어 라인(mov/ldr/...) 정렬
 //    - .asciz/.quad 같은 데이터 선언 "블록"을 표(table)처럼 컬럼 정렬
 // =========================================================================
+// =========================================================================
+// ⚔️ [6구역: 종합 예술 조각소] 코드 칼정렬(Formatting) 포맷터 엔진
+//    - 명령어 라인(mov/ldr/...) 블록별 니모닉 길이 자동 맞춤 정렬 (대수술 완료!)
+//    - .asciz/.quad 같은 데이터 선언 "블록"을 표(table)처럼 컬럼 정렬
+// =========================================================================
 
 // 문자열 리터럴 안쪽인지 추적하면서 "구분자"를 찾아주는 공용 스캐너.
-// 콤마 정규화(,\s* → ", ")나 // 주석 위치 찾기처럼, 문자열 안의 문자를
-// 잘못 건드리면 안 되는 모든 곳에서 재사용한다.
 function isInsideStringAt(text, index) {
   let inStr = false;
   for (let i = 0; i < index; i++) {
@@ -49,8 +52,6 @@ function isInsideStringAt(text, index) {
 }
 
 // "콤마 뒤 공백을 한 칸으로" 정규화하되, 문자열 리터럴 안의 콤마는 건드리지 않음.
-// (기존 코드의 `rawOperands.replace(/,\s*/g, ", ")` 는 .asciz "1,2,3" 같은
-//  문자열 내용까지 고쳐버리는 버그가 있었음 - 이 함수로 교체)
 function normalizeCommasOutsideStrings(str) {
   let result = '';
   let inStr = false;
@@ -61,8 +62,8 @@ function normalizeCommasOutsideStrings(str) {
     if (!inStr && c === ',') {
       result += ',';
       let j = i + 1;
-      while (str[j] === ' ') j++; // 콤마 뒤 공백들을 모두 건너뛰고
-      result += ' ';              // 딱 한 칸만 다시 채움
+      while (str[j] === ' ') j++;
+      result += ' ';
       i = j - 1;
       continue;
     }
@@ -72,7 +73,6 @@ function normalizeCommasOutsideStrings(str) {
 }
 
 // "값 // 주석" 에서 문자열 밖의 진짜 "//" 위치를 찾아 값/주석을 분리.
-// (.asciz 문자열 안에 우연히 "//"가 들어있어도 안전하게 통과)
 function splitTrailingComment(text) {
   for (let i = 0; i < text.length - 1; i++) {
     if (text[i] === '/' && text[i + 1] === '/' && !isInsideStringAt(text, i)) {
@@ -82,39 +82,16 @@ function splitTrailingComment(text) {
   return { value: text.trimEnd(), comment: '' };
 }
 
-// 일반 명령어 라인: (라벨:)? 니모닉 오퍼랜드...
+// 일반 명령어 라인 파싱 정규식
 const INSTRUCTION_RE =
   /^(?:\s*([\p{L}_.$][\p{L}0-9_.$]*:))?\s*([\p{L}_.$][\p{L}0-9_.$]*)\s+(.*)$/u;
 
-// 데이터 선언 라인: (라벨:)? .지시어 값...  (예: format_str: .asciz "...")
+// 데이터 선언 라인 정규식 (.align 구문은 블록 정렬에서 철저히 제외!)
 const DATA_DECL_RE =
-  /^(\s*)(?:([\p{L}_.$][\p{L}0-9_.$]*)\s*:\s*)?(\.\p{L}[\p{L}0-9]*)\s+(.*)$/u;
+  /^(\s*)(?:([\p{L}_.$][\p{L}0-9_.$]*)\s*:\s*)?((?!\.align\b)\.\p{L}[\p{L}0-9]*)\s+(.*)$/u;
 
-function formatInstructionLine(text) {
-  const match = INSTRUCTION_RE.exec(text);
-  if (!match) return text;
 
-  const label = match[1] ? match[1] : '';
-  const mnemonic = match[2];
-  const rawOperands = match[3] ? match[3] : '';
-
-  // 지시어(.asciz 등)는 여기서 다루지 않음 - collectAndAlignDataBlocks 담당
-  if (mnemonic.startsWith('.')) return text;
-
-  // 1단계: 콤마 뒤 공백 정리 (문자열 안쪽은 보호)
-  let operands = normalizeCommasOutsideStrings(rawOperands);
-  // 2단계: 대괄호 내부 공백 접착
-  operands = operands.replace(/\[\s*([a-zA-Z0-9_]+)\s*,\s*([^\]]+)\]/g, '[$1, $2]');
-
-  return label ? `${label}\t${mnemonic}\t${operands}` : `\t${mnemonic}\t${operands}`;
-}
-
-// .asciz / .quad 같은 데이터 선언이 연속된 "블록"을 찾아 정렬.
-//
-//  alignMode === true  → 🔥 칼군무 모드: 블록 안 최대 길이를 계산해서
-//                        공백(padEnd)으로 라벨/지시어/값 열을 칼같이 맞춤.
-//  alignMode === false → 🔹 라벨 밀착 모드: 정렬 없이, 라벨:지시어:값 사이를
-//                        딱 한 칸씩만 남기고 순정 그대로 밀착시킴.
+// 데이터 선언 블록 정렬 함수 (기존 로직 유지)
 function collectAndAlignDataBlockEdits(document, alignMode) {
   const edits = [];
   let i = 0;
@@ -135,10 +112,7 @@ function collectAndAlignDataBlockEdits(document, alignMode) {
     }
 
     if (block.length > 0) {
-      // 칼군무 모드는 최소 2줄은 있어야 "정렬"의 의미가 있음. 1줄뿐이면
-      // 어차피 정렬할 상대가 없으니 라벨 밀착 모드와 동일하게 처리.
       const useAlign = alignMode && block.length >= 2;
-
       let maxLabelLen = 0, maxDirectiveLen = 0, maxValueLen = 0, hasAnyComment = false;
       if (useAlign) {
         maxLabelLen = Math.max(...block.map((b) => (b.label ? b.label.length + 1 : 0)));
@@ -150,13 +124,11 @@ function collectAndAlignDataBlockEdits(document, alignMode) {
       for (const b of block) {
         let formatted;
         if (useAlign) {
-          // 🔥 칼군무 모드
           const labelCol = b.label ? (b.label + ':').padEnd(maxLabelLen + 1) : ' '.repeat(maxLabelLen ? maxLabelLen + 1 : 0);
           const directiveCol = b.directive.padEnd(maxDirectiveLen + 1);
           const valueCol = hasAnyComment ? b.value.padEnd(maxValueLen + 1) : b.value;
           formatted = `${b.indent}${labelCol}${directiveCol}${valueCol}${b.comment}`.replace(/\s+$/, '');
         } else {
-          // 🔹 라벨 밀착 모드: 정렬 없이 한 칸씩만
           const labelPart = b.label ? `${b.label}: ` : '';
           const commentPart = b.comment ? ` ${b.comment}` : '';
           formatted = `${b.indent}${labelPart}${b.directive} ${b.value}${commentPart}`.replace(/\s+$/, '');
@@ -175,27 +147,96 @@ function collectAndAlignDataBlockEdits(document, alignMode) {
   return edits;
 }
 
+
+// 🔥 [대수술 부위] 일반 명령어 라인 블록 정렬 함수 구체화!
 function collectInstructionEdits(document) {
   const edits = [];
+  let i = 0;
 
-  for (let i = 0; i < document.lineCount; i++) {
-    const line = document.lineAt(i);
-    const text = line.text;
+  while (i < document.lineCount) {
+    const block = [];
+    let j = i;
 
-    // 빈 줄, 주석 전용 줄, 지시어 줄(.asciz 등 - 위 블록 정렬이 담당)은 건드리지 않음
-    const t = text.trim();
-    if (!t || t.startsWith('//') || t.startsWith('/*')) continue;
-    if (DATA_DECL_RE.test(text)) continue;
+    // 연속된 일반 명령어 줄들을 하나의 "블록"으로 포획하기
+    while (j < document.lineCount) {
+      const line = document.lineAt(j);
+      const text = line.text;
+      const t = text.trim();
 
-    const formatted = formatInstructionLine(text);
-    if (formatted !== text) {
-      edits.push(vscode.TextEdit.replace(line.range, formatted));
+      // 빈 줄이나 주석 전용 줄을 만나면 블록을 끊는다!
+      if (!t || t.startsWith('//') || t.startsWith('/*')) break;
+
+      // .align 구문은 단독 처리 후 블록을 끊는다!
+      if (t.startsWith('.align')) {
+        if (t !== text) {
+          edits.push(vscode.TextEdit.replace(line.range, t));
+        }
+        j++;
+        break;
+      }
+
+      // 데이터 선언문 줄을 만나면 블록을 끊는다!
+      if (DATA_DECL_RE.test(text)) break;
+
+      // 일반 명령어 포획 시도
+      const match = INSTRUCTION_RE.exec(text);
+      if (match) {
+        const label = match[1] ? match[1] : '';
+        const mnemonic = match[2];
+        const rawOperands = match[3] ? match[3] : '';
+
+        // 지시어로 시작하는 것은 탈락 (.align 외의 다른 지시어 방어)
+        if (mnemonic.startsWith('.')) {
+          j++;
+          break;
+        }
+
+        block.push({
+          lineIdx: j,
+          label,
+          mnemonic,
+          rawOperands,
+          raw: text
+        });
+        j++;
+      } else {
+        // 매칭되지 않는 쌩뚱맞은 줄이 와도 블록을 끊는다
+        break;
+      }
     }
+
+    // 🎯 포획된 명령어 블록이 있다면 칼군무 정렬 집도 시작!
+    if (block.length > 0) {
+      // 블록 내에서 가장 긴 니모닉(명령어)의 자릿수를 찾음 (예: adrp가 있으면 4)
+      const maxMnemonicLen = Math.max(...block.map(b => b.mnemonic.length));
+
+      for (const b of block) {
+        // 1단계: 오퍼랜드 콤마 및 대괄호 공백 정규화
+        let operands = normalizeCommasOutsideStrings(b.rawOperands);
+        operands = operands.replace(/\[\s*([a-zA-Z0-9_]+)\s*,\s*([^\]]+)\]/g, '[$1, $2]');
+
+        // 2단계: 핵심 마법! 가장 긴 명령어 길이에 맞춰서 뒤쪽 공백(padEnd)을 동적으로 채움!
+        // 최소 1칸의 공백은 유지하도록 설정
+        const mnemonicCol = b.mnemonic.padEnd(maxMnemonicLen + 1);
+
+        // 3단계: 조립하기 (라벨이 있으면 앞에 붙이고, 없으면 탭(\t) 들여쓰기 유지)
+        const formatted = b.label
+          ? `${b.label}\t${mnemonicCol}${operands}`
+          : `\t${mnemonicCol}${operands}`;
+
+        if (formatted !== b.raw) {
+          const line = document.lineAt(b.lineIdx);
+          edits.push(vscode.TextEdit.replace(line.range, formatted));
+        }
+      }
+    }
+
+    // 다음 탐색 위치 지정
+    i = j > i ? j : i + 1;
   }
 
   return edits;
 }
-
 
 // =========================================================================
 // 🚀 [제국 선포] 확장팩 활성화 (activate) 총지휘소

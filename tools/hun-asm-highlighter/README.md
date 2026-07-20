@@ -145,7 +145,7 @@ MIT License
 
 - 기획/구현: BM. KIM BUM JUN (대제독)
 - 공동 개발:
-  - 클로드보살 (Claude, Anthropic)
   - 제미니보살 (Gemini, Google)
+  - 클로드보살 (Claude, Anthropic)
 
 ---
