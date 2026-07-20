@@ -172,8 +172,43 @@ void kernel_main(void)
 {
   uart_puts("여지 OS 부팅 중...\n");
   uart_puts("==================================================\n");
-  uart_puts("   여지 OS (Yeoji OS) - v0.0.3 (8,9순위 완전체 결합)\n");
+  uart_puts("   여지 OS (Yeoji OS) - v0.0.4 (8,9순위 완전체 결합)\n");
   uart_puts("==================================================\n\n");
+
+  if (test_global_variable == 0)
+  {
+    uart_puts("[메모리 검증] ✅ .bss 영역이 0으로 완벽하게 무결점 청소되었습니다!\n");
+  }
+  else
+  {
+    uart_puts("[메모리 검증] ❌ 경보! 메모리에 쓰레기 값이 살아있습니다!\n");
+  }
+
+  long long el_level = _asm_get_current_el();
+  // 권한 등급 출력 정화
+  if (el_level == 1)
+  {
+    uart_puts("[권한 등급] 👑 현재 CPU 권한: EL1 (가장 안전하고 완벽한 커널 모드입니다!)\n");
+  }
+  else if (el_level == 2)
+  {
+    uart_puts("[권한 등급] 🕹️ 현재 CPU 권한: EL2 (하이퍼바이저 모드로 진입했습니다!)\n");
+  }
+  else if (el_level == 3)
+  {
+    uart_puts("[권한 등급] 🛡️ 현재 CPU 권한: EL3 (최고 존엄 보안 모드입니다!)\n");
+  }
+  else
+  {
+    uart_puts("[권한 등급] 👤 현재 CPU 권한: EL0 (유저 모드입니다. 커널 제어 불가!)\n");
+  }
+  uart_puts("\n");
+
+  // "여지, 안녕!" UTF-8
+  //  UTF-8 바이트가 그대로 잘 나가는지 확인
+  uart_puts("\xEC\x97\xAC\xEC\xA7\x80, \xEC\x95\x88\xEB\x85\x95!\n");
+  uart_puts("\n");
+  uart_puts("Booted with no OS beneath us. Just Yeoji and the metal.\n");
 
   // 🔑 [출격 완료] 쉘이 뜨기 전, 베어메탈의 심장박동을 먼저 요란하게 확인합니다!
   test_timer_heartbeat();
