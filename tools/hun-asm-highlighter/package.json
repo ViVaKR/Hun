@@ -4,7 +4,7 @@
   "license": "MIT",
   "displayName": "Hun ARM64 한글 어셈블리 강조",
   "description": "훈(Hun) 프로젝트 전용 - 한글 니모닉과 섹션 매크로를 인식하는 문법 강조, Syntax highlighting for Hun ARM64 Assembly with Korean mnemonics, ARM64 registers, directives, labels and section macros.",
-  "version": "1.0.1",
+  "version": "2.0.1",
   "main": "src/extension.js",
   "activationEvents": [
     "onLanguage:hun-asm"
@@ -25,13 +25,15 @@
     "llvm",
     "hun",
     "korean",
-    "syntax-highlighting"
+    "syntax-highlighting",
+    "snippets"
   ],
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Snippets"
   ],
   "contributes": {
     "languages": [
@@ -55,6 +57,12 @@
         "language": "hun-asm",
         "scopeName": "source.hun-asm",
         "path": "./syntaxes/hun-asm.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "hun-asm",
+        "path": "./snippets/hun-asm.code-snippets"
       }
     ]
   }

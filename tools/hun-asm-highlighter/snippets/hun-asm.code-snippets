@@ -1,0 +1,172 @@
+{
+  "Init Hun (raw prologue, no callee-saved)": {
+    "scope": "hun-asm",
+    "prefix": "_huninit",
+    "body": [
+      ".include \"section_macros.inc\"",
+      ".global $1",
+      "",
+      "CSTRING_SECTION",
+      "",
+      "CODE_SECTION",
+      "$1:",
+      "\tstp x29, x30, [sp, #-16]!",
+      "\tmov x29, sp",
+      "",
+      "\t$0",
+      "",
+      "\tldp x29, x30, [sp], #16",
+      "\tret"
+    ],
+    "description": "Hun Asm 기본 함수 뼈대 (16바이트, x19/x20 안 씀)"
+  },
+
+  "Init Hun (with callee-saved x19/x20)": {
+    "scope": "hun-asm",
+    "prefix": "_huninit_cs",
+    "body": [
+      ".include \"section_macros.inc\"",
+      ".global $1",
+      "",
+      "CSTRING_SECTION",
+      "",
+      "CODE_SECTION",
+      "$1:",
+      "\tstp x29, x30, [sp, #-32]!",
+      "\tmov x29, sp",
+      "\tstp x19, x20, [sp, #16]",
+      "",
+      "\t$0",
+      "",
+      "\tldp x19, x20, [sp, #16]",
+      "\tldp x29, x30, [sp], #32",
+      "\tret"
+    ],
+    "description": "x19/x20 보존이 필요한 함수 뼈대 (32바이트, 16의 배수 정렬 확인됨)"
+  },
+
+  "Init Hun (FUNC_START / FUNC_EXIT 매크로 사용)": {
+    "scope": "hun-asm",
+    "prefix": "_huninit_macro",
+    "body": [
+      ".include \"section_macros.inc\"",
+      "",
+      "CSTRING_SECTION",
+      "",
+      "CODE_SECTION",
+      "FUNC_START ${1:func_name}, ${2:32}",
+      "",
+      "\t$0",
+      "",
+      "FUNC_EXIT ${2:32}"
+    ],
+    "description": "section_macros.inc 의 FUNC_START/FUNC_EXIT 매크로를 쓰는 우아한 버전"
+  },
+
+  "Create Prologue": {
+    "scope": "hun-asm",
+    "prefix": "_plg",
+    "body": ["stp x29, x30, [sp, ${1:#-16}]!$0"],
+    "description": "프롤로그 만들기 (offset은 반드시 16의 배수로!)"
+  },
+
+  "Create Epilogue": {
+    "scope": "hun-asm",
+    "prefix": "_epg",
+    "body": ["ldp x29, x30, [sp], ${1:#16}"],
+    "description": "에필로그 만들기 (offset은 반드시 16의 배수로!)"
+  },
+
+  "Variadic printf call (Apple ABI 필수 패턴)": {
+    "scope": "hun-asm",
+    "prefix": "_vprintf",
+    "body": [
+      "adrp x0, ${1:format_str}@PAGE",
+      "add x0, x0, ${1:format_str}@PAGEOFF",
+      "sub sp, sp, #${2:16}",
+      "str ${3:x1}, [sp, #0]",
+      "bl _printf",
+      "add sp, sp, #${2:16}$0"
+    ],
+    "description": "printf variadic 인자를 스택에 실어서 호출 (Apple ARM64 ABI: 고정인자 이후는 반드시 스택)"
+  },
+
+  "Variadic scanf call (Apple ABI 필수 패턴)": {
+    "scope": "hun-asm",
+    "prefix": "_vscanf",
+    "body": [
+      "adrp x0, ${1:scanf_format}@PAGE",
+      "add x0, x0, ${1:scanf_format}@PAGEOFF",
+      "adrp x1, ${2:target_var}@PAGE",
+      "add x1, x1, ${2:target_var}@PAGEOFF",
+      "sub sp, sp, #16",
+      "str x1, [sp, #0]",
+      "bl _scanf",
+      "add sp, sp, #16$0"
+    ],
+    "description": "scanf variadic 인자를 스택에 실어서 호출 (x1에만 넣고 끝내면 값이 조용히 날아감!)"
+  },
+
+  "Local label (.L_) counting loop": {
+    "scope": "hun-asm",
+    "prefix": "_lloop",
+    "body": [
+      ".L_${1:loop_name}:",
+      "\tcmp ${2:x21}, ${3:x20}",
+      "\tb.eq .L_${4:exit_label}",
+      "",
+      "\t$0",
+      "",
+      "\tadd ${2:x21}, ${2:x21}, #1",
+      "\tb .L_${1:loop_name}",
+      "",
+      ".L_${4:exit_label}:"
+    ],
+    "description": "로컬 라벨(.L_) 카운팅 루프 뼈대 — b .L_loop_start 되돌아가는 줄 빠뜨리지 않게!"
+  },
+
+  "Menu table entry": {
+    "scope": "hun-asm",
+    "prefix": "_menutbl",
+    "body": [".quad _${1:func_name},\t${2:str_label}\t// [$3]"],
+    "description": "menu_table 항목 추가 (함수주소, 문자열주소)"
+  },
+
+  "csel ternary (max/min/조건선택)": {
+    "scope": "hun-asm",
+    "prefix": "_csel",
+    "body": [
+      "cmp ${1:x0}, ${2:x1}",
+      "csel ${3:x0}, ${1:x0}, ${2:x1}, ${4|ge,gt,le,lt,eq,ne,hs,lo|}$0"
+    ],
+    "description": "csel 삼항연산 (예: ge → x1>=x2면 x1, 아니면 x2)"
+  },
+
+  "Rust FFI call (extern \"C\", ptr+len 방식)": {
+    "scope": "hun-asm",
+    "prefix": "_rustffi",
+    "body": [
+      "adrp x0, ${1:msg_label}@PAGE",
+      "add x0, x0, ${1:msg_label}@PAGEOFF",
+      "adrp x1, ${1:msg_label}_end@PAGE",
+      "add x1, x1, ${1:msg_label}_end@PAGEOFF",
+      "sub x1, x1, x0",
+      "bl _${2:rust_func_name}$0"
+    ],
+    "description": "Rust extern \"C\" 함수 호출 — 반드시 extern \"C\" 붙은 함수만 부를 것 (ABI 안정성)"
+  },
+
+  "Section macros block (전체)": {
+    "scope": "hun-asm",
+    "prefix": "_sect",
+    "body": [
+      "BSS_SECTION",
+      "CONST_DATA_SECTION",
+      "DATA_SECTION",
+      "CONST_SECTION",
+      "CSTRING_SECTION",
+      "CODE_SECTION$0"
+    ],
+    "description": "섹션 매크로 전체 블록 삽입"
+  }
+}
