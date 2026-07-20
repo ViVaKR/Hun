@@ -109,7 +109,7 @@ tools/hun-asm-highlighter/releases
 
 ## 변경 이력
 
-### 🚀 v2.0.2 (Current Release)
+### 🚀 v2.1.0 (Current Release)
 
 * ✨ **자동 포맷(Document Formatting) 엔진 탑재 및 칼군무 옵션 추가**
   * 데이터 섹션(`.asciz` 등) 지시어 세로 일렬종대 정렬 기능 제공 (설정에서 온/오프 가능)
