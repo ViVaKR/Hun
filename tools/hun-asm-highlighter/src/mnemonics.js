@@ -28,9 +28,11 @@ const MNEMONIC_MAP = {
   '페이지주소': { english: 'adrp', desc: '페이지 단위(4KB) 주소를 계산하여 상위 레지스터에 로드합니다.' },
 
   'add': { english: 'add', desc: '두 값을 더합니다.' },
+  'adds': { english: 'adds', desc: '두 값을 더한 후 플래그 갱신.' },
   '더함': { english: 'add', desc: '두 값을 더합니다.' },
 
   'sub': { english: 'sub', desc: '두 값을 뺍니다. (오프셋이나 스택 조정에 필수!)' },
+  'subs': { english: 'subs', desc: '두 값을 뺀후 플래그 갱신. (오프셋이나 스택 조정에 필수!)' },
   '뺌': { english: 'sub', desc: '두 값을 뺍니다. (오프셋이나 스택 조정에 필수!)' },
 
   // === 2. 제어 흐름 및 함수 호출 (대제독 전용 무기) ===
@@ -67,7 +69,7 @@ const ENGLISH_MNEMONICS = [
   'ldrsb', 'ldrsh', 'ldrsw',
 
   // 3. 정수 사칙연산
-  'add', 'sub', 'adds', 'adc', 'sdiv', 'udiv', 'madd', 'msub', 'mul',
+  'add', 'sub', 'adds', 'subs', 'adc', 'sdiv', 'udiv', 'madd', 'msub', 'mul',
   'umulh', 'smulh',
 
   // 4. 실수(Floating-point) 연산
@@ -81,6 +83,7 @@ const ENGLISH_MNEMONICS = [
   'ret', 'bl', 'blr', 'b', 'cbz', 'cbnz',
   'b.eq', 'b.ne', 'b.gt', 'b.lt', 'b.ge', 'b.le', 'b.hs', 'b.lo', 'b.hi', 'b.ls',
   'tbz', 'tbnz',
+
   // (호환성용 점 없는 버전)
   'beq', 'bne', 'bgt', 'blt', 'bge', 'ble',
 
@@ -91,23 +94,8 @@ const ENGLISH_MNEMONICS = [
   'sxtb', 'sxth', 'sxtw', 'uxtb', 'uxth', 'bfxil', 'bfi', 'ubfx', 'ubfiz',
 
   // 9. 기타
-  'mrs'
+  'mrs', 'msr'
 ];
-
-// const ENGLISH_MNEMONICS = [
-//   'mov', 'mvn', 'fmov', 'ldr', 'str', 'ldp', 'stp', 'adr', 'adrp',
-//   'add', 'sub', 'adds', 'adc', 'sdiv', 'udiv', 'madd', 'msub', 'mul',
-//   'umulh', 'smulh',
-//   'fmla',
-//   'fdiv', 'fmul',
-//   'scvtf', 'fcvtzs', 'cmp', 'ccmp', 'csel', 'cset',
-//   'ret', 'bl', 'blr',
-//   'b.eq', 'b.ne', 'b.gt', 'b.lt', 'b.ge', 'b.le', 'b.hs',
-//   'beq', 'bne', 'bgt', 'blt', 'bge', 'ble', 'b',
-//   'cbz', 'cbnz', 'svc', 'wfe', 'wfi', 'nop',
-//   'and', 'orr', 'eor', 'lsl', 'lsr', 'ror',
-//   'sxtb', 'sxth', 'sxtw', 'bfxil', 'bfi', 'ubfx', 'ubfiz',
-// ];
 
 // AArch64HangulAliases.td / tmLanguage.json 의 hangul-mnemonics 목록과 동일하게 유지할 것
 const HANGUL_MNEMONICS = [
