@@ -11,7 +11,7 @@ pub extern "C" fn calc_sum(a: u64, b: u64) {
 #[unsafe(no_mangle)]
 pub extern "C" fn welcome_rust(num: u64) {
     println!("하하하하! 우주에 평화 !!!");
-    println!("제독 법우님이 어셈블리에서 보내신 값: {}", num);
+    println!("제독 법우님이 어셈블리에서 보내신 값: {}\n", num);
 }
 
 #[unsafe(no_mangle)]
