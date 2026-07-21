@@ -38,6 +38,7 @@ str_function_call:     .asciz "function"
 str_loop_int:          .asciz "loop"
 str_demo_madd:         .asciz "madd"
 str_console_writeline: .asciz "writeline"
+str_ldrb:              .asciz "ldrb"
 
 CONST_DATA_SECTION
 menu_table:
@@ -53,7 +54,9 @@ menu_table:
 		.quad _menu_loop_int, str_loop_int              // 9
 		.quad _demo_madd, str_demo_madd                 // 10
 		.quad _console_writeline, str_console_writeline // 11
+		.quad _demo_ldrb, str_ldrb                      // 12
 menu_table_end:
+
 // .quad 는 8바이트 64비트를 의미함
 // 한줄에 데이터가 2개씩 들어 있으므로 
 // 8바이트(함수 주소) + 8바이트 (문자열 주소) = 각행은  총 16바이트 2^4
