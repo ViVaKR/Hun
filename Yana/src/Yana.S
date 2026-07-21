@@ -11,23 +11,33 @@ LITERAL4_SECTION
 LITERAL8_SECTION
 CONST_SECTION
 CSTRING_SECTION
-menu_format:  .asciz "%d: %s\n"
+
+// %-25s: 문자열을 무조건 25칸 차지하게 하고 좌측 정렬해서 출력하기
+menu_format: .asciz "%3d: %-15s"
+newline_str: .asciz "\n"
+line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
+
 format_str:   .asciz "Hello, ARM64 Assembly! ==> %d\n"
-menu_title:   .asciz "\n=== Yana 메뉴 ===\n"
-input_prompt: .asciz "원하는 메뉴를 선택하세요: "
+menu_title:   .asciz "\n 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 😎 메뉴목록 😎 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖\n"
+input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
 scanf_format: .asciz "%d"
 err_format:   .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
+press_enter:  .asciz "\n🧚‍♂️ 엔터(Enter) 키를 누르면 메뉴로 돌아갑니다..."
+exit_message: .asciz "\n👻 👻 👻 좋은 경험이었습니다. 다음에 또 멋지게 만나요!! 👻 👻 👻\n\n"
+helloworld:   .asciz "Hello, World! Fine Thanks And You?"
 
-str_exit:              .asciz "프로그램 종료"
-str_forloop:           .asciz "for loop 합계구하기"
-str_csel:              .asciz "csel 삼항연산"
-str_welcome_rust:      .asciz "Welcome Rust"
-str_if_else:           .asciz "if else statement"
-str_string_to_integer: .asciz "문자열을 정수로"
-str_readline:          .asciz "scanf 두개의 정수입력 후 합계 구하기"
-str_delegate:          .asciz "델리게이트 함수 호출"
-str_function_call:     .asciz "함수호출"
-str_loop_int:          .asciz "정수반복"
+str_exit:              .asciz "exit"
+str_forloop:           .asciz "for"
+str_csel:              .asciz "csel"
+str_welcome_rust:      .asciz "rust"
+str_if_else:           .asciz "if"
+str_string_to_integer: .asciz "str to int"
+str_readline:          .asciz "scanf"
+str_delegate:          .asciz "delegate"
+str_function_call:     .asciz "function"
+str_loop_int:          .asciz "loop"
+str_demo_madd:         .asciz "madd"
+str_console_writeline: .asciz "writeline"
 
 CONST_DATA_SECTION
 menu_table:
@@ -41,19 +51,28 @@ menu_table:
     .quad _menu_delegate, str_delegate              // 7
 		.quad _menu_function_call, str_function_call    // 8
 		.quad _menu_loop_int, str_loop_int              // 9
+		.quad _demo_madd, str_demo_madd                 // 10
+		.quad _console_writeline, str_console_writeline // 11
 menu_table_end:
-
+// .quad 는 8바이트 64비트를 의미함
+// 한줄에 데이터가 2개씩 들어 있으므로 
+// 8바이트(함수 주소) + 8바이트 (문자열 주소) = 각행은  총 16바이트 2^4
+// x10 에 배열의 시작 주소가 저장 되어 있음
+// x22 에 사용자가 선택한 메뉴 인덱스 번호 (0,1,2,3...) 
+// lsl #4 : 인덱스 번호에 16(2^4) 곱하여 해당 메뉴를 찾는 로직 
 command_table:
     .quad _menu_forloop
 command_table_end:
 
 CODE_SECTION
+
 _main:
 
   // [프롤로그] 값 보존을 위해 Callee-saved 레지스터 사용 
-	stp x29, x30, [sp, #-48]!
+	stp x29, x30, [sp, #-64]!
 	stp x19, x20, [sp, #16]
 	stp x21, x22, [sp, #32]
+	stp x23, x24, [sp, #48]
 	mov x29, sp
 
   // 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트)
@@ -71,41 +90,71 @@ _main:
 	// 타이틀 출력
 	adrp x0, menu_title@PAGE
 	add  x0, x0, menu_title@PAGEOFF
-
-	bl _printf
+	bl   _printf
 
 	// 메뉴 항목 루프 출력 설정
-	mov x21, #0                         // x21 (루프 인덱스 i = 0)
-
+	mov  x21, #0                         // x21 (루프 인덱스 i = 0)
 	adrp x19, menu_table@PAGE
 	add  x19, x19, menu_table@PAGEOFF    // x19 = 배열 시작 주소
-
+	
 .L_loop_start:
 	cmp  x21, x20        // i == 총 개수?
-	b.eq .L_ask_input   // 다 그렸으면 입력 받으러 이동
+	b.eq .L_check_final_newline		// 다 그렸으면 무조건 최종 줄바꿈 하러 가기!
 
-  // printf("%d: %s\n", i, menu_item.str_ptr);
+	// b.eq .L_ask_input   // 다 그렸으면 입력 받으러 이동
+
+  // printf("%2d: %-25s\n", i, menu_item.str_ptr);
 	adrp x0, menu_format@PAGE
 	add  x0, x0, menu_format@PAGEOFF
 
 	mov x1, x21         // 첫번째 인자: 인덱스 번호(%d)
-	ldr x2, [x19, #8]   // 두번째 인자 : 
+	add x1, x1, #1      // 번호를 1번부터 출력하기 위함.
+	ldr x2, [x19, #8]   // 두번째 인자 문자열 주소
 
 	sub sp, sp, #16
-
-	add x1, x1, #1      // 번호를 1번부터 출력하기 위함.
-
 	str x1, [sp, #0]
 	str x2, [sp, #8]
-
-	bl _printf
-
+	bl  _printf
 	add sp, sp, #16
-
-	add x19, x19, #16       // 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
+	
+	// --------------------------------======================
+	// ★ 핵심: 5개 출력할 때마다 줄바꿈 행진! (나머지 연산 최적화)
+	// --------------------------------======================
+	mov  x1, x21  // x21 (현재 인덱스 i = 0), x1 = 현재 인덱스 (0, 1, 2, 3...)
+	add  x1, x1, #1		// x1 = 현재 출력된 메뉴 개수 (1, 2, 3, 4, 5...)
+	mov  x2, #5 	// 나누기 연산으로 5의 배수인지 검사
+	udiv x3, x1, x2		// x3 = x1 / 5
+	msub x4, x3, x2, x1		// x4 = x1 - (x3 * 5) -> 즉, 5로 나눈 나머지!
+	
+	cmp  x4, #0							// 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
+	b.ne .L_skip_newline		//  ❌ 나머지가 0이 아니면, 5의 배수가 아니면 옆으로 계속 붙여라 
+	
+	// 5의 배수면 대인배 처럼 줄바꿈 쾅!
+	adrp x0, newline_str@PAGE
+	add  x0, x0, newline_str@PAGEOFF
+	bl   _printf              // 줄바꿈(\n) 을 쾅! (커서가 다음 줄 맨 앞으로 이동)
+	// ★ 중요: 줄을 바꿨으니 아래 .L_skip_newline을 거치지 말고 
+	// 공통 구간인 바로 주소 이동(.L_next_item) 레이블로 점프
+	b .L_next_item
+	
+.L_skip_newline:
+	add x19, x19, #16       // 16바이트 더하기 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
 	add x21, x21, #1        // i++
+	b   .L_loop_start 				// 루프 복귀 
 
-	b .L_loop_start
+.L_next_item:
+	// 핵심 다음 방으로 주소를 옮기고 인덱스를 증가 시킨 뒤 "다시 루프"
+	add x19, x19, #16 // 16바이트 더하기, 다음 구조체 항목으로 주소 이동 (16바이트 )
+	add x21, x21, #1	// i++
+	b   .L_loop_start		// 루프 복귀 다시 루프 처음으로 ... 
+
+.L_check_final_newline:
+	// 다 그렸으니 깔끔하게 줄바꿈 쾅! 해줘서 메뉴판과 프롬프트를 분리합니다.
+	adrp x0, newline_str@PAGE
+	add  x0, x0, newline_str@PAGEOFF
+	bl   _printf 
+	b    .L_ask_input 										// 그러고 나서 입력 받으러 이동 	
+
 
 .L_ask_input:
   // 입력 프롬프트 출력
@@ -132,21 +181,82 @@ _main:
 	// 동적 범위 검사 (Boundary Check)
 	mov  x10, x22            
 	sub  x10, x10, #1            // 디스플레이된 선택 번호에서 실제 인덱스로 표현하기 위한 조치
-	cmp  x10, x20                // x22 = 사용자가 선택한 번호
+	cmp  x10, x20                // x10 = 사용자가 선택한 번호, x20 총 배열의 갯수
 	b.hs .L_invalid_choice      // 범위를 벗어나면 에러 레이블로
-
-	// 동적 함수 로드 및 실행
+	
+	// exit 선택시
+	cmp  x10, #0
+	b.eq .L_terminate
+	
 	adrp x10, menu_table@PAGE
 	add  x10, x10, menu_table@PAGEOFF
 
 	// 구조체 크기가 16바이트 이므로, [시작주소 + (인덱스 * 16)]
 	// lsl #4 가 곧 16을 곱하는 연산 이 됨
 	sub x22, x22, #1                // 정확한 인덱스 로 환원
-	add x10, x10, x22, lsl #4
-	ldr x11, [x10]                  // 구조체의 첫 8바이트(함수 포인터)를 x11 에 로드
-	blr x11                         // 함수 실행
+	add x10, x10, x22, lsl #4				// x10 = x10 + (x22 * 16), 
+																	// (x22, lsl #4 ==> x22 * 16) + x10 ==> x10 에 저장
+	ldr x11, [x10, #0]              // 구조체의 첫 8바이트(함수 포인터)를 x11 에 로드
+																	// ldr x11, [x10, #8] x10 시작 주소에서 8바이트 떨어진 방의 값(글자 제목 주소)을 x11에 로드!
+	mov x23, x11										// 실행할 함수
 
-	b .L_display_menu               // 실행 후 다시 메뉴판으로 리턴
+	bl .L_insert_line               // ★ 상단 구분선 (새로 추가)
+
+	// ? 11. console writeline 실행
+	cmp  x22, #11
+	b.eq .L_console_writeline   
+	
+	// -->  
+	b .L_exec
+
+// (실행) 11. console writeline
+.L_console_writeline:
+	adrp x0, helloworld@PAGE
+	add  x0, x0, helloworld@PAGEOFF
+	b    .L_exec
+
+// [ 함수 실행 ] //
+.L_exec:
+	blr x23                         // 함수 실행 완료
+	bl  .L_insert_line
+	b   .L_flush_buffer
+	
+/// 선긋기
+.L_insert_line:
+	stp x29, x30, [sp, #-32]! // 호출 직적의 x30 (_main으로 돌아갈 주소)을  스택에 저장
+	stp x19, x20, [sp, #16]
+	mov x29, sp
+
+	mov  x0, #35
+	adrp x1, line_char@PAGE
+	add  x1, x1, line_char@PAGEOFF
+	bl   _console_line	
+
+	ldp x19, x20, [sp, #16]
+	ldp x29, x30, [sp], #32
+	ret // 진짜 서브루틴이 되도록 ret 추가
+
+.L_flush_buffer:
+	bl   _getchar
+	cmp  x0, #10
+	b.ne .L_flush_buffer
+	cmp  x0, #-1 // 혹시 모를 EFO (파일끝) 처리
+	b.eq .L_display_menu 
+	
+	// 2단계: 버퍼가 완전히 깨끗해진 "지금" 안내 메시지를 띄우고 기다리기
+	// ==========================================
+	// ★ [검문소] 여기에 홀딩 로직을 똭 채워넣습니다!
+	// ==========================================
+	adrp x0, press_enter@PAGE
+	add  x0, x0, press_enter@PAGEOFF
+	bl   _printf
+
+.L_wait_enter:
+	bl   _getchar
+	cmp  x0, #10 	// 10은 아스키코드로 엔터('\n') 를 의미
+	b.ne .L_wait_enter		// 엔터ㅌ가 아니라 버퍼에 남은 잔여물이면 계속 읽어서 청소
+	// =================================================================
+	b .L_display_menu
 
 .L_invalid_choice:
 	adrp x0, err_format@PAGE
@@ -169,11 +279,18 @@ _menu_exit:
 // 종료 (에필로그 및 리턴)
 // -------------------------------------------------------------
 .L_terminate:
+	
+	adrp x0, exit_message@PAGE
+	add  x0, x0, exit_message@PAGEOFF
+	
+	bl _printf
+
 	mov x0, #0                      // 리턴값 0
-	ldp x21, x22, [sp, #32]
 	ldp x19, x20, [sp, #16]         // 보존 레지스터 복원
-	ldp x29, x30, [sp], #48         // 프레임 포인터, 링크 레지스터 복원 및 스택 정리
-    ret
+	ldp x21, x22, [sp, #32]
+	ldp x23, x24, [sp, #48]
+	ldp x29, x30, [sp], #64         // 프레임 포인터, 링크 레지스터 복원 및 스택 정리
+	ret
 
 /* 
     // 아규먼트 

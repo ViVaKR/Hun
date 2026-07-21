@@ -160,6 +160,7 @@ register read -f b x0 // 2진수로 보고 싶을때 (비트연산 디버깅용)
  - cmp, b.eq, b.ne 디버깅 필수
  - cmp 하고 b.eq 가 원하는대로 안튈때
  - Zero/Carry/Negtive/Overflow 플래그 새팅확인
+
  register read cpsr
 
  # 다음 함수까지 쭉 실행 (스텝인 대신)
