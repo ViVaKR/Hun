@@ -94,7 +94,7 @@ const ENGLISH_MNEMONICS = [
   'sxtb', 'sxth', 'sxtw', 'uxtb', 'uxth', 'bfxil', 'bfi', 'ubfx', 'ubfiz',
 
   // 9. 기타
-  'mrs', 'msr'
+  'mrs', 'msr', 'eret', 'isb'
 ];
 
 // AArch64HangulAliases.td / tmLanguage.json 의 hangul-mnemonics 목록과 동일하게 유지할 것

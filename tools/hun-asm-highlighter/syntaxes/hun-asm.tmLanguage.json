@@ -62,7 +62,7 @@
     "standard-mnemonics": {
       "comment": "긴 토큰(b.eq 등)을 짧은 토큰(b)보다 먼저 배치. Oniguruma alternation은 왼쪽부터 순서대로 매칭을 시도하므로, 'b'가 먼저 있으면 'b.eq'는 절대 매칭되지 않고 'b'만 강조되는 버그가 있었음",
       "name": "keyword.control.mnemonic.hun-asm",
-      "match": "\\b(mov|mvn|fmov|ldr|str|ldp|stp|adr|adrp|add|sub|adds|subs|adc|sdiv|udiv|madd|msub|fdiv|fmul|scvtf|fcvtzs|cmp|ccmp|csel|cset|ret|bl|blr|b\\.eq|b\\.ne|b\\.gt|b\\.lt|b\\.ge|b\\.le|beq|bne|bgt|blt|bge|ble|b|cbz|cbnz|svc|wfe|wfi|nop|and|orr|eor|lsl|lsr|ror|sxtb|sxth|sxtw|bfxil|bfi|ubfx|ubfiz|mrs|msr)\\b"
+      "match": "\\b(mov|mvn|fmov|ldr|str|ldp|ldrb|ldrsb|ldrh|ldrsh|stp|adr|adrp|add|sub|adds|subs|adc|sdiv|udiv|madd|msub|fdiv|fmul|scvtf|fcvtzs|cmp|ccmp|csel|cset|ret|bl|blr|b\\.eq|b\\.ne|b\\.gt|b\\.lt|b\\.ge|b\\.le|beq|bne|bgt|blt|bge|ble|b|cbz|cbnz|svc|wfe|wfi|nop|and|orr|eor|lsl|lsr|ror|sxtb|sxth|sxtw|bfxil|bfi|ubfx|ubfiz|mrs|msr|eret|isb)\\b"
     },
     "registers": {
       "name": "variable.language.register.hun-asm",
