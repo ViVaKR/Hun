@@ -76,11 +76,15 @@ const ENGLISH_MNEMONICS = [
   'fadd', 'fsub', 'fmul', 'fdiv', 'fmla', 'fcmp',
   'scvtf', 'fcvtzs',
 
+  // 4-1. 실수 연산 보강 (2026-07 arm64-data.js 동기화: 곱셈누적/부호반전/절대값/제곱근/최대최소/변환)
+  'fmadd', 'fmsub', 'fneg', 'fabs', 'fsqrt', 'fmax', 'fmin', 'ucvtf', 'fcvtzu', 'fcvt',
+
   // 5. 비교, 조건 설정 및 시스템 제어
   'cmp', 'ccmp', 'csel', 'cset', 'nop', 'svc', 'wfe', 'wfi',
+  'neg', 'tst',
 
   // 6. 무조건 및 조건부 분기 (함수 호출 포함)
-  'ret', 'bl', 'blr', 'b', 'cbz', 'cbnz',
+  'ret', 'bl', 'blr', 'br', 'b', 'cbz', 'cbnz',
   'b.eq', 'b.ne', 'b.gt', 'b.lt', 'b.ge', 'b.le', 'b.hs', 'b.lo', 'b.hi', 'b.ls',
   'tbz', 'tbnz',
 
@@ -91,7 +95,7 @@ const ENGLISH_MNEMONICS = [
   'and', 'orr', 'eor', 'bic', 'lsl', 'lsr', 'asr', 'ror',
 
   // 8. 비트 추출, 삽입 및 부호/제로 확장
-  'sxtb', 'sxth', 'sxtw', 'uxtb', 'uxth', 'bfxil', 'bfi', 'ubfx', 'ubfiz',
+  'sxtb', 'sxth', 'sxtw', 'uxtb', 'uxth', 'uxtw', 'bfxil', 'bfi', 'ubfx', 'ubfiz',
 
   // 9. 기타
   'mrs', 'msr', 'eret', 'isb'
