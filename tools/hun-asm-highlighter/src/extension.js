@@ -6,7 +6,66 @@ const vscode = require('vscode');
 const { validateDocument } = require('./diagnostics');
 const { MNEMONIC_MAP, ALL_MNEMONICS } = require('./mnemonics');
 // 🔥 [ARM64 첩보원 추가] ARM64 표준 명령어 & 레지스터 데이터 로드
-const { arm64Instructions, arm64Registers } = require('./data/arm64-data');
+// (2026-07 보강: FP/SIMD 레지스터(V0~V31), 부동소수점 명령어, 조건 코드 표까지 전부 로드.
+//  예전엔 arm64Instructions/arm64Registers 두 개만 가져와서, FP 관련 자료가 파일에는
+//  있어도 실제 hover/자동완성에는 전혀 연결이 안 되고 있었음.)
+const {
+  arm64Instructions,
+  arm64Registers,
+  arm64FpSimdRegisters,
+  arm64FpInstructions,
+  arm64ConditionCodes,
+} = require('./data/arm64-data');
+
+// 정수 + 부동소수점 명령어를 하나로 합친 통합 목록 / 대문자 이름 기준 O(1) 조회 인덱스
+const ALL_ARM_INSTRUCTIONS = [...arm64Instructions, ...(arm64FpInstructions || [])];
+const INSTRUCTION_INDEX = new Map(ALL_ARM_INSTRUCTIONS.map((i) => [i.name.toUpperCase(), i]));
+
+// 🩹 [스칼라 뷰 파생] arm64-data.js 에는 V0~V31(128비트 벡터) 항목만 있고,
+// 그 하위 비트 폭 스칼라 뷰인 D0(64b)/S0(32b)/H0(16b)/B0(8b)/Q0(128b)는
+// 각 Vn 설명문 "안에 텍스트로만" 언급될 뿐, 실제로 조회 가능한 엔트리가 아니었음.
+// → 그래서 마우스를 D0 위에 올려도 REGISTER_INDEX에 잡히는 게 없어서 호버가 그냥 안 뜬 것.
+// 데이터 파일에 32×5개를 일일이 손으로 채우는 대신, 여기서 Vn 하나당 자동으로
+// B/H/S/D/Q 스칼라 별칭 다섯 개를 파생시켜서 인덱스에 함께 등록해준다.
+const SCALAR_VIEW_INFO = {
+  B: { bits: 8, label: 'Byte scalar (8-bit)' },
+  H: { bits: 16, label: 'Halfword scalar (16-bit)' },
+  S: { bits: 32, label: 'Single-precision scalar (32-bit)' },
+  D: { bits: 64, label: 'Double-precision scalar (64-bit)' },
+  Q: { bits: 128, label: 'Quadword scalar (128-bit, full vector width)' },
+};
+
+function deriveScalarViewRegisters(vRegisters) {
+  const derived = [];
+  for (const vReg of vRegisters) {
+    const m = /^V([0-9]{1,2})$/.exec(vReg.name);
+    if (!m) continue; // FPCR/FPSR 등 스칼라 뷰가 없는 항목은 스킵
+    const num = m[1];
+    for (const prefix of Object.keys(SCALAR_VIEW_INFO)) {
+      const { label } = SCALAR_VIEW_INFO[prefix];
+      derived.push({
+        name: `${prefix}${num}`,
+        description: `${label} view of V${num} — the lower ${SCALAR_VIEW_INFO[prefix].bits} bits of the same physical register. ${vReg.description}`,
+        type: `${vReg.type} · ${label}`,
+      });
+    }
+  }
+  return derived;
+}
+
+const derivedScalarRegisters = deriveScalarViewRegisters(arm64FpSimdRegisters || []);
+
+// 정수 + FP/SIMD(Vn) + 파생된 스칼라 뷰(Bn/Hn/Sn/Dn/Qn)를 하나로 합친 통합 목록 / 조회 인덱스
+const ALL_ARM_REGISTERS = [...arm64Registers, ...(arm64FpSimdRegisters || []), ...derivedScalarRegisters];
+const REGISTER_INDEX = new Map(ALL_ARM_REGISTERS.map((r) => [r.name.toUpperCase(), r]));
+
+// 조건 코드 인덱스 ("CS / HS" 처럼 슬래시로 묶인 별칭은 개별 키로도 등록)
+const CONDITION_INDEX = new Map();
+(arm64ConditionCodes || []).forEach((c) => {
+  c.name.split('/').map((s) => s.trim().toUpperCase()).forEach((alias) => {
+    CONDITION_INDEX.set(alias, c);
+  });
+});
 
 const LANGUAGE_ID = 'hun-asm';
 
@@ -287,8 +346,9 @@ function activate(context) {
           return new vscode.Hover(md, range);
         }
 
-        // 2) [신규] ARM64 표준 명령어 검사
-        const armInst = arm64Instructions.find(inst => inst.name === wordUpper);
+        // 2) [신규] ARM64 표준 명령어 검사 (정수 + FP 통합 인덱스로 조회.
+        //    예전엔 arm64Instructions만 봐서 fadd/fmul 같은 FP 명령어가 통째로 빠졌었음.)
+        const armInst = INSTRUCTION_INDEX.get(wordUpper);
         if (armInst) {
           const md = new vscode.MarkdownString();
           md.appendMarkdown(`### ARM64 Instruction: \`${armInst.name}\`\n\n`);
@@ -302,8 +362,9 @@ function activate(context) {
           return new vscode.Hover(md, range);
         }
 
-        // 3) [신규] ARM64 레지스터 검사
-        const armReg = arm64Registers.find(reg => reg.name === wordUpper);
+        // 3) [신규] ARM64 레지스터 검사 (정수 + FP/SIMD 통합 인덱스로 조회.
+        //    예전엔 arm64Registers 배열만 봐서 d/q/s/h/v 레지스터가 통째로 빠졌었음.)
+        const armReg = REGISTER_INDEX.get(wordUpper);
         if (armReg) {
           const md = new vscode.MarkdownString();
           md.appendMarkdown(`### ARM64 Register: \`${armReg.name}\`\n\n`);
@@ -354,9 +415,11 @@ function activate(context) {
             });
           }
 
-          // 2) [신규] ARM64 표준 명령어 자동완성 추가 (안전망 장착)
-          if (Array.isArray(arm64Instructions)) {
-            arm64Instructions.forEach((inst) => {
+          // 2) [신규] ARM64 표준 명령어 자동완성 추가 (정수 + FP 통합 목록 사용.
+          //    예전엔 arm64Instructions만 순회해서 fadd/fmul 같은 FP 명령어가
+          //    자동완성 후보에 아예 안 올라오고 있었음.)
+          if (Array.isArray(ALL_ARM_INSTRUCTIONS)) {
+            ALL_ARM_INSTRUCTIONS.forEach((inst) => {
               try {
                 const item = new vscode.CompletionItem(inst.name, vscode.CompletionItemKind.Keyword);
                 item.detail = `ARM64 Instruction: ${inst.name}`;
@@ -384,15 +447,19 @@ function activate(context) {
             });
           }
 
-          // 3) [신규] ARM64 레지스터 자동완성 추가 (안전망 장착)
-          if (Array.isArray(arm64Registers)) {
-            arm64Registers.forEach((reg) => {
+          // 3) [신규] ARM64 레지스터 자동완성 추가 (정수 + FP/SIMD 통합 목록 사용.
+          //    예전엔 두 블록으로 나뉘어 있었는데 아래쪽 블록이 실수로 arm64Registers를
+          //    또 순회하고 있어서, v0~v31 같은 FP/SIMD 레지스터는 후보에 단 한 번도
+          //    안 올라오고 정수 레지스터만 중복으로 두 번 뜨고 있었음.)
+          if (Array.isArray(ALL_ARM_REGISTERS)) {
+            ALL_ARM_REGISTERS.forEach((reg) => {
               try {
                 const item = new vscode.CompletionItem(reg.name, vscode.CompletionItemKind.Variable);
                 item.detail = `ARM64 Register: ${reg.name} (${reg.type})`;
                 item.documentation = new vscode.MarkdownString(reg.description);
 
                 item.filterText = `${reg.name.toLowerCase()} ${reg.name}`;
+
 
                 if (range) {
                   item.range = range;
@@ -403,6 +470,7 @@ function activate(context) {
               }
             });
           }
+
 
           return completionItems;
         } catch (globalError) {
@@ -416,80 +484,6 @@ function activate(context) {
       '.', '_'
     )
   );
-  // context.subscriptions.push(
-  //   vscode.languages.registerCompletionItemProvider(
-  //     LANGUAGE_ID, {
-  //     provideCompletionItems() {
-  //       const completionItems = [];
-
-  //       // 🔥 [영점 조절의 핵심] 현재 입력 중인 단어의 범위를 정확하게 추출!
-  //       // 현재 커서 위치의 단어 영역 추출 (실패하면 기본 range 사용 안 함)
-  //       const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
-
-
-  //       // 1) 기존 한글 니모닉 자동완성 로드
-  //       ALL_MNEMONICS.forEach((name) => {
-  //         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Keyword);
-  //         const info = MNEMONIC_MAP[name];
-  //         if (info) {
-  //           item.detail = info.english;
-  //           item.documentation = info.desc;
-  //         } else {
-  //           item.detail = 'Hun-ASM mnemonic';
-  //         }
-
-  //         if (range) {
-  //           item.range = range; // 🔥 영점 사격!
-  //         }
-
-  //         completionItems.push(item);
-  //       });
-
-  //       // 2) [신규] ARM64 표준 명령어 자동완성 추가
-  //       arm64Instructions.forEach((inst) => {
-  //         const item = new vscode.CompletionItem(inst.name, vscode.CompletionItemKind.Keyword);
-  //         item.detail = `ARM64 Instruction: ${inst.name}`;
-
-  //         const markdown = new vscode.MarkdownString();
-  //         markdown.appendMarkdown(`**${inst.description}**\n\n`);
-  //         markdown.appendCodeblock(inst.syntax, 'arm64');
-  //         if (inst.example) {
-  //           markdown.appendMarkdown(`\n*Example:*\n`);
-  //           markdown.appendCodeblock(inst.example, 'arm64');
-  //         }
-  //         item.documentation = markdown;
-  //         item.insertText = new vscode.SnippetString(`${inst.name} `);
-  //         // 🔥 [소문자 입력 대응 필터 추가!]
-  //         // 이 설정을 해두면 사용자가 소문자 'mov'를 쳐도 대문자 'MOV'를 매칭해서 찾아준다네!
-  //         item.filterText = `${inst.name.toLowerCase()} ${inst.name}`;
-  //         if (range) {
-  //           item.range = range; // 🔥 영점 사격!
-  //         }
-  //         completionItems.push(item);
-  //       });
-
-  //       // 3) [신규] ARM64 레지스터 자동완성 추가
-  //       arm64Registers.forEach((reg) => {
-  //         const item = new vscode.CompletionItem(reg.name, vscode.CompletionItemKind.Variable);
-  //         item.detail = `ARM64 Register: ${reg.name} (${reg.type})`;
-  //         item.documentation = new vscode.MarkdownString(reg.description);
-  //         item.filterText = `${reg.name.toLowerCase()} ${reg.name}`;
-  //         if (range) {
-  //           item.range = range; // 🔥 영점 사격!
-  //         }
-  //         completionItems.push(item);
-  //       });
-
-  //       return completionItems;
-  //     },
-  //   },
-  //     // 🔥 [추가] 트리거 문자 설정: 알파벳 소문자/대문자 아무것이나 타이핑 시작할 때 즉시 자동완성창 소환!
-  //     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  //     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  //     '.', '_'
-  //   )
-  // );
-
 
   // -----------------------------------------------------------------------
   // 🎯 [4구역: 축지법] F12 라벨 정의 이동(Go to Definition) 네비게이터
@@ -587,7 +581,6 @@ function activate(context) {
     })
   );
 }
-
 
 // =========================================================================
 // 🛑 [퇴근] 확장팩 비활성화 (deactivate) 정리소

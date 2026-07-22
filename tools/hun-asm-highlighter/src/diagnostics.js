@@ -62,11 +62,25 @@ function parseRegister(tok) {
   if (t === 'xzr') return { width: 64, name: 'xzr' };
   if (t === 'wzr') return { width: 32, name: 'wzr' };
 
-  const m = /^([xwd])([0-9]{1,2})$/.exec(t);
-  if (m) {
-    const num = parseInt(m[2], 10);
+  // x/w(범용 정수 레지스터): 31번은 실존하지 않음 — 그 자리는 sp/xzr·wzr가 대신 차지하므로 0~30까지만.
+  const gm = /^([xw])([0-9]{1,2})$/.exec(t);
+  if (gm) {
+    const num = parseInt(gm[2], 10);
     if (num >= 0 && num <= 30) {
-      return { width: m[1] === 'x' ? 64 : 32, name: t };
+      return { width: gm[1] === 'x' ? 64 : 32, name: t };
+    }
+    return null;
+  }
+
+  // d/q/s/h/v(FP·NEON 레지스터): 이쪽은 진짜로 0~31 전부 존재함.
+  // (예전엔 x/w/d를 한 그룹으로 묶어서 30으로 캡을 걸어놨었는데, d31/q31/v31 같은
+  //  정당한 레지스터가 "존재하지 않는 레지스터"로 오진단되는 원인이었음.)
+  const fm = /^([dqshv])([0-9]{1,2})$/.exec(t);
+  if (fm) {
+    const num = parseInt(fm[2], 10);
+    if (num >= 0 && num <= 31) {
+      const widthMap = { q: 128, d: 64, s: 32, h: 16, v: 128 };
+      return { width: widthMap[fm[1]], name: t };
     }
   }
   return null;
@@ -127,7 +141,10 @@ function checkPairInstruction(trimmed, rawText, lineIdx, diags) {
   if (immStr === undefined) return;
 
   const imm = parseInt(immStr, 10);
-  const scale = rt1.width === 64 ? 8 : 4;
+  // 오프셋 정렬 배수(scale): 64비트(X/D) 페어는 8, 128비트(Q) 페어는 16, 그 외(W/S)는 4.
+  // 예전엔 64/그외(4)만 나눠놔서, Q 레지스터 쌍(128비트)이 4의 배수 기준으로
+  // 잘못 검사되고 있었음 — AArch64 인코딩상 Q 페어는 16의 배수라야 함.
+  const scale = rt1.width === 128 ? 16 : rt1.width === 64 ? 8 : 4;
   const min = -64 * scale;
   const max = 63 * scale;
 
@@ -176,7 +193,9 @@ function checkSingleInstruction(trimmed, rawText, lineIdx, diags) {
 
   if (insideImm === undefined) return; // 오프셋 없음, 정상
   const imm = parseInt(insideImm, 10);
-  const size = rt.width === 64 ? 8 : 4;
+  // unsigned-offset 형태에서의 스케일: 64비트(X/D)는 8, 128비트(Q)는 16, 그 외(W/S/H/B)는 4.
+  // (pre/post-index 형태는 위 isPreOrPostIndex 분기에서 이미 imm9 범위로 별도 처리됨 — 폭 무관.)
+  const size = rt.width === 128 ? 16 : rt.width === 64 ? 8 : 4;
   if (imm < 0) {
     addDiag(diags, rawText, lineIdx, `#${insideImm}`,
       `이 형태(기본 오프셋)에선 음수 오프셋 #${imm}은 못 쓰네. pre/post-index로 쓰려면 "!"나 콤마 형태로 바꿔보게.`);
