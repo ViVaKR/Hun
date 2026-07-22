@@ -5,6 +5,8 @@
 const vscode = require('vscode');
 const { validateDocument } = require('./diagnostics');
 const { MNEMONIC_MAP, ALL_MNEMONICS } = require('./mnemonics');
+// 🔥 [ARM64 첩보원 추가] ARM64 표준 명령어 & 레지스터 데이터 로드
+const { arm64Instructions, arm64Registers } = require('./data/arm64-data');
 
 const LANGUAGE_ID = 'hun-asm';
 
@@ -34,11 +36,6 @@ function findLabelInDocument(document, name) {
 // =========================================================================
 // ⚔️ [6구역: 종합 예술 조각소] 코드 칼정렬(Formatting) 포맷터 엔진
 //    - 명령어 라인(mov/ldr/...) 정렬
-//    - .asciz/.quad 같은 데이터 선언 "블록"을 표(table)처럼 컬럼 정렬
-// =========================================================================
-// =========================================================================
-// ⚔️ [6구역: 종합 예술 조각소] 코드 칼정렬(Formatting) 포맷터 엔진
-//    - 명령어 라인(mov/ldr/...) 블록별 니모닉 길이 자동 맞춤 정렬 (대수술 완료!)
 //    - .asciz/.quad 같은 데이터 선언 "블록"을 표(table)처럼 컬럼 정렬
 // =========================================================================
 
@@ -148,7 +145,7 @@ function collectAndAlignDataBlockEdits(document, alignMode) {
 }
 
 
-// 🔥 [대수술 부위] 일반 명령어 라인 블록 정렬 함수 구체화!
+// 일반 명령어 라인 블록 정렬 함수 구체화
 function collectInstructionEdits(document) {
   const edits = [];
   let i = 0;
@@ -270,7 +267,7 @@ function activate(context) {
 
 
   // -----------------------------------------------------------------------
-  // 💡 [2구역: 족집게 사전] 니모닉 마우스 호버(Hover) 설명 제공
+  // 💡 [2구역: 족집게 사전] 니모닉 마우스 호버(Hover) 설명 제공 (개조 완료!)
   // -----------------------------------------------------------------------
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(LANGUAGE_ID, {
@@ -278,41 +275,220 @@ function activate(context) {
         const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
         if (!range) return;
 
-        // 대소문자 꼬임 방지를 위해 무조건 소문자로 변환하여 장부 검색!
-        const word = document.getText(range).trim().toLowerCase();
+        const originalWord = document.getText(range); // 백성이 쓴 원본 형태
+        const word = originalWord.trim().toLowerCase();
+        const wordUpper = originalWord.trim().toUpperCase();
+
+        // 1) 기존 한글 니모닉 검사
         const info = MNEMONIC_MAP[word];
-        if (!info) return;
+        if (info) {
+          const md = new vscode.MarkdownString();
+          md.appendMarkdown(`**${originalWord}** → \`${info.english.toUpperCase()}\`\n\n${info.desc}`);
+          return new vscode.Hover(md, range);
+        }
 
-        const md = new vscode.MarkdownString();
-        const originalWord = document.getText(range); // 백성이 쓴 원본 형태 추출
-
-        md.appendMarkdown(`**${originalWord}** → \`${info.english.toUpperCase()}\`\n\n${info.desc}`);
-        return new vscode.Hover(md, range);
-      },
-    })
-  );
-
-
-  // -----------------------------------------------------------------------
-  // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실
-  // -----------------------------------------------------------------------
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(LANGUAGE_ID, {
-      provideCompletionItems() {
-        return ALL_MNEMONICS.map((name) => {
-          const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Keyword);
-          const info = MNEMONIC_MAP[name];
-          if (info) {
-            item.detail = info.english;
-            item.documentation = info.desc;
-          } else {
-            item.detail = 'Hun-ASM mnemonic';
+        // 2) [신규] ARM64 표준 명령어 검사
+        const armInst = arm64Instructions.find(inst => inst.name === wordUpper);
+        if (armInst) {
+          const md = new vscode.MarkdownString();
+          md.appendMarkdown(`### ARM64 Instruction: \`${armInst.name}\`\n\n`);
+          md.appendMarkdown(`**Description:** ${armInst.description}\n\n`);
+          md.appendMarkdown(`**Syntax:**\n`);
+          md.appendCodeblock(armInst.syntax, 'arm64');
+          if (armInst.example) {
+            md.appendMarkdown(`**Example:**\n`);
+            md.appendCodeblock(armInst.example, 'arm64');
           }
-          return item;
-        });
+          return new vscode.Hover(md, range);
+        }
+
+        // 3) [신규] ARM64 레지스터 검사
+        const armReg = arm64Registers.find(reg => reg.name === wordUpper);
+        if (armReg) {
+          const md = new vscode.MarkdownString();
+          md.appendMarkdown(`### ARM64 Register: \`${armReg.name}\`\n\n`);
+          md.appendMarkdown(`**Type:** ${armReg.type}\n\n`);
+          md.appendMarkdown(`**Description:** ${armReg.description}`);
+          return new vscode.Hover(md, range);
+        }
+
+        return;
       },
     })
   );
+
+
+  // -----------------------------------------------------------------------
+  // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실 (개조 완료!)
+  // -----------------------------------------------------------------------
+  // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실 (철벽 방어 버전)
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      LANGUAGE_ID, {
+      provideCompletionItems(document, position) {
+        try {
+          const completionItems = [];
+
+          // 현재 커서 위치의 단어 영역 추출 (실패하면 기본 range 사용 안 함)
+          const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
+
+          // 1) 기존 한글 니모닉 자동완성 로드
+          if (Array.isArray(ALL_MNEMONICS)) {
+            ALL_MNEMONICS.forEach((name) => {
+              try {
+                const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Keyword);
+                const info = MNEMONIC_MAP[name];
+                if (info) {
+                  item.detail = info.english;
+                  item.documentation = info.desc;
+                } else {
+                  item.detail = 'Hun-ASM mnemonic';
+                }
+                if (range) {
+                  item.range = range;
+                }
+                completionItems.push(item);
+              } catch (e) {
+                console.error('[hun-asm] 한글 니모닉 처리 중 에러:', e);
+              }
+            });
+          }
+
+          // 2) [신규] ARM64 표준 명령어 자동완성 추가 (안전망 장착)
+          if (Array.isArray(arm64Instructions)) {
+            arm64Instructions.forEach((inst) => {
+              try {
+                const item = new vscode.CompletionItem(inst.name, vscode.CompletionItemKind.Keyword);
+                item.detail = `ARM64 Instruction: ${inst.name}`;
+
+                const markdown = new vscode.MarkdownString();
+                markdown.appendMarkdown(`**${inst.description}**\n\n`);
+                markdown.appendCodeblock(inst.syntax, 'arm64');
+                if (inst.example) {
+                  markdown.appendMarkdown(`\n*Example:*\n`);
+                  markdown.appendCodeblock(inst.example, 'arm64');
+                }
+                item.documentation = markdown;
+                item.insertText = new vscode.SnippetString(`${inst.name} `);
+
+                // 소문자 대문자 모두 매칭되도록 필터 지정
+                item.filterText = `${inst.name.toLowerCase()} ${inst.name}`;
+
+                if (range) {
+                  item.range = range;
+                }
+                completionItems.push(item);
+              } catch (e) {
+                console.error('[hun-asm] ARM64 명령어 처리 중 에러:', e);
+              }
+            });
+          }
+
+          // 3) [신규] ARM64 레지스터 자동완성 추가 (안전망 장착)
+          if (Array.isArray(arm64Registers)) {
+            arm64Registers.forEach((reg) => {
+              try {
+                const item = new vscode.CompletionItem(reg.name, vscode.CompletionItemKind.Variable);
+                item.detail = `ARM64 Register: ${reg.name} (${reg.type})`;
+                item.documentation = new vscode.MarkdownString(reg.description);
+
+                item.filterText = `${reg.name.toLowerCase()} ${reg.name}`;
+
+                if (range) {
+                  item.range = range;
+                }
+                completionItems.push(item);
+              } catch (e) {
+                console.error('[hun-asm] ARM64 레지스터 처리 중 에러:', e);
+              }
+            });
+          }
+
+          return completionItems;
+        } catch (globalError) {
+          console.error('[hun-asm] 자동완성 수집 중 심각한 에러 발생:', globalError);
+          return [];
+        }
+      },
+    },
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+      '.', '_'
+    )
+  );
+  // context.subscriptions.push(
+  //   vscode.languages.registerCompletionItemProvider(
+  //     LANGUAGE_ID, {
+  //     provideCompletionItems() {
+  //       const completionItems = [];
+
+  //       // 🔥 [영점 조절의 핵심] 현재 입력 중인 단어의 범위를 정확하게 추출!
+  //       // 현재 커서 위치의 단어 영역 추출 (실패하면 기본 range 사용 안 함)
+  //       const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
+
+
+  //       // 1) 기존 한글 니모닉 자동완성 로드
+  //       ALL_MNEMONICS.forEach((name) => {
+  //         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Keyword);
+  //         const info = MNEMONIC_MAP[name];
+  //         if (info) {
+  //           item.detail = info.english;
+  //           item.documentation = info.desc;
+  //         } else {
+  //           item.detail = 'Hun-ASM mnemonic';
+  //         }
+
+  //         if (range) {
+  //           item.range = range; // 🔥 영점 사격!
+  //         }
+
+  //         completionItems.push(item);
+  //       });
+
+  //       // 2) [신규] ARM64 표준 명령어 자동완성 추가
+  //       arm64Instructions.forEach((inst) => {
+  //         const item = new vscode.CompletionItem(inst.name, vscode.CompletionItemKind.Keyword);
+  //         item.detail = `ARM64 Instruction: ${inst.name}`;
+
+  //         const markdown = new vscode.MarkdownString();
+  //         markdown.appendMarkdown(`**${inst.description}**\n\n`);
+  //         markdown.appendCodeblock(inst.syntax, 'arm64');
+  //         if (inst.example) {
+  //           markdown.appendMarkdown(`\n*Example:*\n`);
+  //           markdown.appendCodeblock(inst.example, 'arm64');
+  //         }
+  //         item.documentation = markdown;
+  //         item.insertText = new vscode.SnippetString(`${inst.name} `);
+  //         // 🔥 [소문자 입력 대응 필터 추가!]
+  //         // 이 설정을 해두면 사용자가 소문자 'mov'를 쳐도 대문자 'MOV'를 매칭해서 찾아준다네!
+  //         item.filterText = `${inst.name.toLowerCase()} ${inst.name}`;
+  //         if (range) {
+  //           item.range = range; // 🔥 영점 사격!
+  //         }
+  //         completionItems.push(item);
+  //       });
+
+  //       // 3) [신규] ARM64 레지스터 자동완성 추가
+  //       arm64Registers.forEach((reg) => {
+  //         const item = new vscode.CompletionItem(reg.name, vscode.CompletionItemKind.Variable);
+  //         item.detail = `ARM64 Register: ${reg.name} (${reg.type})`;
+  //         item.documentation = new vscode.MarkdownString(reg.description);
+  //         item.filterText = `${reg.name.toLowerCase()} ${reg.name}`;
+  //         if (range) {
+  //           item.range = range; // 🔥 영점 사격!
+  //         }
+  //         completionItems.push(item);
+  //       });
+
+  //       return completionItems;
+  //     },
+  //   },
+  //     // 🔥 [추가] 트리거 문자 설정: 알파벳 소문자/대문자 아무것이나 타이핑 시작할 때 즉시 자동완성창 소환!
+  //     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  //     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  //     '.', '_'
+  //   )
+  // );
 
 
   // -----------------------------------------------------------------------
@@ -394,8 +570,6 @@ function activate(context) {
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(LANGUAGE_ID, {
       provideDocumentFormattingEdits(document) {
-        // resource(document.uri)를 함께 넘기면 멀티 루트 워크스페이스에서
-        // 폴더별로 다른 설정을 준 경우에도 정확한 값을 읽어옴.
         const config = vscode.workspace.getConfiguration('hun-asm', document.uri);
         const alignMode = config.get('alignDataDirectives', true);
 
@@ -405,8 +579,6 @@ function activate(context) {
           console.log('[hun-asm] 순정파 모드! 라벨에 바짝 붙인다! 🔹');
         }
 
-        // 두 패스는 서로 다른 종류의 줄(명령어 vs 지시어)만 건드리므로
-        // 같은 줄에 대한 편집이 중복/충돌할 일이 없음.
         return [
           ...collectAndAlignDataBlockEdits(document, alignMode),
           ...collectInstructionEdits(document),
