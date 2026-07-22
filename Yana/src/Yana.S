@@ -22,7 +22,7 @@ menu_title:   .asciz "\n 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 
 input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
 scanf_format: .asciz "%d"
 err_format:   .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
-press_enter:  .asciz "\n🧚‍♂️ 엔터(Enter) 키를 누르면 메뉴로 돌아갑니다..."
+press_enter:  .asciz "\n🧚 엔터(Enter) 키를 누르면 메뉴로 돌아갑니다..."
 exit_message: .asciz "\n👻 👻 👻 좋은 경험이었습니다. 다음에 또 멋지게 만나요!! 👻 👻 👻\n\n"
 helloworld:   .asciz "Hello, World! Fine Thanks And You?"
 
@@ -83,6 +83,7 @@ _main:
 	add  x10, x10, menu_table@PAGEOFF
 	adrp x11, menu_table_end@PAGE
 	add  x11, x11, menu_table_end@PAGEOFF
+	
 
   // "끝 주소 - 시작 주소 = 전체 바이트 수"
 	// 그리고, "전체 바이트 수 ÷ 항목 하나의 크기 = 항목 개수"
@@ -96,15 +97,13 @@ _main:
 	bl   _printf
 
 	// 메뉴 항목 루프 출력 설정
-	mov  x21, #0                         // x21 (루프 인덱스 i = 0)
+	mov  x21, #0 // x21 (루프 인덱스 i = 0)
 	adrp x19, menu_table@PAGE
 	add  x19, x19, menu_table@PAGEOFF    // x19 = 배열 시작 주소
 	
 .L_loop_start:
 	cmp  x21, x20        // i == 총 개수?
 	b.eq .L_check_final_newline		// 다 그렸으면 무조건 최종 줄바꿈 하러 가기!
-
-	// b.eq .L_ask_input   // 다 그렸으면 입력 받으러 이동
 
   // printf("%2d: %-25s\n", i, menu_item.str_ptr);
 	adrp x0, menu_format@PAGE
