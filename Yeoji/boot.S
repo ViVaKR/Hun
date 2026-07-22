@@ -1,46 +1,46 @@
 .section ".text.boot"
-.global _start
-.global _asm_get_current_el
-
-.global asm_enable_timer
-.global asm_get_timer_freq
+.global  _start
+.global  _asm_get_current_el
+.global  asm_enable_timer
+.global  asm_get_timer_freq
+.global  enable_irq
 
 _start:
     // [다중 코어 진압] 코어 ID를 읽어 0번이 아니면 무한 루프로 잠재우기
-    mrs     x0, mpidr_el1
-    and     x0, x0, #0xFF
-    cbz     x0, _master_core
+	mrs x0, mpidr_el1
+	and x0, x0, #0xFF
+	cbz x0, _master_core
 _loop:
     wfe
-    b       _loop
+	b _loop
 
 _master_core:
     // -------------------------------------------------------------
     // 🌟 [대제독의 .bss 메모리 광속 대청소 루프]
     // -------------------------------------------------------------
-    ldr     x0, =__bss_start    // x0 = 청소 시작 주소 로드
-    ldr     x1, =__bss_end      // x1 = 청소 마감 주소 로드
-    mov     x2, #0              // x2 = 메모리를 채워 넣을 '0'의 권능!
+	ldr x0, =__bss_start    // x0 = 청소 시작 주소 로드
+	ldr x1, =__bss_end      // x1 = 청소 마감 주소 로드
+	mov x2, #0              // x2 = 메모리를 채워 넣을 '0'의 권능!
 
 _bss_clear_loop:
-    cmp     x0, x1              // 현재 주소(x0)가 마감 주소(x1)에 도달했는지 검사
-    b.hs    _bss_clear_done     // 크거나 같으면(hs) 청소 끝! 루프 탈출
+	cmp  x0, x1              // 현재 주소(x0)가 마감 주소(x1)에 도달했는지 검사
+	b.hs _bss_clear_done     // 크거나 같으면(hs) 청소 끝! 루프 탈출
 
     // 🔑 [포스트 인덱스 신공] 
     // x0 주소 위치에 8바이트 크기의 '0'(x2)을 똭 저장한 뒤,
     // x0 주소 값을 자동으로 8만큼 슥 전진시킵니다! 단 1사이클 연산!
-    str     x2, [x0], #8        
-    b       _bss_clear_loop     // 다음 칸 청소하러 반복!
+	str x2, [x0], #8        
+	b   _bss_clear_loop     // 다음 칸 청소하러 반복!
 
 // -------------------------------------------------------------
 // int64_t asm_get_current_el(void);
 // 현재 CPU의 Exception Level 값을 읽어 x0 레지스터(리턴값)로 반환합니다.
 // -------------------------------------------------------------
 _asm_get_current_el:
-    mrs     x0, CurrentEL       // 🔑 시스템 레지스터 CurrentEL의 값을 x0로 슥 복사!
-    lsr     x0, x0, #2          // 비트 2, 3번째에 레벨 값이 있으므로 오른쪽으로 2칸 시프트!
-    and     x0, x0, #0x3        // 하위 2비트만 깔끔하게 남기기 (0, 1, 2, 3 판정용)
-    ret                         // 계급장 들고 C 커널로 복귀!
+	mrs x0, CurrentEL       // 🔑 시스템 레지스터 CurrentEL의 값을 x0로 슥 복사!
+	lsr x0, x0, #2          // 비트 2, 3번째에 레벨 값이 있으므로 오른쪽으로 2칸 시프트!
+	and x0, x0, #0x3        // 하위 2비트만 깔끔하게 남기기 (0, 1, 2, 3 판정용)
+	ret // 계급장 들고 C 커널로 복귀!
 
 // -------------------------------------------------------------
 // void asm_enable_timer(uint32_t ticks);
@@ -48,9 +48,9 @@ _asm_get_current_el:
 // 입력: x0 = 1초 동안 튀길 클럭 수 (Ticks)
 // -------------------------------------------------------------
 asm_enable_timer:
-    msr     cntp_tval_el0, x0   // 1. 카운트다운 타이머 값 설정 (x0만큼 시간이 지나면 인터럽트 발생!)
-    mov     x1, #1
-    msr     cntp_ctl_el0, x1    // 2. 타이머 컨트롤 레지스터 활성화 (스위치 On!)
+	msr cntp_tval_el0, x0   // 1. 카운트다운 타이머 값 설정 (x0만큼 시간이 지나면 인터럽트 발생!)
+	mov x1, #1
+	msr cntp_ctl_el0, x1    // 2. 타이머 컨트롤 레지스터 활성화 (스위치 On!)
     ret
 
 // -------------------------------------------------------------
@@ -59,16 +59,20 @@ asm_enable_timer:
 // 출력: x0 = 주파수 값 (QEMU virt에서는 보통 62.5MHz 등 시스템마다 확정된 값이 나옴)
 // -------------------------------------------------------------
 asm_get_timer_freq:
-    mrs     x0, cntfrq_el0      // 시스템 레지스터에서 주파수 슥 복사
+	mrs x0, cntfrq_el0      // 시스템 레지스터에서 주파수 슥 복사
     ret
+
+enable_irq:
+	msr daifclr, #2    // PSTATE.I 비트 클리어 = IRQ 마스크 해제 (인터럽트 수신 허용)
+	ret
 
 _bss_clear_done:
     // -------------------------------------------------------------
     // 청소가 끝났으니 스택을 세팅하고 커널로 출발!
     // -------------------------------------------------------------
-    ldr     x0, =_stack_top
-    mov     sp, x0
+	ldr x0, =_stack_top
+	mov sp, x0
     
-    bl      kernel_main
+	bl kernel_main
 
 1:  b       1b                  // 무한루프

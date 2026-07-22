@@ -10,8 +10,22 @@ extern void asm_vector_branch(long long index, long long arg);
 extern void asm_enable_timer(unsigned int ticks);
 extern unsigned int asm_get_timer_freq(void);
 extern void uart_puts(const char *s);
+extern void _install_vectors(void);
+extern void gic_init(void);
 
-void uart_putc(char c) { *UART0_DR = c; }
+void uart_putc(char c); // ★ 정의는 뒤에 있어도, 미리 이렇게 원형만 알려주면 됨
+
+static void uart_put_hex64(unsigned long long val)
+{
+  uart_puts("0x");
+  for (int i = 60; i >= 0; i -= 4)
+  {
+    unsigned int nibble = (val >> i) & 0xF;
+    uart_putc(nibble < 10 ? ('0' + nibble) : ('a' + nibble - 10));
+  }
+}
+
+void uart_putc(char c) { *UART0_DR = c; } // 실제 정의는 원래 자리 그대로 둬도 OK
 
 void uart_puts(const char *s)
 {
@@ -168,6 +182,43 @@ void yeoji_shell_execute(char *cmd_line)
   }
 }
 
+// x0=type, x1=ESR_EL1, x2=ELR_EL1, x3=FAR_EL1  (AAPCS64 인자 순서 그대로!)
+void exc_c_handler(unsigned long long type, unsigned long long esr,
+                   unsigned long long elr, unsigned long long far)
+{
+  uart_puts("\n\n💥 [예외 발생] ");
+  switch (type)
+  {
+  case 1:
+    uart_puts("동기(SYNC) 예외\n");
+    break;
+  case 2:
+    uart_puts("IRQ (인터럽트)\n");
+    break;
+  case 3:
+    uart_puts("FIQ\n");
+    break;
+  case 4:
+    uart_puts("SError\n");
+    break;
+  default:
+    uart_puts("잘못된 벡터 진입 (원래 안 써야 하는 그룹!)\n");
+    break;
+  }
+  uart_puts("  ESR_EL1 = ");
+  uart_put_hex64(esr);
+  uart_puts("\n");
+  uart_puts("  ELR_EL1 = ");
+  uart_put_hex64(elr);
+  uart_puts("\n");
+  uart_puts("  FAR_EL1 = ");
+  uart_put_hex64(far);
+  uart_puts("\n");
+
+  if (type != 2)
+    uart_puts("\n⚠️  복구 불가능한 예외 — CPU 정지\n");
+}
+
 void kernel_main(void)
 {
   uart_puts("여지 OS 부팅 중...\n");
@@ -185,6 +236,7 @@ void kernel_main(void)
   }
 
   long long el_level = _asm_get_current_el();
+
   // 권한 등급 출력 정화
   if (el_level == 1)
   {
@@ -210,8 +262,15 @@ void kernel_main(void)
   uart_puts("\n");
   uart_puts("Booted with no OS beneath us. Just Yeoji and the metal.\n");
 
+  _install_vectors();
+  uart_puts("[벡터] ✅ VBAR_EL1 등록 완료 — 예외 처리 준비 끝!\n\n");
+
+  gic_init();
+  asm_enable_timer(asm_get_timer_freq()); // 첫 타이머 장전
+
+  // __asm__ volatile("svc #0"); // ★ 일부러 예외를 터뜨려서 진짜 잡히는지 확인
   // 🔑 [출격 완료] 쉘이 뜨기 전, 베어메탈의 심장박동을 먼저 요란하게 확인합니다!
-  test_timer_heartbeat();
+  // test_timer_heartbeat();
   char cmd_buffer[128];
   int buf_idx = 0;
 
