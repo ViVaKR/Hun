@@ -1,6 +1,5 @@
 // mnemonics.js
 // 한글/영문 니모닉 목록 및 확실한 의미가 검증된 항목만 담은 매핑.
-//
 // MNEMONIC_MAP 은 hover 설명 등에 쓰이는 "확신 있는" 매핑만 담았다.
 // (LDP/STP/LDR/STR 은 diagnostics.js 에서 직접 검증 로직을 갖고 있으므로
 //  이름 뜻도 확실하게 넣어둠. 나머지 한글 니모닉은 실제 AsmLexer.cpp 의
