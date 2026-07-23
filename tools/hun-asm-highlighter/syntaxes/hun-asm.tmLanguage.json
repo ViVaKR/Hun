@@ -62,7 +62,7 @@
     "standard-mnemonics": {
       "comment": "mnemonics.js의 ENGLISH_MNEMONICS 마스터 목록과 전수 동기화(2026-07). 예전엔 이 목록을 손으로 따로 옮겨 적어서 mul/fneg/fabs/fsqrt/tst/br/tbz/tbnz/bic/asr/b.hs류 등 34개가 자동완성엔 있는데 구문강조엔 없는 반쪽짜리 상태였음. 순서 원칙: 'b.eq' 같이 점(.)이 들어간 토큰은 'b' 단독형보다 반드시 앞에 와야 함 — \\b 경계 판정이 점(.) 앞에서도 성립해버려서 'b'만 먼저 매칭되고 '.eq'가 뒤에 남는 버그가 생기기 때문. 순수 영숫자 접두어(str→strb, adr→adrp 등)는 \\b 경계가 정확히 걸러주므로 순서 무관.",
       "name": "keyword.control.mnemonic.hun-asm",
-      "match": "\\b(mov|mvn|fmov|ldr|str|ldp|ldrb|strb|ldrsb|ldrh|strh|ldrsh|ldrsw|stp|adr|adrp|add|sub|adds|subs|adc|sdiv|udiv|mul|umulh|smulh|madd|msub|fadd|fsub|fdiv|fmul|fmla|fmadd|fmsub|fneg|fabs|fsqrt|fmax|fmin|fcmp|scvtf|fcvtzs|ucvtf|fcvtzu|fcvt|cmp|ccmp|csel|cset|neg|tst|ret|bl|blr|br|b\\.eq|b\\.ne|b\\.gt|b\\.lt|b\\.ge|b\\.le|b\\.hs|b\\.lo|b\\.hi|b\\.ls|beq|bne|bgt|blt|bge|ble|b|cbz|cbnz|tbz|tbnz|svc|wfe|wfi|nop|and|orr|eor|bic|lsl|lsr|asr|ror|sxtb|sxth|sxtw|uxtb|uxth|uxtw|bfxil|bfi|ubfx|ubfiz|mrs|msr|eret|isb)\\b"
+      "match": "(?i)\\b(mov|mvn|fmov|ldr|str|ldp|ldrb|strb|ldrsb|ldrh|strh|ldrsh|ldrsw|stp|adr|adrp|add|sub|adds|subs|adc|sdiv|udiv|mul|umulh|smulh|madd|msub|fadd|fsub|fdiv|fmul|fmla|fmadd|fmsub|fneg|fabs|fsqrt|fmax|fmin|fcmp|scvtf|fcvtzs|ucvtf|fcvtzu|fcvt|cmp|ccmp|csel|cset|neg|tst|ret|bl|blr|br|b\\.eq|b\\.ne|b\\.gt|b\\.lt|b\\.ge|b\\.le|b\\.hs|b\\.lo|b\\.hi|b\\.ls|beq|bne|bgt|blt|bge|ble|b|cbz|cbnz|tbz|tbnz|svc|wfe|wfi|nop|and|orr|eor|bic|lsl|lsr|asr|ror|sxtb|sxth|sxtw|uxtb|uxth|uxtw|bfxil|bfi|ubfx|ubfiz|mrs|msr|eret|isb)\\b"
     },
     "registers": {
       "comment": "정수(x/w) + FP/SIMD(d/q/s/h/v) 레지스터 통합 인식. FP/SIMD 쪽은 v0.4s / v1.2d[0] 같은 벡터 element·lane 표기까지 함께 강조되도록 확장함.",

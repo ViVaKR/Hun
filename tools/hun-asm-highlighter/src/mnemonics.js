@@ -56,7 +56,74 @@ const MNEMONIC_MAP = {
   '왼쉬프트': { english: 'lsl', desc: '비트를 왼쪽으로 이동시킵니다 (2진수 곱셈 효과).' },
 
   'lsr': { english: 'lsr', desc: '비트를 오른쪽으로 이동시킵니다 (2진수 나눗셈 효과).' },
-  '오른쉬프트': { english: 'lsr', desc: '비트를 오른쪽으로 이동시킵니다 (2진수 나눗셈 효과).' }
+  '오른쉬프트': { english: 'lsr', desc: '비트를 오른쪽으로 이동시킵니다 (2진수 나눗셈 효과).' },
+
+  // -- 추가한 부분
+  // === 데이터 이동 계열 ===
+  'mvn': { english: 'mvn', desc: '레지스터의 모든 비트를 반전시킵니다 (비트 NOT).' },
+  '부정': { english: 'mvn', desc: '레지스터의 모든 비트를 반전시킵니다 (비트 NOT).' },
+
+  'fmov': { english: 'fmov', desc: '부동소수점 레지스터 간에 값을 이동합니다.' },
+  '실수이동': { english: 'fmov', desc: '부동소수점 레지스터 간에 값을 이동합니다.' },
+
+  // === 곱셈/나눗셈 계열 ===
+  'madd': { english: 'madd', desc: '두 값을 곱한 뒤 세 번째 값을 더합니다 (곱셈-덧셈).' },
+  '곱더함': { english: 'madd', desc: '두 값을 곱한 뒤 세 번째 값을 더합니다 (곱셈-덧셈).' },
+
+  'msub': { english: 'msub', desc: '세 번째 값에서 두 값을 곱한 결과를 뺍니다 (곱셈-뺄셈).' },
+  '곱뺌': { english: 'msub', desc: '세 번째 값에서 두 값을 곱한 결과를 뺍니다 (곱셈-뺄셈).' },
+
+  'fdiv': { english: 'fdiv', desc: '두 부동소수점 값을 나눕니다 (실수 나눗셈).' },
+  '실수나눔': { english: 'fdiv', desc: '두 부동소수점 값을 나눕니다 (실수 나눗셈).' },
+
+  'sdiv': { english: 'sdiv', desc: '두 값을 부호 있는 정수로 나눕니다.' },
+  '나눔': { english: 'sdiv', desc: '두 값을 부호 있는 정수로 나눕니다.' },
+
+  // === 조건/비교 계열 ===
+  'ccmp': { english: 'ccmp', desc: '이전 조건이 참일 때만 추가로 비교를 수행합니다 (조건부 비교).' },
+  '조건비교': { english: 'ccmp', desc: '이전 조건이 참일 때만 추가로 비교를 수행합니다 (조건부 비교).' },
+
+  'csel': { english: 'csel', desc: '조건 플래그에 따라 분기 없이 두 값 중 하나를 선택합니다 (조건부 선택).' },
+  '조건선택': { english: 'csel', desc: '조건 플래그에 따라 분기 없이 두 값 중 하나를 선택합니다 (조건부 선택).' },
+
+  'fcvtzs': { english: 'fcvtzs', desc: '부동소수점 값을 정수로 변환합니다 (0 방향 반올림).' },
+  '정수변환': { english: 'fcvtzs', desc: '부동소수점 값을 정수로 변환합니다 (0 방향 반올림).' },
+
+  // === 분기 계열 ===
+  'b': { english: 'b', desc: '지정한 라벨로 무조건 분기(점프)합니다.' },
+  '가기': { english: 'b', desc: '지정한 라벨로 무조건 분기(점프)합니다.' },
+
+  'b.gt': { english: 'b.gt', desc: '직전 비교에서 크다(>)는 조건이 참이면 분기합니다.' },
+  '큼이면뜀': { english: 'b.gt', desc: '직전 비교에서 크다(>)는 조건이 참이면 분기합니다.' },
+
+  'cbnz': { english: 'cbnz', desc: '레지스터 값이 0이 아니면 분기합니다.' },
+  '영아니면뜀': { english: 'cbnz', desc: '레지스터 값이 0이 아니면 분기합니다.' },
+
+  'svc': { english: 'svc', desc: '커널에 시스템 콜(서비스)을 요청합니다 (Supervisor Call).' },
+  '명령호출': { english: 'svc', desc: '커널에 시스템 콜(서비스)을 요청합니다 (Supervisor Call).' },
+
+  // === 논리 연산 계열 ===
+  'and': { english: 'and', desc: '두 값을 비트 단위로 AND 연산합니다.' },
+  '그리고': { english: 'and', desc: '두 값을 비트 단위로 AND 연산합니다.' },
+
+  'orr': { english: 'orr', desc: '두 값을 비트 단위로 OR 연산합니다.' },
+  '또는': { english: 'orr', desc: '두 값을 비트 단위로 OR 연산합니다.' },
+
+  'eor': { english: 'eor', desc: '두 값을 비트 단위로 배타적 OR(XOR) 연산합니다.' },
+  '배타적': { english: 'eor', desc: '두 값을 비트 단위로 배타적 OR(XOR) 연산합니다.' },
+
+  'ror': { english: 'ror', desc: '비트를 오른쪽으로 회전시킵니다 (밀려난 비트가 반대쪽에서 다시 들어옴).' },
+  '돌림': { english: 'ror', desc: '비트를 오른쪽으로 회전시킵니다 (밀려난 비트가 반대쪽에서 다시 들어옴).' },
+
+  // === 확장/비트필드 계열 ===
+  'sxtw': { english: 'sxtw', desc: '32비트 값을 부호를 유지한 채 64비트로 확장합니다 (부호 확장).' },
+  '부호확장': { english: 'sxtw', desc: '32비트 값을 부호를 유지한 채 64비트로 확장합니다 (부호 확장).' },
+
+  'ubfx': { english: 'ubfx', desc: '레지스터에서 지정한 비트 범위를 추출합니다 (비트필드 추출).' },
+  '비트추출': { english: 'ubfx', desc: '레지스터에서 지정한 비트 범위를 추출합니다 (비트필드 추출).' },
+
+  'bfi': { english: 'bfi', desc: '지정한 비트 범위에 값을 삽입합니다 (나머지 비트는 그대로 유지).' },
+  '비트삽입': { english: 'bfi', desc: '지정한 비트 범위에 값을 삽입합니다 (나머지 비트는 그대로 유지).' },
 };
 
 const ENGLISH_MNEMONICS = [

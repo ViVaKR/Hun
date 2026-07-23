@@ -4,22 +4,22 @@
 
 const vscode = require('vscode');
 const { validateDocument } = require('./diagnostics');
-const { MNEMONIC_MAP, ALL_MNEMONICS } = require('./mnemonics');
+
+// 🔗 [단일 진실 공급원] hover / completion 이 항상 같은 설명을 보여주도록
+//    MNEMONIC_MAP(mnemonics.js) + arm64Instructions/arm64FpInstructions/
+//    arm64ConditionCodes(data/arm64-data.js) 를 하나로 합쳐 조회하는 레이어.
+//    (예전엔 hover는 MNEMONIC_MAP만, completion은 두 소스를 각각 따로 순회
+//     하면서 'mov'/'MOV'가 별개 후보로 중복 등장하는 문제가 있었음.)
+const { getMnemonicInfo, getAllCompletionEntries } = require('./mnemonic-info');
+
 // 🔥 [ARM64 첩보원 추가] ARM64 표준 명령어 & 레지스터 데이터 로드
 // (2026-07 보강: FP/SIMD 레지스터(V0~V31), 부동소수점 명령어, 조건 코드 표까지 전부 로드.
 //  예전엔 arm64Instructions/arm64Registers 두 개만 가져와서, FP 관련 자료가 파일에는
 //  있어도 실제 hover/자동완성에는 전혀 연결이 안 되고 있었음.)
 const {
-  arm64Instructions,
   arm64Registers,
   arm64FpSimdRegisters,
-  arm64FpInstructions,
-  arm64ConditionCodes,
 } = require('./data/arm64-data');
-
-// 정수 + 부동소수점 명령어를 하나로 합친 통합 목록 / 대문자 이름 기준 O(1) 조회 인덱스
-const ALL_ARM_INSTRUCTIONS = [...arm64Instructions, ...(arm64FpInstructions || [])];
-const INSTRUCTION_INDEX = new Map(ALL_ARM_INSTRUCTIONS.map((i) => [i.name.toUpperCase(), i]));
 
 // 🩹 [스칼라 뷰 파생] arm64-data.js 에는 V0~V31(128비트 벡터) 항목만 있고,
 // 그 하위 비트 폭 스칼라 뷰인 D0(64b)/S0(32b)/H0(16b)/B0(8b)/Q0(128b)는
@@ -59,14 +59,6 @@ const derivedScalarRegisters = deriveScalarViewRegisters(arm64FpSimdRegisters ||
 const ALL_ARM_REGISTERS = [...arm64Registers, ...(arm64FpSimdRegisters || []), ...derivedScalarRegisters];
 const REGISTER_INDEX = new Map(ALL_ARM_REGISTERS.map((r) => [r.name.toUpperCase(), r]));
 
-// 조건 코드 인덱스 ("CS / HS" 처럼 슬래시로 묶인 별칭은 개별 키로도 등록)
-const CONDITION_INDEX = new Map();
-(arm64ConditionCodes || []).forEach((c) => {
-  c.name.split('/').map((s) => s.trim().toUpperCase()).forEach((alias) => {
-    CONDITION_INDEX.set(alias, c);
-  });
-});
-
 const LANGUAGE_ID = 'hun-asm';
 
 // [정규식 감시탑] 라벨 정의 감지: "이름:" 형태 (한글 라벨 및 .L_ 로컬 라벨 포획용)
@@ -89,6 +81,38 @@ function findLabelInDocument(document, name) {
     }
   }
   return null;
+}
+
+
+// =========================================================================
+// 📝 [공용 조립소] getMnemonicInfo() 결과를 vscode.MarkdownString 으로 조립.
+//    hover / completion 양쪽에서 이 함수 하나만 쓰므로 항상 같은 내용이 뜬다.
+// =========================================================================
+function buildMnemonicMarkdown(originalWord, info) {
+  const md = new vscode.MarkdownString();
+  // ⭐️ 이 두 줄이 반드시 들어가 있어야 수식이 작동합니다!
+  md.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션
+  md.supportHtml = true;  // <br> 등의 HTML 태그 허용 옵션
+
+  if (info.hangulAliases.length > 0) {
+    md.appendMarkdown(`**${originalWord}** → \`${info.english.toUpperCase()}\`  \n`);
+    md.appendMarkdown(`별칭: ${info.hangulAliases.map((a) => `\`${a}\``).join(', ')}\n\n`);
+  } else {
+    md.appendMarkdown(`### \`${info.english.toUpperCase()}\`\n\n`);
+  }
+
+  md.appendMarkdown(`${info.description}\n\n`);
+
+  if (info.syntax) {
+    md.appendMarkdown('**Syntax:**\n');
+    md.appendCodeblock(info.syntax, 'arm64');
+  }
+  if (info.example) {
+    md.appendMarkdown('\n**Example:**\n');
+    md.appendCodeblock(info.example, 'arm64');
+  }
+
+  return md;
 }
 
 
@@ -326,7 +350,11 @@ function activate(context) {
 
 
   // -----------------------------------------------------------------------
-  // 💡 [2구역: 족집게 사전] 니모닉 마우스 호버(Hover) 설명 제공 (개조 완료!)
+  // 💡 [2구역: 족집게 사전] 니모닉 마우스 호버(Hover) 설명 제공
+  //    (2026-07 통합: mnemonic-info.js 의 getMnemonicInfo() 하나로 일원화.
+  //     이제 'mov'든 '할당'이든 완전히 같은 설명(풍부한 버전)이 뜬다.
+  //     예전엔 MNEMONIC_MAP을 먼저 체크하는 바람에 영문 니모닉은 항상 짧은
+  //     설명에서 멈추고, arm64-data.js의 syntax/example까지 못 갔었음.)
   // -----------------------------------------------------------------------
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(LANGUAGE_ID, {
@@ -335,38 +363,21 @@ function activate(context) {
         if (!range) return;
 
         const originalWord = document.getText(range); // 백성이 쓴 원본 형태
-        const word = originalWord.trim().toLowerCase();
-        const wordUpper = originalWord.trim().toUpperCase();
 
-        // 1) 기존 한글 니모닉 검사
-        const info = MNEMONIC_MAP[word];
+        // 1) 니모닉(한글 별칭 + 영문 + FP + 조건부 분기) 통합 조회
+        const info = getMnemonicInfo(originalWord);
         if (info) {
-          const md = new vscode.MarkdownString();
-          md.appendMarkdown(`**${originalWord}** → \`${info.english.toUpperCase()}\`\n\n${info.desc}`);
-          return new vscode.Hover(md, range);
+          return new vscode.Hover(buildMnemonicMarkdown(originalWord, info), range);
         }
 
-        // 2) [신규] ARM64 표준 명령어 검사 (정수 + FP 통합 인덱스로 조회.
-        //    예전엔 arm64Instructions만 봐서 fadd/fmul 같은 FP 명령어가 통째로 빠졌었음.)
-        const armInst = INSTRUCTION_INDEX.get(wordUpper);
-        if (armInst) {
-          const md = new vscode.MarkdownString();
-          md.appendMarkdown(`### ARM64 Instruction: \`${armInst.name}\`\n\n`);
-          md.appendMarkdown(`**Description:** ${armInst.description}\n\n`);
-          md.appendMarkdown(`**Syntax:**\n`);
-          md.appendCodeblock(armInst.syntax, 'arm64');
-          if (armInst.example) {
-            md.appendMarkdown(`**Example:**\n`);
-            md.appendCodeblock(armInst.example, 'arm64');
-          }
-          return new vscode.Hover(md, range);
-        }
-
-        // 3) [신규] ARM64 레지스터 검사 (정수 + FP/SIMD 통합 인덱스로 조회.
-        //    예전엔 arm64Registers 배열만 봐서 d/q/s/h/v 레지스터가 통째로 빠졌었음.)
+        // 2) ARM64 레지스터 검사 (정수 + FP/SIMD + 파생 스칼라 뷰 통합 인덱스)
+        const wordUpper = originalWord.trim().toUpperCase();
         const armReg = REGISTER_INDEX.get(wordUpper);
         if (armReg) {
           const md = new vscode.MarkdownString();
+          // ⭐️ 이 두 줄이 반드시 들어가 있어야 수식이 작동합니다!
+          md.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션
+          md.supportHtml = true;  // <br> 등의 HTML 태그 허용 옵션
           md.appendMarkdown(`### ARM64 Register: \`${armReg.name}\`\n\n`);
           md.appendMarkdown(`**Type:** ${armReg.type}\n\n`);
           md.appendMarkdown(`**Description:** ${armReg.description}`);
@@ -380,77 +391,44 @@ function activate(context) {
 
 
   // -----------------------------------------------------------------------
-  // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실 (개조 완료!)
+  // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실
+  //    (2026-07 통합: getAllCompletionEntries() 로 영문 니모닉은 캐논 하나만,
+  //     한글 별칭은 별도 단어로 등록하되 설명은 hover와 완전히 동일하게 공유.
+  //     예전엔 'mov'(짧은 설명)와 'MOV'(풍부한 설명)가 별개 후보로 중복 등장했음.)
   // -----------------------------------------------------------------------
-  // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실 (철벽 방어 버전)
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       LANGUAGE_ID, {
       provideCompletionItems(document, position) {
         try {
           const completionItems = [];
-
-          // 현재 커서 위치의 단어 영역 추출 (실패하면 기본 range 사용 안 함)
           const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
 
-          // 1) 기존 한글 니모닉 자동완성 로드
-          if (Array.isArray(ALL_MNEMONICS)) {
-            ALL_MNEMONICS.forEach((name) => {
-              try {
-                const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Keyword);
-                const info = MNEMONIC_MAP[name];
-                if (info) {
-                  item.detail = info.english;
-                  item.documentation = info.desc;
-                } else {
-                  item.detail = 'Hun-ASM mnemonic';
-                }
-                if (range) {
-                  item.range = range;
-                }
-                completionItems.push(item);
-              } catch (e) {
-                console.error('[hun-asm] 한글 니모닉 처리 중 에러:', e);
+          // 1) 니모닉(한글 + 영문) 통합 자동완성
+          for (const entry of getAllCompletionEntries()) {
+            try {
+              const item = new vscode.CompletionItem(entry.insertText, vscode.CompletionItemKind.Keyword);
+              const info = entry.info;
+
+              if (info) {
+                item.detail = info.hangulAliases.length
+                  ? `${info.english.toUpperCase()} (${info.hangulAliases.join(', ')})`
+                  : info.english.toUpperCase();
+                item.documentation = buildMnemonicMarkdown(entry.insertText, info);
+              } else {
+                item.detail = 'Hun-ASM mnemonic';
               }
-            });
+
+              item.insertText = new vscode.SnippetString(`${entry.insertText} `);
+              item.filterText = `${entry.insertText.toLowerCase()} ${entry.insertText}`;
+              if (range) item.range = range;
+              completionItems.push(item);
+            } catch (e) {
+              console.error('[hun-asm] 니모닉 자동완성 처리 중 에러:', e);
+            }
           }
 
-          // 2) [신규] ARM64 표준 명령어 자동완성 추가 (정수 + FP 통합 목록 사용.
-          //    예전엔 arm64Instructions만 순회해서 fadd/fmul 같은 FP 명령어가
-          //    자동완성 후보에 아예 안 올라오고 있었음.)
-          if (Array.isArray(ALL_ARM_INSTRUCTIONS)) {
-            ALL_ARM_INSTRUCTIONS.forEach((inst) => {
-              try {
-                const item = new vscode.CompletionItem(inst.name, vscode.CompletionItemKind.Keyword);
-                item.detail = `ARM64 Instruction: ${inst.name}`;
-
-                const markdown = new vscode.MarkdownString();
-                markdown.appendMarkdown(`**${inst.description}**\n\n`);
-                markdown.appendCodeblock(inst.syntax, 'arm64');
-                if (inst.example) {
-                  markdown.appendMarkdown(`\n*Example:*\n`);
-                  markdown.appendCodeblock(inst.example, 'arm64');
-                }
-                item.documentation = markdown;
-                item.insertText = new vscode.SnippetString(`${inst.name} `);
-
-                // 소문자 대문자 모두 매칭되도록 필터 지정
-                item.filterText = `${inst.name.toLowerCase()} ${inst.name}`;
-
-                if (range) {
-                  item.range = range;
-                }
-                completionItems.push(item);
-              } catch (e) {
-                console.error('[hun-asm] ARM64 명령어 처리 중 에러:', e);
-              }
-            });
-          }
-
-          // 3) [신규] ARM64 레지스터 자동완성 추가 (정수 + FP/SIMD 통합 목록 사용.
-          //    예전엔 두 블록으로 나뉘어 있었는데 아래쪽 블록이 실수로 arm64Registers를
-          //    또 순회하고 있어서, v0~v31 같은 FP/SIMD 레지스터는 후보에 단 한 번도
-          //    안 올라오고 정수 레지스터만 중복으로 두 번 뜨고 있었음.)
+          // 2) ARM64 레지스터 자동완성 (정수 + FP/SIMD + 파생 스칼라 뷰 통합 목록)
           if (Array.isArray(ALL_ARM_REGISTERS)) {
             ALL_ARM_REGISTERS.forEach((reg) => {
               try {
@@ -458,19 +436,17 @@ function activate(context) {
                 item.detail = `ARM64 Register: ${reg.name} (${reg.type})`;
                 item.documentation = new vscode.MarkdownString(reg.description);
 
+                item.documentation.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션
+                item.documentation.supportHtml = true;  // <br> 등의 HTML 태그 허용 옵션
+
                 item.filterText = `${reg.name.toLowerCase()} ${reg.name}`;
-
-
-                if (range) {
-                  item.range = range;
-                }
+                if (range) item.range = range;
                 completionItems.push(item);
               } catch (e) {
                 console.error('[hun-asm] ARM64 레지스터 처리 중 에러:', e);
               }
             });
           }
-
 
           return completionItems;
         } catch (globalError) {
