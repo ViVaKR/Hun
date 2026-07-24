@@ -39,7 +39,7 @@ str_loop_int:          .asciz "loop"
 str_demo_madd:         .asciz "madd"
 str_console_writeline: .asciz "writeline"
 str_ldrb:              .asciz "ldrb"
-
+str_guess_game:        .asciz "guess game"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -55,6 +55,7 @@ menu_table:
 		.quad _demo_madd, str_demo_madd                 // 10
 		.quad _console_writeline, str_console_writeline // 11
 		.quad _demo_ldrb, str_ldrb                      // 12
+		.quad _guess_game, str_guess_game								// 13
 menu_table_end:
 
 // .quad 는 8바이트 64비트를 의미함

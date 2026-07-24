@@ -75,6 +75,11 @@ add_executable(Yana
     ${YANA_DOCS}
     ${YANA_SCRIPTS}
 )
+# 메인 실행파일 구성 (add_executable) 하단에 추가해주면 좋은 꿀옵션
+if(CMAKE_ASM_FLAGS)
+    # macOS Clang 환경에서 C 표준 라이브러리와 어셈블리 간의 FFI 규격을 칼같이 맞춰줌
+    set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -x assembler-with-cpp")
+endif()
 
 target_include_directories(Yana PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
