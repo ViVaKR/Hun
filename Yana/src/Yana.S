@@ -40,6 +40,7 @@ str_demo_madd:         .asciz "madd"
 str_console_writeline: .asciz "writeline"
 str_ldrb:              .asciz "ldrb"
 str_guess_game:        .asciz "guess game"
+str_fib:               .asciz "피보나치수열"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -55,7 +56,8 @@ menu_table:
 		.quad _demo_madd, str_demo_madd                 // 10
 		.quad _console_writeline, str_console_writeline // 11
 		.quad _demo_ldrb, str_ldrb                      // 12
-		.quad _guess_game, str_guess_game								// 13
+		.quad _guess_game, str_guess_game               // 13
+		.quad _fib_print, str_fib                       // 14
 menu_table_end:
 
 // .quad 는 8바이트 64비트를 의미함
@@ -71,7 +73,7 @@ command_table_end:
 CODE_SECTION
 
 _main:
-
+	
   // [프롤로그] 값 보존을 위해 Callee-saved 레지스터 사용 
 	stp x29, x30, [sp, #-64]!
 	stp x19, x20, [sp, #16]
@@ -207,7 +209,9 @@ _main:
 
 	// ? 11. console writeline 실행
 	cmp  x22, #11
-	b.eq .L_console_writeline   
+	b.eq .L_console_writeline
+	cmp  x22, #14
+	b.eq .L_run_fib
 	
 	// -->  
 	b .L_exec
@@ -217,6 +221,11 @@ _main:
 	adrp x0, helloworld@PAGE
 	add  x0, x0, helloworld@PAGEOFF
 	b    .L_exec
+
+// (실행) 14. 피보나치 수열
+.L_run_fib:
+	mov x0, #13
+	b   .L_exec
 
 // [ 함수 실행 ] //
 .L_exec:
@@ -287,6 +296,8 @@ _menu_exit:
 	add  x0, x0, exit_message@PAGEOFF
 	
 	bl _printf
+	
+	
 
 	mov x0, #0                      // 리턴값 0
 	ldp x19, x20, [sp, #16]         // 보존 레지스터 복원

@@ -32,7 +32,7 @@ str_add_number: .asciz "%lld + %lld = %lld\n"
 // [코드 구역]
 // __TEXT,__text, regular, pure_instructions
 CODE_SECTION
-	FUNC_START_FULL guess_game, 128
+FUNC_START_FULL guess_game, 128
 	
 	// 시드 초기화 srand(time(NULL)) 구현부 추가
 	mov x0, #0			// time(NULL)을 위한 인자 x0 에 0(NULL) 전달
@@ -159,7 +159,5 @@ CODE_SECTION
 	add x0, x0, str_you_win@PAGEOFF
 	bl _printf
 	FUNC_EXIT_FULL 128
-
-
 
 FUNC_EXIT_FULL 128
