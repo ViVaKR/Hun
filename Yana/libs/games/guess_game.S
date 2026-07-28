@@ -36,8 +36,8 @@ FUNC_START_FULL guess_game, 128
 	
 	// 시드 초기화 srand(time(NULL)) 구현부 추가
 	mov x0, #0			// time(NULL)을 위한 인자 x0 에 0(NULL) 전달
-	bl _time				// 현재 시간을 초 단위로 가져옴 -> x0에 결과 반환
-	bl _srand 			// 가져온 시간 (x0)을 시드값으로 사용해 srand 호출
+	bl  _time				// 현재 시간을 초 단위로 가져옴 -> x0에 결과 반환
+	bl  _srand 			// 가져온 시간 (x0)을 시드값으로 사용해 srand 호출
 
 	mov x19, #5
 	mov x20, #45
@@ -121,43 +121,44 @@ FUNC_START_FULL guess_game, 128
 	add  x0, x0, str_err_numeric@PAGEOFF
 	
 	bl _printf 
-	b .L_loop_start		// 루프 처음오로 점프 (continue)
+	b  .L_loop_start		// 루프 처음오로 점프 (continue)
 
 .L_parse_success:
 	// println!("You guessed: {guess}");
 	adrp x0, fmt_print_guess@PAGE
-	add x0, x0, fmt_print_guess@PAGEOFF
-	mov x1, x20
-	sub sp, sp, #16
-	str x1, [sp, #0]
-	bl _printf 
-	add sp, sp, #16
+	add  x0, x0, fmt_print_guess@PAGEOFF
+	mov  x1, x20
+	sub  sp, sp, #16
+	str  x1, [sp, #0]
+	bl   _printf 
+	add  sp, sp, #16
 	
 	// match guess.cmp(&secret_number)
-	cmp x20, x19
-	b.lt .L_too_small		// guess < secret_number
-	b.gt .L_too_big			// guess > secret_number
-	b .L_you_win				// guess == secret_number(Equal)
-	
+	cmp  x20, x19
+	b.lt .L_too_small			// guess < secret_number
+	b.gt .L_too_big				// guess > secret_number
+	b    .L_you_win				// guess == secret_number(Equal)
 
 .L_too_small:
 	// Ordering::Less => println!("Too small")
 	adrp x0, str_too_small@PAGE
-	add x0, x0, str_too_small@PAGEOFF
-	bl _printf 	
-	b .L_loop_start
+	add  x0, x0, str_too_small@PAGEOFF
+	bl   _printf
+	b    .L_loop_start
+
 .L_too_big:
 	// Ordering::Equal => { println!("You win!"); break; }
 	adrp x0, str_too_big@PAGE
-	add x0, x0, str_too_big@PAGEOFF
-	bl _printf 
-	b .L_loop_start
+	add  x0, x0, str_too_big@PAGEOFF
+	bl   _printf 
+	b    .L_loop_start
 
 .L_you_win:
 	// Ordering::Equal => { println!("You win!"); break; }
 	adrp x0, str_you_win@PAGE
-	add x0, x0, str_you_win@PAGEOFF
-	bl _printf
-	FUNC_EXIT_FULL 128
+	add  x0, x0, str_you_win@PAGEOFF
+	bl   _printf
+
+FUNC_EXIT_FULL 128
 
 FUNC_EXIT_FULL 128

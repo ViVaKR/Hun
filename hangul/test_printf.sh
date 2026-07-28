@@ -5,7 +5,7 @@ set -e
 echo "========================================="
 echo "⚙️  한글 어셈블러 빌드를 시작합니다..."
 echo "========================================="
-ninja -C ../llvm-project/build clang
+ninja -C ../../llvm-project/build clang
 
 echo ""
 echo "========================================="
@@ -15,7 +15,7 @@ echo "========================================="
 # 1. 헬로우 월드 한글 어셈블리 코드 작성
 # 매크로시작/끝 기반의 hun.macros.inc 인클루드 방식 검증
 cat <<EOF > hello.s
-    .include "hun.macros.inc"
+.include "hun.macros.inc"
 
     글자구역
 인사말:
@@ -38,7 +38,7 @@ echo "----------------------------------"
 
 echo ""
 echo "--- [어셈블 결과 (기계어 번역)] ---"
-../llvm-project/build/bin/clang --target=aarch64-apple-darwin -c hello.s -o hello.o
+../../llvm-project/build/bin/clang --target=aarch64-apple-darwin -c hello.s -o hello.o
 
 objdump -d hello.o
 echo "----------------------------------"
@@ -46,7 +46,7 @@ echo "----------------------------------"
 echo "✅ clang - 검증 완료!"
 
 # 2. 링크 진행
-../llvm-project/build/bin/clang --target=aarch64-apple-darwin -isysroot $(xcrun -sdk macosx --show-sdk-path) hello.o -o hello
+../../llvm-project/build/bin/clang --target=aarch64-apple-darwin -isysroot $(xcrun -sdk macosx --show-sdk-path) hello.o -o hello
 
 echo "--- [실행 결과] ---"
 ./hello

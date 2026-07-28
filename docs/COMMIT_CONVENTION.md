@@ -134,11 +134,18 @@ chore: .gitignore에 tools/ vsix 제외 규칙 추가
         ↓
 5. (선택) 로컬에서 .vsix 직접 설치해서 실제 동작 테스트
         ↓
-6. git tag hun-asm-highlighter-v2.1.0    ← 방금 push된 커밋을 가리킴
+6. git tag hun-asm-highlighter-v2.3.26    ← 방금 push된 커밋을 가리킴
         ↓
-7. git push origin hun-asm-highlighter-v2.1.0   ← 태그를 원격에 push
+7. git push origin hun-asm-highlighter-v2.3.26   ← 태그를 원격에 push
         ↓
 8. GitHub → Releases → "Draft a new release" → 방금 push한 태그 선택 → .vsix 파일 첨부 → Publish
+
+# 터미널 방식
+gh release create hun-asm-highligher-v2.3.26 tools/hun-asm-highlighter/hun-asm-highlighter-2.3.26.vsix \
+  --title "v2.3.26" \
+  --notes "### 👑 Hun-ASM Code Format v2.3.26  
+  -- **ARM64 코드 포맷 개선**" 
+https://github.com/ViVaKR/Hun/releases/tag/hun-asm-highligher-v2.3.26
         ↓
 9. vsce publish                  ← 마켓플레이스/Open VSX에 배포
 
