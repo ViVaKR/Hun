@@ -315,18 +315,16 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
 ```
 ## 한글 어셈블리 테스트
 
->- `hangul`
+>- `hangul/`
 
 ```bash
-
 ./run.ps1 # 파워쉘 
 ./run.sh  # zsh
-
 ```
 
 ---
 
-## 훈 어셈블리 (Hun ASM) 명령어 대조표
+## 훈 어셈블리 (Hun ASM) 명령어 대조표 (임시 한글 명령어)
 
 ```cpp
 // -----------------------------------------------------------------------------

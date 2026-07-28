@@ -55,7 +55,7 @@ const LABEL_ONLY_RE = /^[\p{L}_.$][\p{L}0-9_.$]*:$/u;
 
 function parseRegister(tok) {
   if (tok === undefined) return null;
-  const t = tok.trim();
+  const t = tok.trim().toLowerCase();
   if (t === 'sp') return { width: 64, name: 'sp' };
   if (t === 'fp') return { width: 64, name: 'fp' };
   if (t === 'lr') return { width: 64, name: 'lr' };

@@ -224,7 +224,7 @@ const arm64Instructions = [
   },
 
   // ---- 확장 ----
-    {
+  {
     name: "SXTB",
     description: "✓ Sign-Extend Byte. Sign-extends the low 8 bits of the source register to the destination register width. The value itself does not change, only its bit-width representation (used to safely widen a signed 8-bit value stored in a wider register).\n\n✓ 바이트를 부호 확장합니다. 소스 레지스터의 하위 8비트를 대상 레지스터 폭으로 부호 확장합니다. 값 자체는 바뀌지 않고 비트 폭 표현만 늘어납니다 (더 넓은 레지스터에 저장된 부호 있는 8비트 값을 안전하게 확장할 때 쓰입니다).",
     syntax: "SXTB <Xd>, <Wn>",
