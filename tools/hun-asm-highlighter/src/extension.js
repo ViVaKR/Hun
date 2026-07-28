@@ -166,6 +166,14 @@ function splitTrailingComment(text) {
 const INSTRUCTION_RE =
   /^(?:\s*([\p{L}_.$][\p{L}0-9_.$]*:))?\s*([\p{L}_.$][\p{L}0-9_.$]*)\s+(.*)$/u;
 
+// 🩹 [포맷터-강조 동기화] hun-asm.tmLanguage.json 의 section-macros / func-macros
+// 규칙과 동일한 기준. 이 매크로 호출들은 진짜 명령어가 아니라 섹션 선언/함수
+// 프롤로그 매크로라서, 명령어 블록의 탭 정렬 대상에서 제외하고 항상 왼쪽에
+// 딱 붙여야 한다 (강조 문법은 이미 알고 있었는데 포맷터만 몰랐던 규칙).
+const SECTION_MACRO_RE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_SECTION$/;
+const FUNC_MACRO_RE = /^FUNC_[A-Z0-9_]*$/;
+const isMacroCall = (name) => SECTION_MACRO_RE.test(name) || FUNC_MACRO_RE.test(name);
+
 // 데이터 선언 라인 정규식 (.align 구문은 블록 정렬에서 철저히 제외!)
 const DATA_DECL_RE =
   /^(\s*)(?:([\p{L}_.$][\p{L}0-9_.$]*)\s*:\s*)?((?!\.align\b)\.\p{L}[\p{L}0-9]*)\s+(.*)$/u;
@@ -267,6 +275,18 @@ function collectInstructionEdits(document) {
 
         // 지시어로 시작하는 것은 탈락 (.align 외의 다른 지시어 방어)
         if (mnemonic.startsWith('.')) {
+          j++;
+          break;
+        }
+
+        // 🎯 섹션/함수 매크로 호출(CODE_SECTION, FUNC_START_FULL 등)은
+        // 명령어가 아니므로 탭 정렬 없이 왼쪽에 딱 붙인 채로 고정하고,
+        // .align 처리와 동일하게 단독 편집 후 블록을 끊는다.
+        if (isMacroCall(mnemonic)) {
+          const flushLeft = text.replace(/^[ \t]+/, '');
+          if (flushLeft !== text) {
+            edits.push(vscode.TextEdit.replace(line.range, flushLeft));
+          }
           j++;
           break;
         }

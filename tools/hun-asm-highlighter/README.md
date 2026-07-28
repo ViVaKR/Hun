@@ -99,7 +99,6 @@
 
 ### VSIX 파일로 직접 설치
 tools/hun-asm-highlighter/releases
-tools/hun-asm-highlighter/releases
 1. [Releases](https://github.com/ViVaKR/Hun/releases)에서 최신 `.vsix` 파일 다운로드
 2. `Cmd+Shift+P` → `Extensions: Install from VSIX...` → 파일 선택
 
@@ -108,6 +107,11 @@ tools/hun-asm-highlighter/releases
 `.S`, `.s`, `.inc`, `.asm` 확장자 파일을 열면 자동으로 적용됩니다. 별도 설정 불필요.
 
 ## 변경 이력
+
+### 🚀 v2.3.26 (Current Release) - 니모닉 정렬외 
+* SECTION_MACRO_RE / FUNC_MACRO_RE 두 정규식을 새로 추가
+* hun-asm.tmLanguage.json의 section-macros/func-macros 규칙을 그대로 재사용해서 포맷터와 하이라이터가 "매크로가 뭔지"에 대해 같은 기준을 쓰게 만듦
+* 명령어 블록 탐색 루프에서, mnemonic이 저 매크로 패턴에 걸리면 → .align처럼 탭 정렬 대상에서 빼고, 왼쪽 공백/탭을 강제로 제거한 뒤 단독 편집으로 처리하고 블록을 끊음
 
 ### 🚀 v2.1.2 (Current Release) — 🔥 천년의 한(한글/영문 정렬 불일치) 치유 패치!
 * ✨ **명령어 블록별 니모닉 길이 자동 감지 및 오퍼랜드 칼군무 정렬 기능 탑재**
