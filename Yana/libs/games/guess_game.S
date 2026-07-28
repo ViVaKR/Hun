@@ -160,5 +160,3 @@ FUNC_START_FULL guess_game, 128
 	bl   _printf
 
 FUNC_EXIT_FULL 128
-
-FUNC_EXIT_FULL 128

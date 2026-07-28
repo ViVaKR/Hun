@@ -31,7 +31,7 @@
     "directives": {
       "comment": ".section, .global, .macro, .equ 등 내장 지시어",
       "name": "keyword.control.directive.hun-asm",
-      "match": "\\.(global|section|align|include|macro|endmacro|endm|equ|asciz|ascii|quad|long|int|double|float|byte|word|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
+      "match": "\\.(glob(?:al|l)|section|align|include|macro|endmacro|endm|equ|asciz|ascii|octa|quad|long|int|double|float|hword|short|2byte|word|byte|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
     },
 
     "macro-definition": {

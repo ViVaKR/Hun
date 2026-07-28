@@ -224,6 +224,18 @@ const arm64Instructions = [
   },
 
   // ---- 확장 ----
+    {
+    name: "SXTB",
+    description: "✓ Sign-Extend Byte. Sign-extends the low 8 bits of the source register to the destination register width. The value itself does not change, only its bit-width representation (used to safely widen a signed 8-bit value stored in a wider register).\n\n✓ 바이트를 부호 확장합니다. 소스 레지스터의 하위 8비트를 대상 레지스터 폭으로 부호 확장합니다. 값 자체는 바뀌지 않고 비트 폭 표현만 늘어납니다 (더 넓은 레지스터에 저장된 부호 있는 8비트 값을 안전하게 확장할 때 쓰입니다).",
+    syntax: "SXTB <Xd>, <Wn>",
+    example: "SXTB X20, W19"
+  },
+  {
+    name: "SXTH",
+    description: "✓ Sign-Extend Halfword. Sign-extends the low 16 bits of the source register to the destination register width. Commonly used right after loading a signed 16-bit (short) value that was stored in a narrower memory location.\n\n✓ 하프워드(16비트)를 부호 확장합니다. 소스 레지스터의 하위 16비트를 대상 레지스터 폭으로 부호 확장합니다. 좁은 메모리 공간에 저장돼 있던 부호 있는 16비트(short) 값을 로드한 직후에 흔히 사용됩니다.",
+    syntax: "SXTH <Xd>, <Wn>",
+    example: "SXTH X0, W1"
+  },
   {
     name: "SXTW",
     description: "✓ Sign-Extend Word. Sign-extends the low 32 bits of the source register to 64 bits and writes the result to the destination register.\n\n✓ 워드를 부호 확장합니다. 소스 레지스터의 하위 32비트를 부호 확장하여 64비트로 만든 뒤 대상 레지스터에 저장합니다.",

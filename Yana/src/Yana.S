@@ -41,6 +41,8 @@ str_console_writeline: .asciz "writeline"
 str_ldrb:              .asciz "ldrb"
 str_guess_game:        .asciz "guess game"
 str_fib:               .asciz "피보나치수열"
+str_variable_size:     .asciz "Variable Size"
+
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -58,6 +60,7 @@ menu_table:
 		.quad _demo_ldrb, str_ldrb                      // 12
 		.quad _guess_game, str_guess_game               // 13
 		.quad _fib_print, str_fib                       // 14
+		.quad _variable_size, str_variable_size         // 15
 menu_table_end:
 
 // .quad 는 8바이트 64비트를 의미함

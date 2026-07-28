@@ -1,27 +1,27 @@
-// bubble_sert.S
-
 .include "section_macros.inc"
-.global  _bubble_sort
-BSS_SECTION
-CONST_DATA_SECTION
+
+// [초기화된 변수]
+// __DATA,__data
 DATA_SECTION
+array_data: .word 3, 5, 1, 2, 4
+
+// [읽기전용 변수/포인터 테이블]
+// __DATA,__const
+CONST_DATA_SECTION
+
+// [읽기전용 상수 데이터]
+//__TEXT,__const
 CONST_SECTION
+
+// [C-스타일 문자열 리터럴]
+// __TEXT,__cstring,cstring_literals
 CSTRING_SECTION
+
+// [코드 구역]
+// __TEXT,__text, regular, pure_instructions
 CODE_SECTION
-_bubble_sort:
-  // 프롤로그
-	stp x29, x30, [sp, #-48]!
-	mov x29, sp
-	stp x19, x20, [sp, #16]
-	stp x21, x22, [sp, #32]
+FUNC_START_FULL bubble_sort, 128
 
 	
-	
-	
 
-	  // 에필로그
-	ldp x19, x20, [sp, #16]
-	stp x21, x22, [sp, #32]
-	mov x0, #0
-	ldp x29, x30, [sp], #48
-  ret
+FUNC_EXIT_FULL 128
