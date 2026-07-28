@@ -1,16 +1,83 @@
-# 한글 어셈블리 시험장
-
 # 한글화
 
-### `진입점` (무장한진입점, 알몸진입점) 관리 
+**전설의 시작이자 신화의 첫 번째 단추**!! 🎯💥
+
+>- LLVM 렉서(Lexer)의 가장 깊은 밑바닥, `isIdentifierChar` 폭파 지점!
+
+---
+
+## ⚡ 0x80 한 줄의 깨달음: 렉서(Lexer)의 벽을 깨부순 순간!
+
+기존의 LLVM 렉서는 아스키(ASCII) 7비트 범주(`0x00`~`0x7F`) 안에서 `a-z`, `A-Z`, `_`, `$`, `@` 만 식별자로 인정하는 **지극히 서구지향적이고 구태의연한 문지기**
+
+**`static_cast<unsigned char>(C) >= 0x80`** 이라는 거룩한 조건 한 줄을 주입하는 순간:
+
+1. **UTF-8 한글의 특성**: 한글/옛글자/아프리카 흡음 표기 등 모든 멀티바이트 유니코드 문자는 첫 바이트의 최상위 비트(MSB)가 `1`로 시작하므로 `0x80` 이상이 됨.
+2. **렉서의 개안(開眼)**: 렉서가 한글을 만났을 때 "어? 이건 이상한 특수문자가 아니라 **당당한 식별자(Identifier) 문자의 시작**이구나!" 하고 완벽하게 통과시키게 된 것.
+
+```cpp
+// 💡 역사의 한 줄
+static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
+  return isAlnum(C) || C == '_' || C == '$' || C == '.' || C == '?' ||
+         (AllowAt && C == '@') || (AllowHash && C == '#') ||
+         static_cast<unsigned char>(C) >= 0x80; // 👈 렉서의 문을 활짝 연 열쇠!
+}
+
+```
+
+---
+
+## 📜 수부타이 제독의 최종 좌표록 완비
+
+**최초의 교두보 좌표**까지 포함하여, 우리의 한글 어셈블러 타격 지도는 비로소 렉서(Lexer) ➔ 파서(Parser) ➔ 타깃(AArch64)으로 이어지는 완벽한 삼위일체를 완성!
+
+```
+[훈령 어셈블러 LLVM 침투 완전 지도]
+
+1. 렉서(Lexer) 계층  : MCAsmLexer.cpp / AsmLexer.cpp
+   └── isIdentifierChar() ➔ (unsigned char)C >= 0x80 (한글 토큰화 허용)
+
+2. 파서(Parser) 계층  : MCParser/AsmParser.cpp
+   ├── parseStatement()      ➔ 한글 지시어 (.코드영역, .글자 등)
+   ├── parseAtSpecifier()   ➔ 한글 릴로케이션 (@페이지, @페이지오프셋)
+   └── parseIdentifier()    ➔ 한글 진입점 (무장한진입점 등)
+
+3. 타깃(Target) 계층  : Target/AArch64/AArch64AsmParser.cpp
+   ├── TranslateHunminMnemonic() ➔ 한글 명령어 (할당, 더하기, OS도움요청 등)
+   └── tryParseScalarRegister()  ➔ 한글 레지스터 (연산처_0, 돌아갈길 등)
+
+```
+
+"ASCII 128개 문자에 갇혀 있던 현대 컴파일러 공학의 사슬을  끊어낸 순간"을 기억하시는 그 패기!
+전 세계 97.25%의 개발자들이 이 `0x80` 한 줄의 위엄에 눈물을 흘릴 것입니다.
+모든 좌표와 무기가 완벽하게 준비되었다, 이제 진격뿐! 크하하하하! 🚀🔥🐎⚔️
+
+### `한글인식` 파트
+
+>- `./llvm/lib/MC/MCParser/AsmLexer.cpp` 
+>- line number `231`
+>- [한글인식](./llvm/lib/MC/MCParser/AsmLexer.cpp#L231)
+
+```cpp
+// 💡 역사의 한 줄
+static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
+  return isAlnum(C) || C == '_' || C == '$' || C == '.' || C == '?' ||
+         (AllowAt && C == '@') || (AllowHash && C == '#') ||
+         static_cast<unsigned char>(C) >= 0x80; // 👈 렉서의 문을 활짝 연 열쇠!
+}
+
+```
+
+### `공통 지시어 / 심볼` 한글화 파트 관리 
 
 >- `llvm/lib/MC/MCParser/AsmParser.cpp` 파일
 >- `AsmParser::parseIdentifier` 함수 내부 (약 2,980 라인 부근)
 >- 참고: 진입점 이름 뿐만 아니라 어셈블리 내 모든 일반 한글 변수나 심볼을 변환 하고 싶다면 이곳에서 매핑 조건을 늘려가면 됨
+>- [공통 지시어 / 심볼](./llvm/lib/MC/MCParser/AsmParser.cpp#L2991)
 
 ```cpp
 Res = getTok().getIdentifier();
-if (Res == "무장한진입점" || Res == "새진입점") // <- 여기에 새 단어 추가!
+if (Res == "무장한진입점" || Res == "새진입점")
   Res = "_main";
 else if (Res == "알몸진입점")
   Res = "_start";
@@ -23,6 +90,8 @@ else if (Res == "알몸진입점")
 >- `MCAsmParser::parseAtSpecifier` 함수 내부 (약 1,440 라인 부근)
 >- `@` PAGE, PAGEOFF, GOT (LLVM 표준 영문 수식어)
 
+[한글 릴로케이션 수식어](./llvm/lib/MC/MCParser/AsmParser.cpp#L1440)
+
 ```cpp
 std::string SpecName = getTok().getIdentifier().str();
 if (SpecName == "페이지" || SpecName == "페이지주소") SpecName = "PAGE";
@@ -30,7 +99,6 @@ else if (SpecName == "페이지오프셋") SpecName = "PAGEOFF";
 else if (SpecName == "지오티") SpecName = "GOT";
 else if (SpecName == "새수식어") SpecName = "GOTTPREL"; // <- 요렇게 추가!
 
-# 현재 
 bool MCAsmParser::parseAtSpecifier(const MCExpr *&Res, SMLoc &EndLoc) {
   if (parseOptionalToken(AsmToken::At)) {
     if (getLexer().isNot(AsmToken::Identifier))
@@ -46,10 +114,10 @@ bool MCAsmParser::parseAtSpecifier(const MCExpr *&Res, SMLoc &EndLoc) {
 
 ```
 
-### `한글 지시어 (예:글자, 공개)` 관리
+### `지시어`  한글화 파트 관리
 
 >- 수정할 위치: `llvm/lib/MC/MCParser/AsmParser.cpp`
->- 찾을 위치: `AsmParser::parseStatement` 함수 내부의 StringSwitch (약 1,790라인 부근)
+>- 찾을 위치: `AsmParser::parseStatement` 함수 내부의 StringSwitch (약 `1,790`라인 부근)
 >- 방법: `StringSwitch` 체인에 한글 지시어와 매칭되는 표준 가스(gas) 어셈블러 지시어(마침표 . 포함)를 한 줄 얹어주면 된다네.
 
 ```cpp
@@ -60,8 +128,6 @@ IDVal = StringSwitch<StringRef>(IDVal)
             .Case("새지시어", ".word") // <- 요렇게 한 줄 추가!
             .Default(IDVal);
             
-            
-# 현재 
   // Hangul Assembly Directive translation
   IDVal = StringSwitch<StringRef>(IDVal)
               .Case("공개", ".global")
@@ -80,11 +146,59 @@ IDVal = StringSwitch<StringRef>(IDVal)
               .Default(IDVal);
 ```
 
+### `AArch64 레지스터` 한글화 파트
 
-## 한글니모닉 
+>- `llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp` 
+>- line number `3023`
+>- [레지스터](./llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp#L3023)
 
->- `llvm/lib/MC/MCParser/AsmParser.cpp` 파일
->- `TranslateHunminMnemonic` 함수, 페이지 5,296 라인 
+```cpp
+/// tryParseScalarRegister - Try to parse a register name. The token must be an
+/// Identifier when called, and if it is a register name the token is eaten and
+/// the register is added to the operand list.
+ParseStatus AArch64AsmParser::tryParseScalarRegister(MCRegister &RegNum) {
+  const AsmToken &Tok = getTok();
+  if (Tok.isNot(AsmToken::Identifier))
+    return ParseStatus::NoMatch;
+
+  std::string regName = Tok.getString().str();
+  static const std::string Prefix = "연산처_";
+  static const std::string SPrefix = "단연산처_";
+
+  if (regName.rfind(Prefix, 0) == 0) {
+    std::string numPart = regName.substr(Prefix.size());
+    // len("연산처_") = 10 in UTF-8: 연(3)+산(3)+처(3)+_(1) = 10 bytes
+    regName = "x" + numPart;
+  } else if (regName.rfind(SPrefix, 0) == 0) {
+    std::string numPart = regName.substr(SPrefix.size());
+    // len("단연산처_") = 13 in UTF-8: 단(3)+연(3)+산(3)+처(3)+_(1) = 13 bytes
+    regName = "w" + numPart;
+  } else if (regName == "참조쌓임터") {
+    regName = "sp";
+  } else if (regName == "기본참조터") {
+    regName = "x29";
+  } else if (regName == "돌아갈길") {
+    regName = "x30";
+  }
+
+  std::string lowerCase = StringRef(regName).lower();
+  MCRegister Reg = matchRegisterNameAlias(lowerCase, RegKind::Scalar);
+  if (!Reg)
+    return ParseStatus::NoMatch;
+
+  RegNum = Reg;
+  Lex(); // Eat identifier token.
+  return ParseStatus::Success;
+}
+
+
+```
+
+## `AArch64 니모닉` 한글화 파트
+
+>- `./llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp` 파일
+>- `TranslateHunminMnemonic` 함수, 페이지 `5,296` 라인 
+>-[한글 명령어](./llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp#L5296)
 
 ```cpp
 
@@ -199,6 +313,16 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
   return Name;
 }
 ```
+## 한글 어셈블리 테스트
+
+>- `hangul`
+
+```bash
+
+./run.ps1 # 파워쉘 
+./run.sh  # zsh
+
+```
 
 ---
 
@@ -284,8 +408,10 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
 
 ## 한글이름 대본
 
-- 길고 직관적이며 리듬감이 넘펴 가독성의 극치를 달리는 닷네(pwsh core) 스타일의 명령어 가문 이름 목록 기획
+- 되도록이면 서술형식으로 최대한 길게 직관적이며 리듬감이 넘치며, 가독성의 극치를 달리는 닷넷(pwsh core) 스타일의 명령어 가문 이름 목록 기획
 - 추후 유엔총회를 거쳐 확정할 예정
+
+## 극단적인 예시
 
 ① 데이터 배달 및 이동 가문 (Move, Load, Store)
 
@@ -309,11 +435,11 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
 - bl ➔ 자식함수를품격있게부르기 (Call)
 - ret ➔ 모든번뇌를끊고당당하게고향으로회군 (시적 가독성의 완성!)
 
-### 샘플코드
+### Hun OS Compiler road map
 
 ```rust
 
-// 훈 OS 독자 컴파일러 코어 스케치 (C/C++ 흔적 0%)
+// 훈 OS 독자 컴파일러 코어 스케치 (C/C++ 의 그 숭함의 극한 흔적 0%로 제거 후 --> Rust)
 pub fn 훈_파서_엔진(토큰: &str) -> 기계어코드 {
     // 🌟 한글 특유의 조사를 유연하게 잘라내는 엣지 있는 한글 분석 규칙!
     let 정갈한_명령어 = 토큰.trim_end_matches("하기").trim_end_matches("하여");
@@ -325,4 +451,7 @@ pub fn 훈_파서_엔진(토큰: &str) -> 기계어코드 {
         _ => 폭파_오류발생(),
     }
 }
+
+// 한글 리모닉은 타이핑 시점, 사전 컴파일 JOT, 즉시 CPU 언어의 2진수 형식으로 변환..
+// 명령어 `할당` ===  `1001_1111_1010_....` (Hun 아키텍처는 모든 명령어는 4096bit 이상을 추구함., 최대극한의 철학) 
 ```
