@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.20)
+project(playground ASM)
+
+set(COMMON_LINK_OPTIONS
+    -Wl,-e,_start   # 커스텀 엔트리포인트 지정 (원래 Makefile의 -e _start)
+    -lSystem        # 원래 Makefile의 -lSystem
+    # -syslibroot는 clang이 macOS에서 자동으로 올바른 SDK를 잡아주므로 생략 가능
+)
+
+# 디렉토리의 모든 .s 파일을 자동 스캔 (새 파일 추가/삭제 시 자동 재구성)
+file(GLOB ASM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/*.s)
+
+foreach(src ${ASM_SOURCES})
+    get_filename_component(name ${src} NAME_WE)   # helloworld.s -> helloworld
+
+    add_executable(${name} ${src})
+    target_link_options(${name} PRIVATE ${COMMON_LINK_OPTIONS})
+
+    # cmake --build . --target run-<파일이름> 으로 개별 실행
+    add_custom_target(run-${name}
+        COMMAND $<TARGET_FILE:${name}>
+        DEPENDS ${name}
+        USES_TERMINAL
+    )
+endforeach()

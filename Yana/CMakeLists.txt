@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 4.4.0)
 
-# 🔑 1. 미래의 버전 오타 수정 (안정적인 3.25+ 또는 Corrosion 권장 버전으로 타협)
-# cmake_minimum_required(VERSION 3.25)
-
 # 🔑 Corrosion과 시스템 링킹을 위해 C, CXX를 반드시 포함!
 project(Yana LANGUAGES C CXX ASM)
 
@@ -34,7 +31,7 @@ corrosion_import_crate(MANIFEST_PATH ${CMAKE_SOURCE_DIR}/../Applications/rust/hu
 # -------------------------------------------------------------
 enable_testing()
 
-# 🔑 중요: hun_test_runner가 lib로 바뀌었으므로, cargo 명령을 통해 테스트를 안전하게 격리 수행하세!
+# 🔑 중요: hun_test_runner가 lib로 바뀌었으므로, cargo 명령을 통해 테스트를 안전하게 격리 수행
 add_test(
     NAME hun_asm_tests 
     COMMAND cargo test -p hun_test_runner -- --nocapture

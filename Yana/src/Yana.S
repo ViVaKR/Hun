@@ -296,8 +296,6 @@ _menu_exit:
 	add  x0, x0, exit_message@PAGEOFF
 	
 	bl _printf
-	
-	
 
 	mov x0, #0                      // 리턴값 0
 	ldp x19, x20, [sp, #16]         // 보존 레지스터 복원
