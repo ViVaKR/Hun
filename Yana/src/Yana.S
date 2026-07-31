@@ -20,6 +20,7 @@ line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
 format_str:   .asciz "Hello, ARM64 Assembly! ==> %d\n"
 menu_title:   .asciz "\n 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 😎 메뉴목록 😎 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖\n"
 input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
+
 scanf_format: .asciz "%d"
 err_format:   .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
 press_enter:  .asciz "\n🧚 엔터(Enter) 키를 누르면 메뉴로 돌아갑니다..."
@@ -43,7 +44,8 @@ str_guess_game:        .asciz "Guess"
 str_fib:               .asciz "Fibonacci"
 str_variable_size:     .asciz "Var Size"
 str_hanoi:             .asciz "Hanoi"
-str_sum_numbers:       .asciz "자연수합"
+str_sum_numbers:       .asciz "Sum Of Number"
+str_gcd:               .asciz "GCD"
 
 CONST_DATA_SECTION
 menu_table:
@@ -65,6 +67,7 @@ menu_table:
 		.quad _variable_size, str_variable_size         // 15
 		.quad _hanoi, str_hanoi                         // 16
 		.quad _sum_of_numbers, str_sum_numbers          // 17
+		.quad _gcd, str_gcd                             // 18
 menu_table_end:
 
 // .quad 는 8바이트 64비트를 의미함
