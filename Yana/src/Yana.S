@@ -42,6 +42,7 @@ str_ldrb:              .asciz "ldrb"
 str_guess_game:        .asciz "guess game"
 str_fib:               .asciz "피보나치수열"
 str_variable_size:     .asciz "Variable Size"
+str_hanoi:             .asciz "하노이타워"
 
 CONST_DATA_SECTION
 menu_table:
@@ -61,6 +62,7 @@ menu_table:
 		.quad _guess_game, str_guess_game               // 13
 		.quad _fib_print, str_fib                       // 14
 		.quad _variable_size, str_variable_size         // 15
+		.quad _hanoi, str_hanoi                         // 16
 menu_table_end:
 
 // .quad 는 8바이트 64비트를 의미함
@@ -215,6 +217,8 @@ _main:
 	b.eq .L_console_writeline
 	cmp  x22, #14
 	b.eq .L_run_fib
+	cmp  x22, #16
+	b.eq .L_run_hanoi
 	
 	// -->  
 	b .L_exec
@@ -229,6 +233,18 @@ _main:
 .L_run_fib:
 	mov x0, #13
 	b   .L_exec
+
+// (실행) 17. 하노이 탑
+.L_run_hanoi:
+	mov x0, #4
+	mov x1, #'A'     // from = 'A' (0x41)
+	mov x2, #'C'     // to   = 'C' (0x43)
+	mov x3, #'B'     // via  = 'B' (0x42)
+	// mov x0, #5
+	// mov x1, #'A'
+	// mov x2, #'C'
+	// mov x3, #'B'
+	b .L_exec
 
 // [ 함수 실행 ] //
 .L_exec:

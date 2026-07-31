@@ -40,7 +40,7 @@ FUNC_START variable_size, 32
   // 2. test-byte (0xCB) 로드
 	adrp x19, test_byte@PAGE
 	add  x19, x19, test_byte@PAGEOFF
-	ldrb  w19, [x19] // 8바이트 통째로 말고, 딱 1바이트(byte) 만 읽어옴 
+	ldrb  w19, [x19] // 8바이트 통째로 말고, 딱 1바이트(byte) 만 == 읽어옴 
   
   // 3. 원본 16진수 출력
 	adrp x0, fmt_raw@PAGE
