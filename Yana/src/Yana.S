@@ -13,7 +13,7 @@ CONST_SECTION
 CSTRING_SECTION
 
 // %-25s: 문자열을 무조건 25칸 차지하게 하고 좌측 정렬해서 출력하기
-menu_format: .asciz "%3d: %-15s"
+menu_format: .asciz "%2d: %-25s"
 newline_str: .asciz "\n"
 line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
 
@@ -39,10 +39,11 @@ str_loop_int:          .asciz "loop"
 str_demo_madd:         .asciz "madd"
 str_console_writeline: .asciz "writeline"
 str_ldrb:              .asciz "ldrb"
-str_guess_game:        .asciz "guess game"
-str_fib:               .asciz "피보나치수열"
-str_variable_size:     .asciz "Variable Size"
-str_hanoi:             .asciz "하노이타워"
+str_guess_game:        .asciz "Guess"
+str_fib:               .asciz "Fibonacci"
+str_variable_size:     .asciz "Var Size"
+str_hanoi:             .asciz "Hanoi"
+str_sum_numbers:       .asciz "자연수합"
 
 CONST_DATA_SECTION
 menu_table:
@@ -63,6 +64,7 @@ menu_table:
 		.quad _fib_print, str_fib                       // 14
 		.quad _variable_size, str_variable_size         // 15
 		.quad _hanoi, str_hanoi                         // 16
+		.quad _sum_of_numbers, str_sum_numbers          // 17
 menu_table_end:
 
 // .quad 는 8바이트 64비트를 의미함
@@ -71,9 +73,6 @@ menu_table_end:
 // x10 에 배열의 시작 주소가 저장 되어 있음
 // x22 에 사용자가 선택한 메뉴 인덱스 번호 (0,1,2,3...) 
 // lsl #4 : 인덱스 번호에 16(2^4) 곱하여 해당 메뉴를 찾는 로직 
-command_table:
-    .quad _menu_forloop
-command_table_end:
 
 CODE_SECTION
 
@@ -143,9 +142,8 @@ _main:
 	adrp x0, newline_str@PAGE
 	add  x0, x0, newline_str@PAGEOFF
 	bl   _printf              // 줄바꿈(\n) 을 쾅! (커서가 다음 줄 맨 앞으로 이동)
-	// ★ 중요: 줄을 바꿨으니 아래 .L_skip_newline을 거치지 말고 
-	// 공통 구간인 바로 주소 이동(.L_next_item) 레이블로 점프
-	b .L_next_item
+	
+	// b .L_next_item
 	
 .L_skip_newline:
 	add x19, x19, #16       // 16바이트 더하기 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
@@ -240,11 +238,7 @@ _main:
 	mov x1, #'A'     // from = 'A' (0x41)
 	mov x2, #'C'     // to   = 'C' (0x43)
 	mov x3, #'B'     // via  = 'B' (0x42)
-	// mov x0, #5
-	// mov x1, #'A'
-	// mov x2, #'C'
-	// mov x3, #'B'
-	b .L_exec
+	b   .L_exec
 
 // [ 함수 실행 ] //
 .L_exec:
