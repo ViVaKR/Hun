@@ -151,6 +151,48 @@ disassemble -n _main
 p $x0
 x/s $x0
 
+    process launch
+    run
+    r
+    frame variable
+    memory read -fx -c4 -s4 &a
+    memory read -fx -c4 -s4 &b
+    display variable-name
+    b 10 (breakpoint)
+    breakpoint set --file main.c --line 6
+    breakpoint set --method foo
+    br s --file main.c --line 13
+    c (continue)
+    clang CalculateApp.c -o ./Bin/Calculate
+
+    register read
+    reg r
+
+    f
+    list main
+    up
+    down
+    step (s)
+    next(n)
+    finish
+    quit
+
+    b (pos)
+    tbreak (pos)
+    breakpoint delete (or br del) : delete all breakpoints
+    breakpoint delete (number) : delete the breakpoint indicated by (number)
+
+
+    print (var)
+    p  (var) : 주어진 변수의 값을 인쇄
+    print *(ptr) : 포인터의 목적지를 인쇄
+    x/(format) (var/address) :
+    display (var) : 프로그램이 일시 중지될 때마다 항상 (var) 값을 표시.
+    display
+    undisplay (num) : 변수 표시 취소.
+    expr (var) = (value) : 변수 (var) 를 값으로 설정 expr foo = 5
+    up and down : 충돌하거나 일시 중지된 프로그램의 백트레이스 (bt)에서 프레임으르 위로 이동하거나 아래로 이동.
+
 # register
 register read --format d x0
 register readd --all

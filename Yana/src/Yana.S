@@ -2,8 +2,6 @@
 //  Created by 김범준 on 2026.7.7
 
 .include "section_macros.inc"
-.global  _main
-
 DATA_SECTION
 user_input: .quad 0
 BSS_SECTION
@@ -16,9 +14,9 @@ newline_str: .asciz "\n"
 line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
 
 format_str:   .asciz "Hello, ARM64 Assembly! ==> %d\n"
-icon_heart:   .asciz "💖 "
+icon_heart:   .asciz " 💖 "
 menu_title:   .asciz "😎 메뉴목록 😎"
-input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
+input_prompt: .asciz "\n 🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
 
 scanf_format: .asciz "%d"
 err_format:   .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
@@ -45,7 +43,7 @@ str_variable_size:     .asciz "Var Size"
 str_hanoi:             .asciz "Hanoi"
 str_sum_numbers:       .asciz "Sum Of Number"
 str_gcd:               .asciz "GCD"
-
+str_is_palindrome:     .asciz "Is Palindrome"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -67,35 +65,29 @@ menu_table:
 		.quad _hanoi, str_hanoi                         // 16
 		.quad _sum_of_numbers, str_sum_numbers          // 17
 		.quad _gcd, str_gcd                             // 18
+		.quad _is_palindrome, str_is_palindrome         // 19
 menu_table_end:
 
 CODE_SECTION
-_main:
+FUNC_START_FULL main, 128
 	
-  // [프롤로그] 값 보존을 위해 Callee-saved 레지스터 사용 
-	stp x29, x30, [sp, #-64]!
-	stp x19, x20, [sp, #16]
-	stp x21, x22, [sp, #32]
-	stp x23, x24, [sp, #48]
-	mov x29, sp
-	
-  // 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트)
+	// 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트)
 	adrp x10, menu_table@PAGE
 	add  x10, x10, menu_table@PAGEOFF
 	adrp x11, menu_table_end@PAGE
 	add  x11, x11, menu_table_end@PAGEOFF
 
-  // "끝 주소 - 시작 주소 = 전체 바이트 수"
+	// "끝 주소 - 시작 주소 = 전체 바이트 수"
 	// 그리고, "전체 바이트 수 ÷ 항목 하나의 크기 = 항목 개수"
-	sub x12, x11, x10       // 전체 바이트 크기
-	lsr x20, x12, #4        // x20 = 총메뉴 개수
+	sub x12, x11, x10  // 전체 바이트 크기
+	lsr x20, x12, #4   // x20 = 총메뉴 개수
 	mov x23, #0
 
 // 타이틀 //
 .L_repeat_heart:
 	cmp  x23, #15
 	b.eq .L_title
-	cmp  x23, #30
+	cmp  x23, #31
 	b.eq .L_display_menu
 
 	adrp x0, icon_heart@PAGE
@@ -115,76 +107,73 @@ _main:
 
 	adrp x0, newline_str@PAGE
 	add  x0, x0, newline_str@PAGEOFF
-	bl   _printf 
+	bl   _printf
 
 	// 메뉴 항목 루프 출력 설정
-	mov  x21, #0 // x21 (루프 인덱스 i = 0)
-	adrp x19, menu_table@PAGE
-	add  x19, x19, menu_table@PAGEOFF    // x19 = 배열 시작 주소
+	mov  x21, #0                       // x21 (루프 인덱스 i = 0)
+	adrp x19, menu_table@PAGE          // 테스트
+	add  x19, x19, menu_table@PAGEOFF  // x19 = 배열 시작 주소
 	
 .L_loop_start:
-	cmp  x21, x20        // i == 총 개수?
-	b.eq .L_check_final_newline		// 다 그렸으면 무조건 최종 줄바꿈 하러 가기!
+	cmp  x21, x20                // i == 총 개수?
+	b.eq .L_check_final_newline  // 다 그렸으면 무조건 최종 줄바꿈 하러 가기!
 
-  // printf("%2d: %-25s\n", i, menu_item.str_ptr);
+	// printf("%2d: %-25s\n", i, menu_item.str_ptr);
 	adrp x0, menu_format@PAGE
 	add  x0, x0, menu_format@PAGEOFF
 
-	mov x1, x21         // 첫번째 인자: 인덱스 번호(%d)
-	add x1, x1, #1      // 번호를 1번부터 출력하기 위함.
-	ldr x2, [x19, #8]   // 두번째 인자 문자열 주소
+	mov x1, x21        // 첫번째 인자: 인덱스 번호(%d)
+	add x1, x1, #1     // 번호를 1번부터 출력하기 위함.
+	ldr x2, [x19, #8]  // 두번째 인자 문자열 주소
 
 	sub sp, sp, #16
 	str x1, [sp, #0]
 	str x2, [sp, #8]
 	bl  _printf
 	add sp, sp, #16
-	
+
 	// --------------------------------======================
 	// ★ 핵심: 5개 출력할 때마다 줄바꿈 행진! (나머지 연산 최적화)
 	// --------------------------------======================
-	mov  x1, x21  // x21 (현재 인덱스 i = 0), x1 = 현재 인덱스 (0, 1, 2, 3...)
-	add  x1, x1, #1		// x1 = 현재 출력된 메뉴 개수 (1, 2, 3, 4, 5...)
-	mov  x2, #5 	// 나누기 연산으로 5의 배수인지 검사
-	udiv x3, x1, x2		// x3 = x1 / 5
-	msub x4, x3, x2, x1		// x4 = x1 - (x3 * 5) -> 즉, 5로 나눈 나머지!
-	
-	cmp  x4, #0							// 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
-	b.ne .L_skip_newline		//  ❌ 나머지가 0이 아니면, 5의 배수가 아니면 옆으로 계속 붙여라 
+	mov  x1, x21          // x21 (현재 인덱스 i = 0), x1 = 현재 인덱스 (0, 1, 2, 3...)
+	add  x1, x1, #1       // x1 = 현재 출력된 메뉴 개수 (1, 2, 3, 4, 5...)
+	mov  x2, #5           // 나누기 연산으로 5의 배수인지 검사
+	udiv x3, x1, x2       // x3 = x1 / 5
+	msub x4, x3, x2, x1   // x4 = x1 - (x3 * 5) -> 즉, 5로 나눈 나머지!
+	cmp  x4, #0           // 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
+	b.ne .L_skip_newline  //  ❌ 나머지가 0이 아니면, 5의 배수가 아니면 옆으로 계속 붙여라
 	
 	// 5의 배수면 줄바꿈 쾅!
 	adrp x0, newline_str@PAGE
 	add  x0, x0, newline_str@PAGEOFF
-	bl   _printf              // 줄바꿈(\n) 을 쾅! (커서가 다음 줄 맨 앞으로 이동)
-	
-	// b .L_next_item
+	bl   _printf                      // 줄바꿈(\n) 을 쾅! (커서가 다음 줄 맨 앞으로 이동)
 	
 .L_skip_newline:
-	add x19, x19, #16       // 16바이트 더하기 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
-	add x21, x21, #1        // i++
-	b   .L_loop_start 				// 루프 복귀 
+	add x19, x19, #16  // 16바이트 더하기 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
+	add x21, x21, #1   // i++
+	b   .L_loop_start  // 루프 복귀
 
 .L_next_item:
 	// 핵심 다음 방으로 주소를 옮기고 인덱스를 증가 시킨 뒤 "다시 루프"
-	add x19, x19, #16 // 16바이트 더하기, 다음 구조체 항목으로 주소 이동 (16바이트 )
-	add x21, x21, #1	// i++
-	b   .L_loop_start		// 루프 복귀 다시 루프 처음으로 ... 
+	add x19, x19, #16  // 16바이트 더하기, 다음 구조체 항목으로 주소 이동 (16바이트 )
+	add x21, x21, #1   // i++
+	b   .L_loop_start  // 루프 복귀 다시 루프 처음으로 ...
 
 .L_check_final_newline:
 	// 다 그렸으니 깔끔하게 줄바꿈 쾅! 해줘서 메뉴판과 프롬프트를 분리합니다.
 	adrp x0, newline_str@PAGE
 	add  x0, x0, newline_str@PAGEOFF
-	bl   _printf 
-	b    .L_ask_input 										// 그러고 나서 입력 받으러 이동 	
+	bl   _printf
+	b    .L_ask_input                 // 그러고 나서 입력 받으러 이동
 
 
 .L_ask_input:
-  // 입력 프롬프트 출력
+	// 입력 프롬프트 출력
 	adrp x0, input_prompt@PAGE
 	add  x0, x0, input_prompt@PAGEOFF
 	bl   _printf
 
-  // 입력 받기
+	// 입력 받기
 	adrp x0, scanf_format@PAGE
 	add  x0, x0, scanf_format@PAGEOFF
 	adrp x1, user_input@PAGE
@@ -198,13 +187,13 @@ _main:
 	// 입력값 로드
 	adrp x10, user_input@PAGE
 	add  x10, x10, user_input@PAGEOFF
-	ldr  x22, [x10] // x22 = 사용자가 선택한 번호 (1, 2, 3 ...)
+	ldr  x22, [x10]                    // x22 = 사용자가 선택한 번호 (1, 2, 3 ...)
 
 	// 동적 범위 검사 (Boundary Check)
-	mov  x10, x22            
-	sub  x10, x10, #1            // 디스플레이된 선택 번호에서 실제 인덱스로 표현하기 위한 조치
-	cmp  x10, x20                // x10 = 사용자가 선택한 번호, x20 총 배열의 갯수
-	b.hs .L_invalid_choice      // 범위를 벗어나면 에러 레이블로
+	mov  x10, x22
+	sub  x10, x10, #1       // 디스플레이된 선택 번호에서 실제 인덱스로 표현하기 위한 조치
+	cmp  x10, x20           // x10 = 사용자가 선택한 번호, x20 총 배열의 갯수
+	b.hs .L_invalid_choice  // 범위를 벗어나면 에러 레이블로
 	
 	// exit 선택시
 	cmp  x10, #0
@@ -215,22 +204,27 @@ _main:
 
 	// 구조체 크기가 16바이트 이므로, [시작주소 + (인덱스 * 16)]
 	// lsl #4 가 곧 16을 곱하는 연산 이 됨
-	sub x22, x22, #1                // 정확한 인덱스 로 환원
-	add x10, x10, x22, lsl #4				// x10 = x10 + (x22 * 16), 
-																	// (x22, lsl #4 ==> x22 * 16) + x10 ==> x10 에 저장
-	ldr x11, [x10, #0]              // 구조체의 첫 8바이트(함수 포인터)를 x11 에 로드
-																	// ldr x11, [x10, #8] x10 시작 주소에서 8바이트 떨어진 방의 값(글자 제목 주소)을 x11에 로드!
-	mov x23, x11										// 실행할 함수
+	sub x22, x22, #1           // 정확한 인덱스 로 환원
+	add x10, x10, x22, lsl #4  // x10 = x10 + (x22 * 16),
+	// (x22, lsl #4 ==> x22 * 16) + x10 ==> x10 에 저장
+	ldr x11, [x10, #0]  // 구조체의 첫 8바이트(함수 포인터)를 x11 에 로드
+	// ldr x11, [x10, #8] x10 시작 주소에서 8바이트 떨어진 방의 값(글자 제목 주소)을 x11에 로드!
+	mov x23, x11  // 실행할 함수
 
-	bl .L_insert_line               // ★ 상단 구분선 (새로 추가)
+	bl .L_insert_line  // ★ 상단 구분선 (새로 추가)
 
+	// 💞 메뉴별 사전 설정 💞
 	cmp  x22, #11
 	b.eq .L_console_writeline
-	cmp  x22, #14
+
+	cmp  x22, #14    // 피보나치
 	b.eq .L_run_fib
-	cmp  x22, #16
+
+	cmp  x22, #16      // 하노이탑
 	b.eq .L_run_hanoi
-	b    .L_exec
+	
+	// ---- //
+	b .L_exec
 
 .L_console_writeline:
 	adrp x0, helloworld@PAGE
@@ -245,40 +239,39 @@ _main:
 // (실행) 17. 하노이 탑
 .L_run_hanoi:
 	mov x0, #4
-	mov x1, #'A'     // from = 'A' (0x41)
-	mov x2, #'C'     // to   = 'C' (0x43)
-	mov x3, #'B'     // via  = 'B' (0x42)
- 
-	b .L_exec
-
+	mov x1, #'A'  // from = 'A' (0x41)
+	mov x2, #'C'  // to   = 'C' (0x43)
+	mov x3, #'B'  // via  = 'B' (0x42)
+	b   .L_exec
+	
 // ------------------------------------------------//
 .L_exec:
-	blr x23 
+	blr x23
 	bl  .L_insert_line
 	b   .L_flush_buffer
 // ------------------------------------------------//	
 
-/// 선긋기
+// 선긋기
 .L_insert_line:
-	stp x29, x30, [sp, #-32]! // 호출 직전의 x30 (_main으로 돌아갈 주소)을  스택에 저장
+	stp x29, x30, [sp, #-32]!  // 호출 직전의 x30 (_main으로 돌아갈 주소)을  스택에 저장
 	stp x19, x20, [sp, #16]
 	mov x29, sp
 
 	mov  x0, #35
 	adrp x1, line_char@PAGE
 	add  x1, x1, line_char@PAGEOFF
-	bl   _console_line	
+	bl   _console_line
 
 	ldp x19, x20, [sp, #16]
 	ldp x29, x30, [sp], #32
-	ret // 진짜 서브루틴이 되도록 ret 추가
+	ret                      // 진짜 서브루틴이 되도록 ret 추가
 
 .L_flush_buffer:
 	bl   _getchar
 	cmp  x0, #10
 	b.ne .L_flush_buffer
-	cmp  x0, #-1 // 혹시 모를 EFO (파일끝) 처리
-	b.eq .L_display_menu 
+	cmp  x0, #-1          // 혹시 모를 EFO (파일끝) 처리
+	b.eq .L_display_menu
 	
 	// 2단계: 버퍼가 완전히 깨끗해진 "지금" 안내 메시지를 띄우고 기다리기
 	// ==========================================
@@ -290,8 +283,8 @@ _main:
 
 .L_wait_enter:
 	bl   _getchar
-	cmp  x0, #10 	// 10은 아스키코드로 엔터('\n') 를 의미
-	b.ne .L_wait_enter		// 엔터ㅌ가 아니라 버퍼에 남은 잔여물이면 계속 읽어서 청소
+	cmp  x0, #10        // 10은 아스키코드로 엔터('\n') 를 의미
+	b.ne .L_wait_enter  // 엔터ㅌ가 아니라 버퍼에 남은 잔여물이면 계속 읽어서 청소
 	// =================================================================
 	b .L_display_menu
 
@@ -301,7 +294,7 @@ _main:
 
 	sub sp, sp, #16
 
-	sub x1, x20, #1             // 최대 인덱스 번호 계산 (개수 - 1)
+	sub x1, x20, #1   // 최대 인덱스 번호 계산 (개수 - 1)
 	add x9, x1, #1
 	str x9, [sp, #0]
 	bl  _printf
@@ -319,10 +312,6 @@ _menu_exit:
 	adrp x0, exit_message@PAGE
 	add  x0, x0, exit_message@PAGEOFF
 	bl   _printf
+	mov  x0, #0
 
-	mov x0, #0                      // 리턴값 0
-	ldp x19, x20, [sp, #16]         // 보존 레지스터 복원
-	ldp x21, x22, [sp, #32]
-	ldp x23, x24, [sp, #48]
-	ldp x29, x30, [sp], #64         // 프레임 포인터, 링크 레지스터 복원 및 스택 정리
-	ret
+FUNC_EXIT_FULL 128
