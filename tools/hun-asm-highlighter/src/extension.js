@@ -232,8 +232,60 @@ function collectAndAlignDataBlockEdits(document, alignMode) {
   return edits;
 }
 
+// -------------------------------------------------------------
+// 🏷️ 독립 주석 줄(라벨/명령어 위에 홀로 놓인 //) 들여쓰기 정렬
+//    규칙: "이 주석 줄 바로 다음에 나오는 실제 코드/라벨 줄"의 들여쓰기를 따라간다.
+//    연속된 여러 줄의 주석 블록이면, 그 블록 전체가 같은 대상에 맞춰짐.
+//    빈 줄이 주석과 다음 코드 사이에 끼어 있으면 "소속이 불분명"하다고 보고 건드리지 않음.
+// -------------------------------------------------------------
+function collectStandaloneCommentIndentEdits(document) {
+  const edits = [];
+
+  for (let i = 0; i < document.lineCount; i++) {
+    const text = document.lineAt(i).text;
+    const t = text.trim();
+    if (!t.startsWith('//')) continue;
+
+    // 이 주석 줄 바로 위가 이미 처리된 주석 블록의 일부라면 건너뜀 (중복 작업 방지)
+    if (i > 0) {
+      const prevTrim = document.lineAt(i - 1).text.trim();
+      if (prevTrim.startsWith('//')) continue; // 블록의 첫 줄에서 한꺼번에 처리하므로 스킵
+    }
+
+    // 이 지점부터 시작하는 "연속 주석 블록" 전체를 모음
+    const commentBlock = [i];
+    let k = i + 1;
+    while (k < document.lineCount && document.lineAt(k).text.trim().startsWith('//')) {
+      commentBlock.push(k);
+      k++;
+    }
+
+    // 주석 블록 바로 다음 줄 확인 (빈 줄이면 소속 불분명 -> 스킵)
+    if (k >= document.lineCount) continue;
+    const nextLineText = document.lineAt(k).text;
+    if (nextLineText.trim() === '') continue; // 빈 줄로 분리돼 있으면 손대지 않음
+
+    // 다음 코드/라벨 줄의 들여쓰기 추출
+    const indentMatch = /^(\s*)/.exec(nextLineText);
+    const targetIndent = indentMatch ? indentMatch[1] : '';
+
+    // 블록 안의 모든 주석 줄에 같은 들여쓰기 적용
+    for (const lineIdx of commentBlock) {
+      const raw = document.lineAt(lineIdx).text;
+      const trimmed = raw.trim();
+      const formatted = `${targetIndent}${trimmed}`;
+      if (formatted !== raw) {
+        const line = document.lineAt(lineIdx);
+        edits.push(vscode.TextEdit.replace(line.range, formatted));
+      }
+    }
+  }
+
+  return edits;
+}
 
 // 일반 명령어 라인 블록 정렬 함수 구체화
+// 코드 정렬
 function collectInstructionEdits(document) {
   const edits = [];
   let i = 0;
@@ -288,11 +340,18 @@ function collectInstructionEdits(document) {
           break;
         }
 
+        // ★ 여기가 핵심 추가 지점: 오퍼랜드와 주석을 분리해서 각각 저장
+        const normalized = normalizeCommasOutsideStrings(rawOperands)
+          .replace(/\[\s*([a-zA-Z0-9_]+)\s*,\s*([^\]]+)\]/g, '[$1, $2]');
+        const { value: operandsOnly, comment } = splitTrailingComment(normalized);
+
         block.push({
           lineIdx: j,
           label,
           mnemonic,
-          rawOperands,
+          operandsOnly, // 주석 뺀 순수 오퍼랜드
+          comment, // 주석만 따로
+          // rawOperands,
           raw: text
         });
         j++;
@@ -307,19 +366,33 @@ function collectInstructionEdits(document) {
       // 블록 내에서 가장 긴 니모닉(명령어)의 자릿수를 찾음 (예: adrp가 있으면 4)
       const maxMnemonicLen = Math.max(...block.map(b => b.mnemonic.length));
 
+      // ★ 추가: 오퍼랜드 최대 길이 + 주석 존재 여부
+      const hasAnyComment = block.some((b) => b.comment);
+      const maxOperandLen = Math.max(...block.map((b) => b.operandsOnly.length));
+
+      // ★ 데이터 블록과 똑같은 방식: 오퍼랜드 최대 길이 계산
+      // const hasAnyComment = block.some((b) => b.comment);
+      // const maxOperandLen = Math.max(...block.map((b) => b.operandsOnly.length));
+
       for (const b of block) {
         // 1단계: 오퍼랜드 콤마 및 대괄호 공백 정규화
-        let operands = normalizeCommasOutsideStrings(b.rawOperands);
+        // let operands = normalizeCommasOutsideStrings(b.rawOperands);
+        let operands = normalizeCommasOutsideStrings(b.operandsOnly);
         operands = operands.replace(/\[\s*([a-zA-Z0-9_]+)\s*,\s*([^\]]+)\]/g, '[$1, $2]');
 
         // 2단계: 핵심 마법! 가장 긴 명령어 길이에 맞춰서 뒤쪽 공백(padEnd)을 동적으로 채움!
         // 최소 1칸의 공백은 유지하도록 설정
         const mnemonicCol = b.mnemonic.padEnd(maxMnemonicLen + 1);
 
+        // ★ 추가: 주석이 하나라도 있으면 오퍼랜드를 최대 길이에 맞춰 padEnd
+        const operandsCol = hasAnyComment ? operands.padEnd(maxOperandLen + 1) : operands;
+        const commentPart = b.comment ? ` ${b.comment}` : '';   // ★ 추가
+
         // 3단계: 조립하기 (라벨이 있으면 앞에 붙이고, 없으면 탭(\t) 들여쓰기 유지)
-        const formatted = b.label
-          ? `${b.label}\t${mnemonicCol}${operands}`
-          : `\t${mnemonicCol}${operands}`;
+        const formatted = (b.label
+          ? `${b.label}\t${mnemonicCol}${operandsCol}`
+          : `\t${mnemonicCol}${operandsCol}${commentPart}`
+        ).replace(/\s+$/, '');   // ★ trailing space 제거 후 주석 붙이기
 
         if (formatted !== b.raw) {
           const line = document.lineAt(b.lineIdx);
@@ -465,7 +538,27 @@ function activate(context) {
             });
           }
 
+          // 3) 사용자 정의 라벨 자동완성 (같은 문서의 .L_ 로컬 라벨 + 전역 라벨)
+          for (let i = 0; i < document.lineCount; i++) {
+            if (i === position.line) continue;
+
+            const text = document.lineAt(i).text;
+            const m = LABEL_DEF_RE.exec(text);
+            if (!m) continue;
+            const name = m[1];
+            const isLocal = name.startsWith('.L');
+
+            const item = new vscode.CompletionItem(
+              name,
+              isLocal ? vscode.CompletionItemKind.Field : vscode.CompletionItemKind.Function);
+            item.sortText = `0_${name}`
+            item.detail = isLocal ? '로컬 라벨 (현재 파일)' : '전역 라벨 / 함수';
+            if (range) item.range = range;
+            completionItems.push(item);
+          }
+
           return completionItems;
+
         } catch (globalError) {
           console.error('[hun-asm] 자동완성 수집 중 심각한 에러 발생:', globalError);
           return [];
@@ -569,6 +662,7 @@ function activate(context) {
         return [
           ...collectAndAlignDataBlockEdits(document, alignMode),
           ...collectInstructionEdits(document),
+          ...collectStandaloneCommentIndentEdits(document),
         ];
       },
     })
