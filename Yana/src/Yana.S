@@ -11,14 +11,13 @@ LITERAL4_SECTION
 LITERAL8_SECTION
 CONST_SECTION
 CSTRING_SECTION
-
-// %-25s: 문자열을 무조건 25칸 차지하게 하고 좌측 정렬해서 출력하기
-menu_format: .asciz "%2d: %-25s"
+menu_format: .asciz "%2d: %-20s"
 newline_str: .asciz "\n"
 line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
 
 format_str:   .asciz "Hello, ARM64 Assembly! ==> %d\n"
-menu_title:   .asciz "\n 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 😎 메뉴목록 😎 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖 💖\n"
+icon_heart:   .asciz "💖 "
+menu_title:   .asciz "😎 메뉴목록 😎"
 input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
 
 scanf_format: .asciz "%d"
@@ -70,15 +69,7 @@ menu_table:
 		.quad _gcd, str_gcd                             // 18
 menu_table_end:
 
-// .quad 는 8바이트 64비트를 의미함
-// 한줄에 데이터가 2개씩 들어 있으므로 
-// 8바이트(함수 주소) + 8바이트 (문자열 주소) = 각행은  총 16바이트 2^4
-// x10 에 배열의 시작 주소가 저장 되어 있음
-// x22 에 사용자가 선택한 메뉴 인덱스 번호 (0,1,2,3...) 
-// lsl #4 : 인덱스 번호에 16(2^4) 곱하여 해당 메뉴를 찾는 로직 
-
 CODE_SECTION
-
 _main:
 	
   // [프롤로그] 값 보존을 위해 Callee-saved 레지스터 사용 
@@ -93,18 +84,38 @@ _main:
 	add  x10, x10, menu_table@PAGEOFF
 	adrp x11, menu_table_end@PAGE
 	add  x11, x11, menu_table_end@PAGEOFF
-	
 
   // "끝 주소 - 시작 주소 = 전체 바이트 수"
 	// 그리고, "전체 바이트 수 ÷ 항목 하나의 크기 = 항목 개수"
 	sub x12, x11, x10       // 전체 바이트 크기
 	lsr x20, x12, #4        // x20 = 총메뉴 개수
+	mov x23, #0
 
-.L_display_menu:
-	// 타이틀 출력
+// 타이틀 //
+.L_repeat_heart:
+	cmp  x23, #15
+	b.eq .L_title
+	cmp  x23, #30
+	b.eq .L_display_menu
+
+	adrp x0, icon_heart@PAGE
+	add  x0, x0, icon_heart@PAGEOFF
+	bl   _printf
+	add  x23, x23, #1
+	b    .L_repeat_heart
+
+.L_title:
 	adrp x0, menu_title@PAGE
 	add  x0, x0, menu_title@PAGEOFF
 	bl   _printf
+	mov  x23, #16
+	b    .L_repeat_heart
+
+.L_display_menu:
+
+	adrp x0, newline_str@PAGE
+	add  x0, x0, newline_str@PAGEOFF
+	bl   _printf 
 
 	// 메뉴 항목 루프 출력 설정
 	mov  x21, #0 // x21 (루프 인덱스 i = 0)
@@ -141,7 +152,7 @@ _main:
 	cmp  x4, #0							// 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
 	b.ne .L_skip_newline		//  ❌ 나머지가 0이 아니면, 5의 배수가 아니면 옆으로 계속 붙여라 
 	
-	// 5의 배수면 대인배 처럼 줄바꿈 쾅!
+	// 5의 배수면 줄바꿈 쾅!
 	adrp x0, newline_str@PAGE
 	add  x0, x0, newline_str@PAGEOFF
 	bl   _printf              // 줄바꿈(\n) 을 쾅! (커서가 다음 줄 맨 앞으로 이동)
@@ -213,18 +224,14 @@ _main:
 
 	bl .L_insert_line               // ★ 상단 구분선 (새로 추가)
 
-	// ? 11. console writeline 실행
 	cmp  x22, #11
 	b.eq .L_console_writeline
 	cmp  x22, #14
 	b.eq .L_run_fib
 	cmp  x22, #16
 	b.eq .L_run_hanoi
-	
-	// -->  
-	b .L_exec
+	b    .L_exec
 
-// (실행) 11. console writeline
 .L_console_writeline:
 	adrp x0, helloworld@PAGE
 	add  x0, x0, helloworld@PAGEOFF
@@ -241,17 +248,19 @@ _main:
 	mov x1, #'A'     // from = 'A' (0x41)
 	mov x2, #'C'     // to   = 'C' (0x43)
 	mov x3, #'B'     // via  = 'B' (0x42)
-	b   .L_exec
+ 
+	b .L_exec
 
-// [ 함수 실행 ] //
+// ------------------------------------------------//
 .L_exec:
-	blr x23                         // 함수 실행 완료
+	blr x23 
 	bl  .L_insert_line
 	b   .L_flush_buffer
-	
+// ------------------------------------------------//	
+
 /// 선긋기
 .L_insert_line:
-	stp x29, x30, [sp, #-32]! // 호출 직적의 x30 (_main으로 돌아갈 주소)을  스택에 저장
+	stp x29, x30, [sp, #-32]! // 호출 직전의 x30 (_main으로 돌아갈 주소)을  스택에 저장
 	stp x19, x20, [sp, #16]
 	mov x29, sp
 
@@ -307,11 +316,9 @@ _menu_exit:
 // 종료 (에필로그 및 리턴)
 // -------------------------------------------------------------
 .L_terminate:
-	
 	adrp x0, exit_message@PAGE
 	add  x0, x0, exit_message@PAGEOFF
-	
-	bl _printf
+	bl   _printf
 
 	mov x0, #0                      // 리턴값 0
 	ldp x19, x20, [sp, #16]         // 보존 레지스터 복원
@@ -319,67 +326,3 @@ _menu_exit:
 	ldp x23, x24, [sp, #48]
 	ldp x29, x30, [sp], #64         // 프레임 포인터, 링크 레지스터 복원 및 스택 정리
 	ret
-
-/* 
-    // 아규먼트 
-    //b _argv
-
-_argv:
-	cmp  x0, #2
-	mov  x19, #108
-	b.lt .L_default
-
-	ldr x0, [x1, #8]        // x0 = argv[1]
-	bl  _atoi                // atoi(argv[1]); 결과는 x0에 저장됨
-	mov x19, x0             // 결과를 안전하게 x19(Calle-saved)에 보관
-
-    // [배열 시작주소 계산]
-	adrp x10, command_table@PAGE
-	add  x10, x10, command_table@PAGEOFF // x10 = command_table 시작 주소
-
-    // [배열 끝 주소 계산]
-	adrp x11, command_table_end@PAGE
-	add  x11, x11, command_table_end@PAGEOFF  // x11 = command_tabel 끝 주소
-
-    // [배열의 크기]
-	sub x12, x11, x10
-
-    // [배열의 갯수 계산]
-    // 포인터 주소의 크기 : 8바이트
-    // 배열의 갯수 = 배열의 크기 / 포인터 주소의 크기 2^3 (8바이트)
-	lsr x12, x12, #3
-
-    // 3. 64비트끼리 안전하게 범위 검사 (Boundary Check)
-    // 범위검사 (Boundary Check) : 
-    // 사용자가 입력한 아규먼트 값 과 배열의 총 갯수를 비교 
-	cmp x19, x12             
-
-    // x19 가 배열의 크기보다 크거나 같으면
-    // hs: Higher or Same, 부호없는 비교
-    //  _default 레이블로 점프
-	b.hs .L_default
-
-    // 진짜 함수 로드하기
-    // x10 (테이블 시작 주소)에서 x19(인덱스) 만큼 8바이트씩(lsl #3) 떨어진 곳의 주소값을 읽기
-    // (예) : x19 (입력값) 을 2로 하였을 때
-    //       x10 의 주소가 0x1000 일때
-    //       0x1000 + (2 * 2^3) => 0x1000 + 16 => 즉.. array[2] 의 요소를 호출하는 결과가 
-	ldr x11, [x10, x19, lsl #3]
-
-    // 목표 함수 실행!
-	blr x11
-
-	b .L_terminate
-
-.L_default:
-    // 3. 포맷 스트링 및 인자 준비 후 printf 호출
-	adrp x0, format_str@PAGE  // 포맷 문자열 주소 로드
-	add  x0, x0, format_str@PAGEOFF
-    
-	sub sp, sp, #32
-	str x19, [sp, #0]
-	bl  _printf
-	add sp, sp, #32
-
-	b .L_terminate
-*/

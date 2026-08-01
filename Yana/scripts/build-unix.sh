@@ -18,12 +18,14 @@ cmake --build ${BUILD_DIR_UNIX} --config Debug
 EXECFILE="${BUILD_DIR_UNIX}/Yana"
 
 if [[ -f "${EXECFILE}" ]]; then
-    echo "✅ 빌드 완료! 실행 파일: ${EXECFILE}"
+    echo "✅ 빌드 완료!"
+    echo "실행 파일: ${EXECFILE}"
     echo "🚀 Yana 실행 중..."
-    echo "---------------------------------------"
+    echo 
+    echo
     "${EXECFILE}"
 else
-    echo "❌ Unix 용 실행 파일을 찾을 수 없습니다: ${EXECFILE}"
+    echo "✖︎ 실행 파일을 찾을 수 없습니다: ${EXECFILE}"
     exit 1
 fi
 
