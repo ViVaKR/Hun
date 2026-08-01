@@ -16,10 +16,7 @@ const { getMnemonicInfo, getAllCompletionEntries } = require('./mnemonic-info');
 // (2026-07 보강: FP/SIMD 레지스터(V0~V31), 부동소수점 명령어, 조건 코드 표까지 전부 로드.
 //  예전엔 arm64Instructions/arm64Registers 두 개만 가져와서, FP 관련 자료가 파일에는
 //  있어도 실제 hover/자동완성에는 전혀 연결이 안 되고 있었음.)
-const {
-  arm64Registers,
-  arm64FpSimdRegisters,
-} = require('./data/arm64-data');
+const { arm64Registers, arm64FpSimdRegisters } = require('./data/arm64-data');
 
 // 🩹 [스칼라 뷰 파생] arm64-data.js 에는 V0~V31(128비트 벡터) 항목만 있고,
 // 그 하위 비트 폭 스칼라 뷰인 D0(64b)/S0(32b)/H0(16b)/B0(8b)/Q0(128b)는
@@ -398,7 +395,7 @@ function activate(context) {
           // ⭐️ 이 두 줄이 반드시 들어가 있어야 수식이 작동합니다!
           md.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션
           md.supportHtml = true;  // <br> 등의 HTML 태그 허용 옵션
-          md.appendMarkdown(`### ARM64 Register: \`${armReg.name}\`\n\n`);
+          md.appendMarkdown(`### ARM64 Register: \`${armReg.name.toLowerCase()}\`\n\n`);
           md.appendMarkdown(`**Type:** ${armReg.type}\n\n`);
           md.appendMarkdown(`**Description:** ${armReg.description}`);
           return new vscode.Hover(md, range);
@@ -452,8 +449,8 @@ function activate(context) {
           if (Array.isArray(ALL_ARM_REGISTERS)) {
             ALL_ARM_REGISTERS.forEach((reg) => {
               try {
-                const item = new vscode.CompletionItem(reg.name, vscode.CompletionItemKind.Variable);
-                item.detail = `ARM64 Register: ${reg.name} (${reg.type})`;
+                const item = new vscode.CompletionItem(reg.name.toLowerCase(), vscode.CompletionItemKind.Variable);
+                item.detail = `ARM64 Register: ${reg.name.toLowerCase()} (${reg.type})`;
                 item.documentation = new vscode.MarkdownString(reg.description);
 
                 item.documentation.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션

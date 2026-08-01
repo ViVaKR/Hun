@@ -5,6 +5,7 @@
   "patterns": [
     { "include": "#comments" },
     { "include": "#strings" },
+    { "include": "#char-literals" },
     { "include": "#directives" },
     { "include": "#macro-definition" },
     { "include": "#section-macros" },
@@ -27,6 +28,10 @@
       "begin": "\"",
       "end": "\"",
       "patterns": [{ "name": "constant.character.escape.hun-asm", "match": "\\\\." }]
+    },
+    "char-literals": {
+      "name": "string.quoted.single.hun-asm",
+      "match": "'\\\\?.'"
     },
     "directives": {
       "comment": ".section, .global, .macro, .equ 등 내장 지시어",
