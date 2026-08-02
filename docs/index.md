@@ -4,16 +4,20 @@
 
 # Hun ARM64 Mnemonic Dictionary / 니모닉 사전
 
-> Auto-generated draft from `mnemonic-info.js` — the same data source that powers hover and autocomplete in the extension. English first, Korean below, per entry.
-> `mnemonic-info.js` 데이터를 그대로 훑어서 만든 자동 생성 초안입니다 — 확장의 hover/자동완성과 완전히 같은 데이터 소스입니다. 항목마다 영문을 위, 한글을 아래에 배치했습니다.
-
 _224 mnemonics / 니모닉 224종_
 
 ---
 
 ## `ADC`
 
-**EN:** Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.
+```mermaid
+flowchart LR
+  str([ADC])
+
+```
+
+**EN:** Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.  
+
 **KO:** 캐리를 포함한 덧셈. 두 피연산자와 현재 캐리 플래그를 함께 더합니다(Xd = Xn + Xm + C). 64비트보다 큰 값을 여러 레지스터에 걸쳐 더할 때, 하위 워드의 ADDS 다음에 이어서 사용합니다.
 
 **Syntax**
@@ -32,6 +36,7 @@ ADC  X1, X3, X5   // 상위 64비트 + 캐리 -> 128비트 덧셈 완성
 ## `ADCS`
 
 **EN:** Add with Carry, setting flags. Same as ADC but also updates the NZCV flags, allowing the carry chain to continue into a further ADC/ADCS for even wider (192-bit+) arithmetic.
+
 **KO:** 캐리를 포함한 덧셈 후 플래그 설정. ADC와 동일하지만 NZCV 플래그도 갱신하여, 더 넓은(192비트 이상) 연산을 위해 캐리 체인을 계속 이어갈 수 있습니다.
 
 **Syntax**
@@ -46,9 +51,10 @@ ADCS X1, X3, X5
 
 ---
 
-## `ADD` (더함)
+## `ADD`
 
 **EN:** Add (register or immediate). Adds two operands and stores the result in the destination register.
+
 **KO:** 덧셈 (레지스터 또는 즉시값). 두 피연산자를 더하여 결과를 대상 레지스터에 저장합니다.
 
 **Syntax**
