@@ -13,7 +13,6 @@ _224 mnemonics / 니모닉 224종_
 ```mermaid
 flowchart LR
   str([ADC])
-
 ```
 
 **EN:** Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.  
