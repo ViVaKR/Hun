@@ -13,10 +13,9 @@ LITERAL4_SECTION
 LITERAL8_SECTION
 CONST_SECTION
 CSTRING_SECTION
-newline_str: .asciz "\n"
-menu_format: .asciz "%2d: %-15s"
-line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
-
+newline_str:  .asciz "\n"
+menu_format:  .asciz "%2d: %-15s"
+line_char:    .asciz "👻"                     // 간단 - mov w1, #'*'
 fmt_demo:     .asciz "total: %d, count: %d\n"
 fmt_qs:       .asciz "%lld "
 label_before: .asciz "\n정렬 전: "
@@ -24,7 +23,7 @@ label_after:  .asciz "정렬 후: "
 
 format_str:   .asciz "Hello, ARM64 Assembly! ==> %d\n"
 icon_heart:   .asciz "💖 "
-menu_title:   .asciz "😎 메뉴목록 😎"
+menu_title:   .asciz "😎 메뉴목록 😎 "
 input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
 
 scanf_format: .asciz "%d"
@@ -36,7 +35,7 @@ helloworld:   .asciz "Hello, World! Fine Thanks And You?"
 str_exit:              .asciz "exit"
 str_forloop:           .asciz "for"
 str_csel:              .asciz "csel"
-str_welcome_rust:      .asciz "rust"
+str_welcome_rust:      .asciz "Rust Call 1"
 str_if_else:           .asciz "if"
 str_string_to_integer: .asciz "str to int"
 str_readline:          .asciz "scanf"
@@ -48,11 +47,11 @@ str_console_writeline: .asciz "writeline"
 str_ldrb:              .asciz "ldrb"
 str_guess_game:        .asciz "Guess"
 str_fib:               .asciz "Fibonacci"
-str_variable_size:     .asciz "Var Size"
+str_variable_size:     .asciz "Variable 1"
 str_hanoi:             .asciz "Hanoi"
 str_sum_numbers:       .asciz "Sum Numbers"
 str_gcd:               .asciz "GCD"
-str_is_palindrome:     .asciz "Is Palindrome"
+str_is_palindrome:     .asciz "Palindrome"
 str_quicksort:         .asciz "Quick Sort"
 CONST_DATA_SECTION
 menu_table:
@@ -61,7 +60,7 @@ menu_table:
     .quad _menu_csel, str_csel                      // 2
     .quad _menu_welcome_rust, str_welcome_rust      // 3
     .quad _menu_if_else, str_if_else                // 4
-    .quad _string_to_integer, str_string_to_integer // 5
+    .quad _string_to_number, str_string_to_integer  // 5
     .quad _readline, str_readline                   // 6
     .quad _menu_delegate, str_delegate              // 7
 		.quad _menu_function_call, str_function_call    // 8
@@ -96,9 +95,9 @@ FUNC_START_FULL main, 128
 
 // 타이틀 //
 .L_repeat_heart:
-	cmp  x23, #15
+	cmp  x23, #10
 	b.eq .L_title
-	cmp  x23, #31
+	cmp  x23, #21
 	b.eq .L_display_menu
 
 	adrp x0, icon_heart@PAGE
@@ -111,7 +110,7 @@ FUNC_START_FULL main, 128
 	adrp x0, menu_title@PAGE
 	add  x0, x0, menu_title@PAGEOFF
 	bl   _printf
-	mov  x23, #16
+	mov  x23, #11
 	b    .L_repeat_heart
 
 .L_display_menu:
@@ -194,6 +193,13 @@ FUNC_START_FULL main, 128
 	str x1, [sp, #0]
 	bl  _scanf
 	add sp, sp, #16
+	
+	// scanf 가 몇 개 필드를 성공적으로 읽었는지 체크
+	cmp  w0, #-1       // EOF(CTRL + D) 면 아예 프로그램 종료, 32비트 int 반환값
+	b.eq .L_terminate
+
+	cmp  w0, #1
+	b.ne .L_bad_input  // 입력요청이 한개인데 . 한개가 아니면?
 
 	// 입력값 로드
 	adrp x10, user_input@PAGE
@@ -233,10 +239,36 @@ FUNC_START_FULL main, 128
 	
 	cmp  x22, #20           // _quicksort
 	b.eq .L_exec_quicksort
+
 	// ---- //
 	b .L_exec
 
-// _quicksort
+/* 메뉴선택 끝 */
+
+.L_bad_input:
+// scanf 가 소비하지 못한 문자들이 버퍼에 그대로 남아 있으므로
+// 개행(\n) 을 만날 때 까지 강제로 다 읽어서 버퍼를 비워줌
+.L_bad_input_flush:
+	bl   _getchar
+	cmp  w0, #10             // '\n' 만자면 정리 끝
+	b.eq .L_bad_input_done
+	cmp  w0, #-1
+	b.eq .L_bad_input_done
+	b    .L_bad_input_flush
+
+.L_bad_input_done:
+	adrp x0, err_format@PAGE
+	add  x0, x0, err_format@PAGEOFF
+	
+	sub sp, sp, #16
+	sub x1, x20, #1
+	add x9, x1, #1
+	str x9, [sp, #0]
+	bl  _printf
+	add sp, sp, #16
+	b   .L_display_menu
+
+
 // _quicksort
 .L_exec_quicksort:
 	adrp x25, quicksort_arr@PAGE
@@ -274,46 +306,6 @@ FUNC_START_FULL main, 128
 
 	bl .L_insert_line
 	b  .L_flush_buffer
-
-
-// .L_print_loop:
-// 	cmp  x23, x28
-// 	b.ge .L_print_done
-	
-// 	lsl x0, x23, #3
-// 	ldr x1, [x25, x0]
-	
-// 	adrp x0, fmt_qs@PAGE
-// 	add  x0, x0, fmt_qs@PAGEOFF
-// 	sub  sp, sp, #16
-// 	str  x1, [sp, #0]
-// 	bl   _printf
-// 	add  sp, sp, #16
-// 	add  x23, x23, #1
-
-// 	b .L_print_loop
-
-// .L_print_done:
-// 	adrp x0, newline_str@PAGE
-// 	add  x0, x0, newline_str@PAGEOFF
-// 	bl   _printf
-
-// 	mov x0, #0
-	
-// 	mov x0, x25
-// 	mov x1, #0
-// 	mov x2, x28
-	
-// 	bl _quicksort
-// 	// mov  x0, x25
-// 	// mov  x1, #0
-// 	// mov  x2, x28
-// 	// mov  x3, #'M'
-	
-// 	b .L_exec
-
-
-
 
 // _console_writeline
 .L_console_writeline:
@@ -358,9 +350,9 @@ FUNC_START_FULL main, 128
 
 .L_flush_buffer:
 	bl   _getchar
-	cmp  x0, #10
+	cmp  w0, #10
 	b.ne .L_flush_buffer
-	cmp  x0, #-1          // 혹시 모를 EFO (파일끝) 처리
+	cmp  w0, #-1          // 혹시 모를 EFO (파일끝) 처리
 	b.eq .L_display_menu
 	
 	// 2단계: 버퍼가 완전히 깨끗해진 "지금" 안내 메시지를 띄우고 기다리기
@@ -373,7 +365,7 @@ FUNC_START_FULL main, 128
 
 .L_wait_enter:
 	bl   _getchar
-	cmp  x0, #10        // 10은 아스키코드로 엔터('\n') 를 의미
+	cmp  w0, #10        // 10은 아스키코드로 엔터('\n') 를 의미
 	b.ne .L_wait_enter  // 엔터ㅌ가 아니라 버퍼에 남은 잔여물이면 계속 읽어서 청소
 	// =================================================================
 	b .L_display_menu
@@ -403,5 +395,5 @@ _menu_exit:
 	add  x0, x0, exit_message@PAGEOFF
 	bl   _printf
 	mov  x0, #0
-
+	
 FUNC_EXIT_FULL 128

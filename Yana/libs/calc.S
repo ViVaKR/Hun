@@ -9,17 +9,18 @@
 .align 2
 
 _add_numbers:
-    add x0, x0, x1
+	add x0, x0, x1
     ret
+    
 
 _sub_numbers:
-    sub x0, x0, x1
+	sub x0, x0, x1
     ret
 
 _mul_numbers:
-    mul x0, x0, x1
+	mul x0, x0, x1
     ret
 
 _div_numbers:
-    sdiv x0, x0, x1
+	sdiv x0, x0, x1
     ret
