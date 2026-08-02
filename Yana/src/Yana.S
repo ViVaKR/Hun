@@ -4,19 +4,28 @@
 .include "section_macros.inc"
 DATA_SECTION
 user_input: .quad 0
+
+quicksort_arr: 
+	.quad 3, 1, 7, 9, 5, 2, 6, 4, 8 // 8 byte * 9 = 72 byte
+quicksort_arr_end: // 배열의 끝 라벨
 BSS_SECTION
 LITERAL4_SECTION
 LITERAL8_SECTION
 CONST_SECTION
 CSTRING_SECTION
-menu_format: .asciz "%2d: %-20s"
 newline_str: .asciz "\n"
+menu_format: .asciz "%2d: %-15s"
 line_char:   .asciz "👻"         // 간단 - mov w1, #'*'
 
+fmt_demo:     .asciz "total: %d, count: %d\n"
+fmt_qs:       .asciz "%lld "
+label_before: .asciz "\n정렬 전: "
+label_after:  .asciz "정렬 후: "
+
 format_str:   .asciz "Hello, ARM64 Assembly! ==> %d\n"
-icon_heart:   .asciz " 💖 "
+icon_heart:   .asciz "💖 "
 menu_title:   .asciz "😎 메뉴목록 😎"
-input_prompt: .asciz "\n 🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
+input_prompt: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
 
 scanf_format: .asciz "%d"
 err_format:   .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
@@ -41,9 +50,10 @@ str_guess_game:        .asciz "Guess"
 str_fib:               .asciz "Fibonacci"
 str_variable_size:     .asciz "Var Size"
 str_hanoi:             .asciz "Hanoi"
-str_sum_numbers:       .asciz "Sum Of Number"
+str_sum_numbers:       .asciz "Sum Numbers"
 str_gcd:               .asciz "GCD"
 str_is_palindrome:     .asciz "Is Palindrome"
+str_quicksort:         .asciz "Quick Sort"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -66,6 +76,7 @@ menu_table:
 		.quad _sum_of_numbers, str_sum_numbers          // 17
 		.quad _gcd, str_gcd                             // 18
 		.quad _is_palindrome, str_is_palindrome         // 19
+		.quad _quicksort, str_quicksort                 // 20
 menu_table_end:
 
 CODE_SECTION
@@ -118,7 +129,7 @@ FUNC_START_FULL main, 128
 	cmp  x21, x20                // i == 총 개수?
 	b.eq .L_check_final_newline  // 다 그렸으면 무조건 최종 줄바꿈 하러 가기!
 
-	// printf("%2d: %-25s\n", i, menu_item.str_ptr);
+	// printf("%2d: %-15s\n", i, menu_item.str_ptr);
 	adrp x0, menu_format@PAGE
 	add  x0, x0, menu_format@PAGEOFF
 
@@ -137,7 +148,7 @@ FUNC_START_FULL main, 128
 	// --------------------------------======================
 	mov  x1, x21          // x21 (현재 인덱스 i = 0), x1 = 현재 인덱스 (0, 1, 2, 3...)
 	add  x1, x1, #1       // x1 = 현재 출력된 메뉴 개수 (1, 2, 3, 4, 5...)
-	mov  x2, #5           // 나누기 연산으로 5의 배수인지 검사
+	mov  x2, #4           // 나누기 연산으로 5의 배수인지 검사
 	udiv x3, x1, x2       // x3 = x1 / 5
 	msub x4, x3, x2, x1   // x4 = x1 - (x3 * 5) -> 즉, 5로 나눈 나머지!
 	cmp  x4, #0           // 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
@@ -203,29 +214,108 @@ FUNC_START_FULL main, 128
 	add  x10, x10, menu_table@PAGEOFF
 
 	// 구조체 크기가 16바이트 이므로, [시작주소 + (인덱스 * 16)]
-	// lsl #4 가 곧 16을 곱하는 연산 이 됨
 	sub x22, x22, #1           // 정확한 인덱스 로 환원
 	add x10, x10, x22, lsl #4  // x10 = x10 + (x22 * 16),
-	// (x22, lsl #4 ==> x22 * 16) + x10 ==> x10 에 저장
-	ldr x11, [x10, #0]  // 구조체의 첫 8바이트(함수 포인터)를 x11 에 로드
-	// ldr x11, [x10, #8] x10 시작 주소에서 8바이트 떨어진 방의 값(글자 제목 주소)을 x11에 로드!
-	mov x23, x11  // 실행할 함수
+	ldr x11, [x10, #0]         // 구조체의 첫 8바이트(함수 포인터)를 x11 에 로드
+	mov x23, x11               // 실행할 함수
 
 	bl .L_insert_line  // ★ 상단 구분선 (새로 추가)
 
 	// 💞 메뉴별 사전 설정 💞
-	cmp  x22, #11
+	cmp  x22, #11              // Console.WriteLine() 모델링
 	b.eq .L_console_writeline
 
-	cmp  x22, #14    // 피보나치
+	cmp  x22, #14    // _fib_print
 	b.eq .L_run_fib
 
-	cmp  x22, #16      // 하노이탑
+	cmp  x22, #16      // _hanoi
 	b.eq .L_run_hanoi
 	
+	cmp  x22, #20           // _quicksort
+	b.eq .L_exec_quicksort
 	// ---- //
 	b .L_exec
 
+// _quicksort
+// _quicksort
+.L_exec_quicksort:
+	adrp x25, quicksort_arr@PAGE
+	add  x25, x25, quicksort_arr@PAGEOFF
+
+	adrp x26, quicksort_arr_end@PAGE
+	add  x26, x26, quicksort_arr_end@PAGEOFF
+
+	sub x27, x26, x25  // 전체 바이트 크기
+	lsr x28, x27, #3   // x28 = 원소 개수 (72 / 8 = 9)
+
+	// ---- 정렬 전 배열 출력 ----
+	adrp x0, label_before@PAGE
+	add  x0, x0, label_before@PAGEOFF
+	bl   _printf
+
+	mov x0, x25       // arr
+	mov x1, x28       // count
+	bl  _print_array
+
+	// ---- 퀵정렬 실행 ----
+	mov x0, x25      // arr
+	mov x1, #0       // lo
+	sub x2, x28, #1  // hi = count - 1
+	bl  _quicksort
+
+	// ---- 정렬 후 배열 출력 ----
+	adrp x0, label_after@PAGE
+	add  x0, x0, label_after@PAGEOFF
+	bl   _printf
+
+	mov x0, x25
+	mov x1, x28
+	bl  _print_array
+
+	bl .L_insert_line
+	b  .L_flush_buffer
+
+
+// .L_print_loop:
+// 	cmp  x23, x28
+// 	b.ge .L_print_done
+	
+// 	lsl x0, x23, #3
+// 	ldr x1, [x25, x0]
+	
+// 	adrp x0, fmt_qs@PAGE
+// 	add  x0, x0, fmt_qs@PAGEOFF
+// 	sub  sp, sp, #16
+// 	str  x1, [sp, #0]
+// 	bl   _printf
+// 	add  sp, sp, #16
+// 	add  x23, x23, #1
+
+// 	b .L_print_loop
+
+// .L_print_done:
+// 	adrp x0, newline_str@PAGE
+// 	add  x0, x0, newline_str@PAGEOFF
+// 	bl   _printf
+
+// 	mov x0, #0
+	
+// 	mov x0, x25
+// 	mov x1, #0
+// 	mov x2, x28
+	
+// 	bl _quicksort
+// 	// mov  x0, x25
+// 	// mov  x1, #0
+// 	// mov  x2, x28
+// 	// mov  x3, #'M'
+	
+// 	b .L_exec
+
+
+
+
+// _console_writeline
 .L_console_writeline:
 	adrp x0, helloworld@PAGE
 	add  x0, x0, helloworld@PAGEOFF
