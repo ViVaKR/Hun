@@ -1,2 +1,4 @@
 theme: jekyll-theme-cayman
 title: Hun ARM64 Mnemonic Dictionary
+mermaid: true
+use_math: true
