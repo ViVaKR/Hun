@@ -1,5 +1,9 @@
 # Hun ARM64 Assembly Highlighter
 
+[![Version](https://img.shields.io/visual-studio-marketplace/v/buddham-hq.hun-asm-highlighter)](https://marketplace.visualstudio.com/items?itemName=buddham-hq.hun-asm-highlighter)
+[![📖 Mnemonic Dictionary](https://img.shields.io/badge/📖_Mnemonic_Dictionary-224_instructions-brightgreen)](https://vivakr.github.io/Hun/)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 A VS Code extension for **AArch64 / ARM64 assembly** development — built for the [Hun](https://github.com/ViVaKR/Hun) project, and just as useful for anyone writing plain, standard ARM64 assembly.
 
 It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for the full AArch64 instruction set, lightweight static diagnostics that catch real encoding mistakes before you assemble, code formatting, snippets for common patterns, and Go to Definition / Outline for label navigation. Korean-mnemonic support (`할당`, `더함`, `적재`...) is included as an optional layer on top — you can use the extension for pure standard ARM64 assembly without ever touching it.
@@ -87,6 +91,26 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 Just open a `.S`, `.s`, `.inc`, or `.asm` file — the extension activates automatically. No configuration needed.
 
 ## Changelog
+
+### 🚀 v2.4.1 — NEON/SIMD, Kernel-Level, and Scalar Completeness
+This release closes three of the biggest remaining gaps in instruction coverage, adding 63 new mnemonics — all sourced from the same `arm64-data.js` file that already powers hover documentation, autocomplete, syntax highlighting, and the "unknown mnemonic" diagnostic hint, so every one of those four surfaces now agrees on the exact same 224-instruction set.
+
+* **45 NEON/SIMD vector instructions**, aimed at the kind of code most assembly beginners actually run into first — image and audio processing:
+  * Multiply-accumulate: `MLA`, `MLS`, `FMLA`, `FMLS`
+  * Structured (interleaved) load/store for stereo audio and RGB/RGBA pixel data: `LD1`–`LD4`, `ST1`–`ST4`
+  * Lane manipulation: `DUP`, `INS`, `UMOV`, `SMOV`
+  * Table lookup / shuffle: `TBL`, `TBX`, `ZIP1`/`ZIP2`, `UZP1`/`UZP2`, `TRN1`/`TRN2`, `EXT`
+  * Horizontal reductions: `ADDV`, `UMAXV`/`SMAXV`, `UMINV`/`SMINV`
+  * Per-lane vector compares (produce branchless masks): `CMEQ`, `CMGT`, `CMGE`, `CMHI`, `CMHS`
+  * Mask-based bitwise select: `BSL`, `BIT`, `BIF`
+  * Saturating arithmetic (prevents audio clipping / pixel wraparound): `SQADD`, `UQADD`, `SQSUB`, `UQSUB`
+  * Widen/narrow conversions: `SXTL`, `UXTL`, `XTN`
+* **9 kernel/system instructions**, relevant to bare-metal and privileged-mode work (cache and TLB maintenance, exception levels): `DC`, `IC`, `TLBI`, `AT`, `SB`, `ERET`, `HVC`, `SMC`, `HLT`
+* **9 previously-undocumented scalar instructions and aliases**, filling entries that only had a bare name (or none at all) before: `EXTR`, `CINC`, `CINV`, `CNEG`, `CSETM`, `BFXIL`, `ROR`, `UXTB`, `UXTH`
+
+Every addition includes a full English + Korean description, official syntax, and a realistic code example — hover over any of them in the editor to see it directly.
+
+Also published a standalone **[Mnemonic Dictionary](https://vivakr.github.io/Hun/)** (224 entries) as a GitHub Pages site, generated straight from `arm64-data.js` so it never drifts out of sync with what the extension itself shows.
 
 ### 🚀 v2.3.36 (Current) — 176 new mnemonics added to IntelliSense
 * Added IntelliSense (Korean + English) for 176 additional mnemonics
@@ -267,6 +291,7 @@ MIT License
 
 ## 관련 프로젝트
 
+- 📖 **[Browse the full Mnemonic Dictionary →](https://vivakr.github.io/Hun/)** — every instruction, hover-for-hover the same as what you see in the editor.
 - [Hun](https://github.com/ViVaKR/Hun) — 한글 OS 개발 프로젝트 본체
 
 ## 제작진

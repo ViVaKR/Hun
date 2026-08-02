@@ -1457,6 +1457,402 @@ const arm64FpInstructions = [
   }
 ];
 
+// ARM64 NEON/SIMD Vector Instructions (curated core set)
+// Note: many scalar mnemonics (ADD, SUB, MUL, NEG...) are reused for vector
+// operands too (e.g. "ADD V0.4S, V1.4S, V2.4S") - the assembler tells them
+// apart by operand syntax, not by name. To avoid overwriting the scalar
+// entries above (name-keyed lookup), this list only includes mnemonics that
+// are unique to the vector/SIMD world.
+const arm64NeonInstructions = [
+  {
+    name: "MLA",
+    description: "✓ Multiply-Add (vector). Per-lane: Vd = Vd + (Vn * Vm). Used to accumulate a running sum of products, e.g. in FIR filters or dot products, without a separate add step.\n\n✓ 벡터 곱셈-덧셈. 레인별로 Vd = Vd + (Vn * Vm)을 계산합니다. FIR 필터나 내적처럼 곱한 값을 계속 누적할 때, 덧셈을 따로 안 해도 되게 해줍니다.",
+    syntax: "MLA <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "MLA V0.4S, V1.4S, V2.4S   // V0 += V1 * V2 (4개 32비트 레인 동시에)"
+  },
+  {
+    name: "MLS",
+    description: "✓ Multiply-Subtract (vector). Per-lane: Vd = Vd - (Vn * Vm).\n\n✓ 벡터 곱셈-뺄셈. 레인별로 Vd = Vd - (Vn * Vm)을 계산합니다.",
+    syntax: "MLS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "MLS V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "FMLA",
+    description: "✓ Floating-point fused Multiply-Add (vector). Per-lane: Vd = Vd + (Vn * Vm), computed in a single rounding step. The workhorse of vectorized audio mixing and matrix/dot-product math.\n\n✓ 부동소수점 벡터 융합 곱셈-덧셈. 레인별로 Vd = Vd + (Vn * Vm)을 한 번의 반올림으로 계산합니다. 오디오 믹싱, 행렬/내적 연산을 벡터화할 때 가장 많이 쓰이는 명령어입니다.",
+    syntax: "FMLA <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "FMLA V0.4S, V1.4S, V2.4S   // 오디오 4채널 믹싱 등에 활용"
+  },
+  {
+    name: "FMLS",
+    description: "✓ Floating-point fused Multiply-Subtract (vector). Per-lane: Vd = Vd - (Vn * Vm), single rounding step.\n\n✓ 부동소수점 벡터 융합 곱셈-뺄셈. 레인별로 Vd = Vd - (Vn * Vm)을 한 번의 반올림으로 계산합니다.",
+    syntax: "FMLS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "FMLS V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "LD1",
+    description: "✓ Load single 1-element structures (or a plain vector). Loads contiguous memory straight into one (or more) vector register(s), lane by lane, with no interleaving. This is the basic \"load a chunk of pixels/samples into a vector\" instruction.\n\n✓ 단일(비인터리브) 구조체 적재. 메모리를 그대로, 채널을 섞지 않고 벡터 레지스터에 순서대로 읽어들입니다. \"픽셀/샘플 덩어리를 벡터에 그대로 담는다\"는 가장 기본적인 벡터 로드입니다.",
+    syntax: "LD1 { <Vt>.<T> }, [<Xn|SP>]",
+    example: "LD1 { V0.16B }, [X0]   // 16바이트를 그대로 V0에 적재"
+  },
+  {
+    name: "ST1",
+    description: "✓ Store single 1-element structures (or a plain vector). The store counterpart of LD1 - writes a vector register straight to contiguous memory, no interleaving.\n\n✓ 단일(비인터리브) 구조체 저장. LD1의 반대 동작으로, 벡터 레지스터 내용을 채널을 섞지 않고 연속된 메모리에 그대로 씁니다.",
+    syntax: "ST1 { <Vt>.<T> }, [<Xn|SP>]",
+    example: "ST1 { V0.16B }, [X1]"
+  },
+  {
+    name: "LD2",
+    description: "✓ Load 2-element interleaved structures. Reads memory containing interleaved pairs (e.g. stereo L/R audio samples, or R/G of a 2-channel image) and de-interleaves them into two separate vector registers in one instruction.\n\n✓ 2개 원소 인터리브 구조체 적재. 스테레오 오디오(L/R)나 2채널 이미지처럼 서로 섞여 저장된 데이터를, 한 번의 명령으로 채널별 벡터 레지스터 두 개로 분리해서 읽어옵니다.",
+    syntax: "LD2 { <Vt>.<T>, <Vt2>.<T> }, [<Xn|SP>]",
+    example: "LD2 { V0.8H, V1.8H }, [X0]   // 스테레오 오디오를 좌/우 채널로 분리 적재"
+  },
+  {
+    name: "ST2",
+    description: "✓ Store 2-element interleaved structures. The store counterpart of LD2 - takes two vector registers and interleaves them back into memory (e.g. re-interleaving separate L/R buffers into a stereo stream).\n\n✓ 2개 원소 인터리브 구조체 저장. LD2의 반대 동작으로, 두 벡터 레지스터를 다시 인터리브하여 메모리에 씁니다 (예: 분리된 L/R 버퍼를 스테레오 스트림으로 재조합).",
+    syntax: "ST2 { <Vt>.<T>, <Vt2>.<T> }, [<Xn|SP>]",
+    example: "ST2 { V0.8H, V1.8H }, [X1]"
+  },
+  {
+    name: "LD3",
+    description: "✓ Load 3-element interleaved structures. De-interleaves memory holding triplets - classically RGB pixel data - into three separate vector registers (R, G, B) in a single instruction.\n\n✓ 3개 원소 인터리브 구조체 적재. RGB 픽셀처럼 3개씩 섞여 저장된 데이터를, 한 번의 명령으로 R/G/B 세 개의 벡터 레지스터로 분리해서 읽어옵니다.",
+    syntax: "LD3 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T> }, [<Xn|SP>]",
+    example: "LD3 { V0.16B, V1.16B, V2.16B }, [X0]   // RGB 픽셀을 R/G/B 채널로 분리 적재"
+  },
+  {
+    name: "ST3",
+    description: "✓ Store 3-element interleaved structures. The store counterpart of LD3 - interleaves three vector registers (e.g. R, G, B channels) back into memory as packed triplets.\n\n✓ 3개 원소 인터리브 구조체 저장. LD3의 반대 동작으로, R/G/B 세 벡터 레지스터를 다시 섞어서 메모리에 씁니다.",
+    syntax: "ST3 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T> }, [<Xn|SP>]",
+    example: "ST3 { V0.16B, V1.16B, V2.16B }, [X1]"
+  },
+  {
+    name: "LD4",
+    description: "✓ Load 4-element interleaved structures. De-interleaves memory holding quadruplets - classically RGBA pixel data - into four separate vector registers (R, G, B, A) in a single instruction.\n\n✓ 4개 원소 인터리브 구조체 적재. RGBA 픽셀처럼 4개씩 섞여 저장된 데이터를, 한 번의 명령으로 R/G/B/A 네 개의 벡터 레지스터로 분리해서 읽어옵니다.",
+    syntax: "LD4 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T>, <Vt4>.<T> }, [<Xn|SP>]",
+    example: "LD4 { V0.16B, V1.16B, V2.16B, V3.16B }, [X0]   // RGBA 픽셀을 채널별로 분리 적재"
+  },
+  {
+    name: "ST4",
+    description: "✓ Store 4-element interleaved structures. The store counterpart of LD4 - interleaves four vector registers (e.g. R, G, B, A channels) back into memory as packed quadruplets.\n\n✓ 4개 원소 인터리브 구조체 저장. LD4의 반대 동작으로, R/G/B/A 네 벡터 레지스터를 다시 섞어서 메모리에 씁니다.",
+    syntax: "ST4 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T>, <Vt4>.<T> }, [<Xn|SP>]",
+    example: "ST4 { V0.16B, V1.16B, V2.16B, V3.16B }, [X1]"
+  },
+  {
+    name: "DUP",
+    description: "✓ Duplicate (broadcast). Copies a single value - from a general-purpose register or from one lane of a vector - into every lane of the destination vector. The classic way to build a constant vector, e.g. for adding the same value to every pixel.\n\n✓ 복제(브로드캐스트). 범용 레지스터 값이나 벡터의 특정 레인 하나를, 대상 벡터의 모든 레인에 똑같이 복사해 채웁니다. 모든 픽셀에 같은 값을 더하고 싶을 때처럼, 상수 벡터를 만드는 기본 방법입니다.",
+    syntax: "DUP <Vd>.<T>, <Rn>  or  DUP <Vd>.<T>, <Vn>.<Ts>[<index>]",
+    example: "DUP V0.4S, W0        // W0 값을 4개 레인 전부에 복제"
+  },
+  {
+    name: "INS",
+    description: "✓ Insert vector element. Writes a value - from a general-purpose register or from another vector's lane - into exactly one lane of the destination vector, leaving the other lanes untouched.\n\n✓ 벡터 원소 삽입. 범용 레지스터 값이나 다른 벡터의 특정 레인 값을, 대상 벡터의 딱 한 레인에만 써 넣습니다. 나머지 레인은 그대로 유지됩니다.",
+    syntax: "INS <Vd>.<Ts>[<index>], <Rn>  or  INS <Vd>.<Ts>[<index>], <Vn>.<Ts>[<index2>]",
+    example: "INS V0.S[1], W0   // V0의 두 번째 32비트 레인에 W0 값을 삽입"
+  },
+  {
+    name: "UMOV",
+    description: "✓ Unsigned Move (vector to general-purpose register). Copies one lane of a vector into a general-purpose register, zero-extending it. The counterpart of DUP for reading a single lane back out.\n\n✓ 벡터 레인을 범용 레지스터로 이동(부호 없음). 벡터의 한 레인 값을 0으로 확장하여 범용 레지스터에 저장합니다. DUP과 반대로, 벡터에서 값을 하나 꺼내올 때 씁니다.",
+    syntax: "UMOV <Rd>, <Vn>.<Ts>[<index>]",
+    example: "UMOV W0, V0.S[0]   // V0의 첫 32비트 레인을 W0로 꺼냄"
+  },
+  {
+    name: "SMOV",
+    description: "✓ Signed Move (vector to general-purpose register). Copies one lane of a vector into a general-purpose register, sign-extending it. Use this instead of UMOV when the lane holds a signed value.\n\n✓ 벡터 레인을 범용 레지스터로 이동(부호 있음). 벡터의 한 레인 값을 부호 확장하여 범용 레지스터에 저장합니다. 레인 값이 부호 있는 값일 때는 UMOV 대신 이걸 씁니다.",
+    syntax: "SMOV <Rd>, <Vn>.<Ts>[<index>]",
+    example: "SMOV X0, V0.B[3]   // signed byte 레인을 64비트로 부호 확장하며 꺼냄"
+  },
+  {
+    name: "TBL",
+    description: "✓ Table vector Lookup. Uses each byte of an index vector to look up a corresponding byte in a table made of 1-4 vector registers; any index outside the table's range produces 0. A general-purpose shuffle/permute/lookup-table primitive.\n\n✓ 테이블 벡터 조회. 인덱스 벡터의 각 바이트 값을 이용해, 1~4개의 벡터 레지스터로 구성된 테이블에서 해당 바이트를 찾아옵니다. 테이블 범위를 벗어난 인덱스는 0이 됩니다. 셔플/치환/룩업테이블 용도로 두루 쓰이는 범용 명령어입니다.",
+    syntax: "TBL <Vd>.<Ta>, { <Vn>.16B }, <Vm>.<Ta>",
+    example: "TBL V0.16B, { V1.16B }, V2.16B   // V2를 인덱스 삼아 V1에서 바이트 조회"
+  },
+  {
+    name: "TBX",
+    description: "✓ Table vector lookup with eXtension. Same as TBL, but any index outside the table's range leaves the corresponding destination lane unchanged instead of zeroing it - useful when you want a lookup with a fallback/default value already in place.\n\n✓ 확장 테이블 벡터 조회. TBL과 동작은 같지만, 범위를 벗어난 인덱스의 경우 해당 레인을 0으로 만드는 대신 대상 벡터에 원래 있던 값을 그대로 남겨둡니다. 기본값이 이미 채워진 상태에서 조회하고 싶을 때 유용합니다.",
+    syntax: "TBX <Vd>.<Ta>, { <Vn>.16B }, <Vm>.<Ta>",
+    example: "TBX V0.16B, { V1.16B }, V2.16B"
+  },
+  {
+    name: "ZIP1",
+    description: "✓ Zip vectors (low half). Interleaves the low half of two vectors, element by element, into the destination - like zipping two decks of cards together starting from the top. Used to re-interleave separated channels.\n\n✓ 벡터 지퍼(하위 절반). 두 벡터의 하위 절반 원소들을 하나씩 번갈아 섞어서 대상 벡터를 만듭니다 - 카드 두 벌을 위에서부터 섞어 합치는 것과 비슷합니다. 분리해둔 채널을 다시 인터리브할 때 씁니다.",
+    syntax: "ZIP1 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "ZIP1 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "ZIP2",
+    description: "✓ Zip vectors (high half). Same as ZIP1 but interleaves the high half of the two source vectors instead.\n\n✓ 벡터 지퍼(상위 절반). ZIP1과 동작은 같지만, 두 소스 벡터의 상위 절반 원소들을 섞습니다.",
+    syntax: "ZIP2 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "ZIP2 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "UZP1",
+    description: "✓ Unzip vectors (even elements). The inverse of ZIP: gathers the even-indexed elements from two vectors into the destination. Used to de-interleave data, e.g. pulling every-other-sample out of an interleaved stream.\n\n✓ 벡터 언집(짝수 원소). ZIP의 반대 동작으로, 두 벡터에서 짝수 번째 인덱스의 원소들만 모아 대상 벡터를 만듭니다. 인터리브된 스트림에서 한 칸씩 건너뛰며 뽑아낼 때 씁니다.",
+    syntax: "UZP1 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "UZP1 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "UZP2",
+    description: "✓ Unzip vectors (odd elements). Same as UZP1 but gathers the odd-indexed elements instead.\n\n✓ 벡터 언집(홀수 원소). UZP1과 동작은 같지만, 홀수 번째 인덱스의 원소들을 모읍니다.",
+    syntax: "UZP2 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "UZP2 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "TRN1",
+    description: "✓ Transpose vectors (even positions). Takes alternating elements from two vectors and places them at even destination positions - useful for transposing small matrices stored in vector registers.\n\n✓ 벡터 전치(짝수 위치). 두 벡터에서 원소를 번갈아 가져와 짝수 위치에 배치합니다. 벡터 레지스터에 담긴 작은 행렬을 전치(transpose)할 때 유용합니다.",
+    syntax: "TRN1 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "TRN1 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "TRN2",
+    description: "✓ Transpose vectors (odd positions). Same as TRN1 but places the alternating elements at odd destination positions instead.\n\n✓ 벡터 전치(홀수 위치). TRN1과 동작은 같지만, 원소들을 홀수 위치에 배치합니다.",
+    syntax: "TRN2 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "TRN2 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "EXT",
+    description: "✓ Extract vector from pair. Conceptually concatenates two vectors and extracts a 128-bit window starting at a byte offset - like a sliding window or byte-granular rotate across two registers. Handy for shifting a stream by a few bytes.\n\n✓ 벡터 쌍에서 추출. 개념적으로 두 벡터를 이어붙인 뒤, 바이트 오프셋만큼 떨어진 위치에서 128비트 구간을 잘라냅니다 - 두 레지스터에 걸친 슬라이딩 윈도우/바이트 단위 회전과 비슷합니다. 스트림을 몇 바이트씩 밀 때 유용합니다.",
+    syntax: "EXT <Vd>.16B, <Vn>.16B, <Vm>.16B, #<index>",
+    example: "EXT V0.16B, V1.16B, V2.16B, #4   // V1V2를 이어붙인 뒤 4바이트 밀어서 추출"
+  },
+  {
+    name: "ADDV",
+    description: "✓ Add across Vector. Sums every lane of a vector together into a single scalar result written to one lane of the destination. The classic horizontal-reduction step after a vectorized dot product.\n\n✓ 벡터 전체 합산. 벡터의 모든 레인 값을 다 더해서 하나의 스칼라 결과로 만들어 대상 레인에 씁니다. 벡터화된 내적 계산 뒤에 흔히 오는 수평 축소(reduction) 단계입니다.",
+    syntax: "ADDV <V><d>, <Vn>.<T>",
+    example: "ADDV S0, V1.4S   // V1의 4개 레인 합계를 S0에"
+  },
+  {
+    name: "UMAXV",
+    description: "✓ Unsigned Maximum across Vector. Finds the largest unsigned value among all lanes and writes it to the destination.\n\n✓ 벡터 전체 중 최댓값(부호 없음). 모든 레인 중 가장 큰 부호 없는 값을 찾아 대상에 씁니다.",
+    syntax: "UMAXV <V><d>, <Vn>.<T>",
+    example: "UMAXV B0, V1.16B"
+  },
+  {
+    name: "SMAXV",
+    description: "✓ Signed Maximum across Vector. Finds the largest signed value among all lanes and writes it to the destination.\n\n✓ 벡터 전체 중 최댓값(부호 있음). 모든 레인 중 가장 큰 부호 있는 값을 찾아 대상에 씁니다.",
+    syntax: "SMAXV <V><d>, <Vn>.<T>",
+    example: "SMAXV S0, V1.4S"
+  },
+  {
+    name: "UMINV",
+    description: "✓ Unsigned Minimum across Vector. Finds the smallest unsigned value among all lanes and writes it to the destination.\n\n✓ 벡터 전체 중 최솟값(부호 없음). 모든 레인 중 가장 작은 부호 없는 값을 찾아 대상에 씁니다.",
+    syntax: "UMINV <V><d>, <Vn>.<T>",
+    example: "UMINV B0, V1.16B"
+  },
+  {
+    name: "SMINV",
+    description: "✓ Signed Minimum across Vector. Finds the smallest signed value among all lanes and writes it to the destination.\n\n✓ 벡터 전체 중 최솟값(부호 있음). 모든 레인 중 가장 작은 부호 있는 값을 찾아 대상에 씁니다.",
+    syntax: "SMINV <V><d>, <Vn>.<T>",
+    example: "SMINV S0, V1.4S"
+  },
+  {
+    name: "CMEQ",
+    description: "✓ Compare Equal (vector). Per-lane: compares two vectors (or a vector and zero) and sets every bit of the destination lane to 1 if equal, or 0 if not - producing a mask usable with BSL/BIT/BIF or AND.\n\n✓ 벡터 비교(같음). 레인별로 두 벡터(또는 벡터와 0)를 비교해서, 같으면 해당 레인 전체를 1로, 다르면 0으로 채웁니다. 이렇게 만든 마스크는 BSL/BIT/BIF나 AND와 함께 씁니다.",
+    syntax: "CMEQ <Vd>.<T>, <Vn>.<T>, <Vm>.<T>  or  CMEQ <Vd>.<T>, <Vn>.<T>, #0",
+    example: "CMEQ V0.4S, V1.4S, V2.4S   // 레인별로 같으면 0xFFFFFFFF, 다르면 0"
+  },
+  {
+    name: "CMGT",
+    description: "✓ Compare Greater Than, signed (vector). Per-lane signed comparison, producing an all-1s/all-0s mask like CMEQ.\n\n✓ 벡터 비교(초과, 부호 있음). 레인별로 부호 있는 값끼리 비교하여, CMEQ처럼 전체-1/전체-0 마스크를 만듭니다.",
+    syntax: "CMGT <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "CMGT V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "CMGE",
+    description: "✓ Compare Greater than or Equal, signed (vector). Per-lane signed comparison (>=), producing an all-1s/all-0s mask.\n\n✓ 벡터 비교(이상, 부호 있음). 레인별로 부호 있는 값끼리 크거나 같은지 비교하여 마스크를 만듭니다.",
+    syntax: "CMGE <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "CMGE V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "CMHI",
+    description: "✓ Compare Higher, unsigned (vector). Per-lane unsigned greater-than comparison, producing an all-1s/all-0s mask. Use this instead of CMGT when the lanes hold unsigned values.\n\n✓ 벡터 비교(더 높음, 부호 없음). 레인별로 부호 없는 값끼리 초과 비교하여 마스크를 만듭니다. 레인이 부호 없는 값일 때는 CMGT 대신 이걸 씁니다.",
+    syntax: "CMHI <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "CMHI V0.16B, V1.16B, V2.16B"
+  },
+  {
+    name: "CMHS",
+    description: "✓ Compare Higher or Same, unsigned (vector). Per-lane unsigned greater-or-equal comparison, producing an all-1s/all-0s mask.\n\n✓ 벡터 비교(더 높거나 같음, 부호 없음). 레인별로 부호 없는 값끼리 이상 비교하여 마스크를 만듭니다.",
+    syntax: "CMHS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "CMHS V0.16B, V1.16B, V2.16B"
+  },
+  {
+    name: "BSL",
+    description: "✓ Bitwise Select. Uses the destination register's current bits as a mask: where the mask bit is 1, keeps the bit from Vn; where it's 0, takes the bit from Vm. Typically paired with a CMxx instruction to build a branchless if/else over vector lanes.\n\n✓ 비트 단위 선택. 대상 레지스터에 이미 들어있는 값을 마스크로 사용해서, 마스크 비트가 1인 자리는 Vn의 비트를, 0인 자리는 Vm의 비트를 가져와 채웁니다. 보통 CMxx 계열 명령어와 짝지어, 분기 없이 벡터 레인 단위 if/else를 구현할 때 씁니다.",
+    syntax: "BSL <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "CMGT V3.4S, V1.4S, V2.4S   // 마스크 생성\nBSL  V3.16B, V1.16B, V2.16B  // 마스크에 따라 V1/V2 중 선택"
+  },
+  {
+    name: "BIT",
+    description: "✓ Bitwise Insert if True. Inserts bits from Vn into the destination wherever the mask in Vm is 1, leaving the rest of the destination unchanged.\n\n✓ 조건부(참) 비트 삽입. 마스크 Vm의 비트가 1인 자리에만 Vn의 비트를 대상에 삽입합니다. 나머지 자리는 원래 값 그대로 유지됩니다.",
+    syntax: "BIT <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "BIT V0.16B, V1.16B, V2.16B"
+  },
+  {
+    name: "BIF",
+    description: "✓ Bitwise Insert if False. Inserts bits from Vn into the destination wherever the mask in Vm is 0, leaving the rest of the destination unchanged. The complement of BIT.\n\n✓ 조건부(거짓) 비트 삽입. 마스크 Vm의 비트가 0인 자리에만 Vn의 비트를 대상에 삽입합니다. BIT의 반대 조건입니다.",
+    syntax: "BIF <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "BIF V0.16B, V1.16B, V2.16B"
+  },
+  {
+    name: "SQADD",
+    description: "✓ Signed saturating Add (vector). Adds per-lane like ADD, but clamps (saturates) the result at the signed range's max/min instead of wrapping around on overflow. Essential for audio mixing, where wraparound would produce ugly clicks/pops.\n\n✓ 부호 있는 포화 덧셈(벡터). ADD처럼 레인별로 더하되, 오버플로 시 값이 넘어가 버리는 대신 부호 있는 범위의 최댓값/최솟값에서 멈춥니다(포화). 오디오 믹싱에서 오버플로로 인한 지지직거리는 클리핑 잡음을 막기 위해 필수적입니다.",
+    syntax: "SQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "SQADD V0.8H, V1.8H, V2.8H   // 오디오 샘플 합성 시 클리핑 방지"
+  },
+  {
+    name: "UQADD",
+    description: "✓ Unsigned saturating Add (vector). Same as SQADD but clamps to the unsigned range instead - useful for image pixel values that must stay within 0-255.\n\n✓ 부호 없는 포화 덧셈(벡터). SQADD와 같지만 부호 없는 범위에서 클램프합니다. 픽셀 값이 0~255 범위를 벗어나면 안 되는 이미지 처리에 유용합니다.",
+    syntax: "UQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "UQADD V0.16B, V1.16B, V2.16B   // 밝기 보정 시 255를 넘지 않도록"
+  },
+  {
+    name: "SQSUB",
+    description: "✓ Signed saturating Subtract (vector). Subtracts per-lane like SUB, but clamps the result at the signed range's max/min instead of wrapping around on underflow.\n\n✓ 부호 있는 포화 뺄셈(벡터). SUB처럼 레인별로 빼되, 언더플로 시 값이 넘어가 버리는 대신 부호 있는 범위에서 멈춥니다.",
+    syntax: "SQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "SQSUB V0.8H, V1.8H, V2.8H"
+  },
+  {
+    name: "UQSUB",
+    description: "✓ Unsigned saturating Subtract (vector). Same as SQSUB but clamps to the unsigned range - a subtraction that stops at 0 instead of wrapping to a huge positive number, e.g. for image darkening.\n\n✓ 부호 없는 포화 뺄셈(벡터). SQSUB와 같지만 부호 없는 범위에서 클램프합니다. 뺄셈 결과가 큰 양수로 감싸돌지 않고 0에서 멈춥니다(예: 이미지 어둡게 하기).",
+    syntax: "UQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+    example: "UQSUB V0.16B, V1.16B, V2.16B   // 밝기를 낮추되 0 밑으로 안 내려가게"
+  },
+  {
+    name: "SXTL",
+    description: "✓ Signed extend Long (vector widen). Sign-extends each element in the lower half of a vector to double its width, producing a full-width result vector (e.g. 8x8-bit -> 8x16-bit). Used to widen data before doing arithmetic that would otherwise overflow.\n\n✓ 부호 확장하며 폭 넓히기(벡터). 벡터 하위 절반의 각 원소를 부호를 유지한 채 두 배 폭으로 확장하여, 폭이 넓은 결과 벡터를 만듭니다(예: 8비트 8개 -> 16비트 8개). 그대로 연산하면 오버플로될 값을, 먼저 넓혀두고 계산할 때 씁니다.",
+    syntax: "SXTL <Vd>.<Ta>, <Vn>.<Tb>",
+    example: "SXTL V0.8H, V1.8B   // signed 8비트 8개 -> signed 16비트 8개로 확장"
+  },
+  {
+    name: "UXTL",
+    description: "✓ Unsigned extend Long (vector widen). Zero-extends each element in the lower half of a vector to double its width. The unsigned counterpart of SXTL.\n\n✓ 부호 없이 확장하며 폭 넓히기(벡터). 벡터 하위 절반의 각 원소를 0으로 채워 두 배 폭으로 확장합니다. SXTL의 부호 없는 버전입니다.",
+    syntax: "UXTL <Vd>.<Ta>, <Vn>.<Tb>",
+    example: "UXTL V0.8H, V1.8B   // unsigned 8비트 8개 -> unsigned 16비트 8개로 확장"
+  },
+  {
+    name: "XTN",
+    description: "✓ Extract Narrow (vector narrow). The inverse of SXTL/UXTL - truncates each element of a wider vector down to half width, packing the results into the lower half of the destination (e.g. 16-bit samples -> 8-bit).\n\n✓ 폭 좁혀서 추출(벡터). SXTL/UXTL의 반대 동작으로, 넓은 벡터의 각 원소를 절반 폭으로 잘라내어 대상 벡터의 하위 절반에 채웁니다(예: 16비트 샘플 -> 8비트로 축소).",
+    syntax: "XTN <Vd>.<Tb>, <Vn>.<Ta>",
+    example: "XTN V0.8B, V1.8H   // 16비트 8개를 8비트 8개로 잘라 담음"
+  }
+];
+
+// ARM64 System / Privileged Instructions (curated core set, relevant to bare-metal kernel work)
+const arm64SystemInstructions = [
+  {
+    name: "DC",
+    description: "✓ Data Cache operation. Performs a cache-maintenance action (clean, invalidate, or zero) on the cache line containing the address in the given register. Essential in bare-metal/kernel code whenever data written by the CPU must actually reach memory that a non-coherent observer (DMA device, another core before MMU is up, etc.) will read - e.g. after writing page tables, before enabling the MMU.\n\n✓ 데이터 캐시 유지보수 명령. 지정한 레지스터 주소가 속한 캐시 라인에 대해 clean(메모리에 반영), invalidate(무효화), zero(0으로 채움) 중 하나의 동작을 수행합니다. CPU가 쓴 데이터가 캐시에만 머물지 않고 실제 메모리까지 반드시 도달해야 할 때(비일관성 관찰자인 DMA 장치, MMU 켜지기 전의 다른 코어 등이 읽을 때) 베어메탈/커널 코드에서 필수적입니다 - 예: 페이지 테이블을 쓴 직후, MMU를 켜기 전.",
+    syntax: "DC <op>, <Xt>   // op: IVAC, ISW, CVAC, CSW, CVAU, CIVAC, CISW, ZVA ...",
+    example: "DC CVAC, X0      // X0 주소의 캐시 라인을 메모리로 clean\nDSB SY            // clean이 실제로 끝날 때까지 대기"
+  },
+  {
+    name: "IC",
+    description: "✓ Instruction Cache operation. Invalidates instruction-cache entries so the CPU re-fetches fresh instruction bytes from memory (or the point of unification) instead of stale cached ones. Required after writing new/patched code (JIT output, a relocated kernel, self-modifying code) before jumping into it - otherwise the core may still execute the old cached instructions.\n\n✓ 명령어 캐시 유지보수 명령. 명령어 캐시 항목을 무효화하여, CPU가 오래된 캐시된 명령어 대신 메모리(또는 통합 지점)에서 최신 명령어 바이트를 다시 가져오게 합니다. 새로 쓴/패치한 코드(JIT 출력, 재배치된 커널, 자기수정 코드)로 점프하기 전에 반드시 필요합니다 - 안 그러면 코어가 여전히 예전 캐시된 명령어를 실행할 수 있습니다.",
+    syntax: "IC <op>{, <Xt>}   // op: IALLU (전체), IVAU, <Xt> (주소 단위)",
+    example: "IC IVAU, X0      // X0 주소의 명령어 캐시 라인 무효화\nDSB ISH\nISB               // 파이프라인 플러시 - 새 코드가 보이도록"
+  },
+  {
+    name: "TLBI",
+    description: "✓ TLB Invalidate operation. Invalidates cached page-table (address-translation) entries in the TLB, so the MMU re-walks the page tables instead of using a stale mapping. Required after modifying page-table entries (unmapping a page, changing permissions) - without it, the CPU may keep using the old translation.\n\n✓ TLB 무효화 명령. TLB에 캐시된 페이지 테이블(주소 변환) 항목을 무효화하여, MMU가 오래된 매핑을 계속 쓰는 대신 페이지 테이블을 다시 훑도록 합니다. 페이지 테이블 항목을 수정(페이지 언매핑, 권한 변경)한 뒤에는 반드시 필요합니다 - 안 그러면 CPU가 예전 변환 결과를 계속 쓸 수 있습니다.",
+    syntax: "TLBI <op>{, <Xt>}   // op: VMALLE1, VAE1, ASIDE1, ALLE2 ...",
+    example: "TLBI VMALLE1      // 현재 EL1 주소공간의 TLB 항목 전체 무효화\nDSB ISH\nISB"
+  },
+  {
+    name: "AT",
+    description: "✓ Address Translate operation. Runs a virtual address through the MMU's translation tables (as configured for a given exception level/stage) without actually performing a memory access, and deposits the resulting physical address (or fault info) into PAR_EL1. Useful for debugging page-table setup or implementing a software page-table walker.\n\n✓ 주소 변환 명령. 실제 메모리 접근 없이, 가상 주소를 지정한 예외 레벨/단계 기준의 변환 테이블에 통과시켜 그 결과(물리 주소 또는 폴트 정보)를 PAR_EL1에 기록합니다. 페이지 테이블 설정을 디버깅하거나 소프트웨어 페이지 테이블 워커를 구현할 때 유용합니다.",
+    syntax: "AT <op>, <Xt>   // op: S1E1R, S1E1W, S1E0R, S1E0W ...",
+    example: "AT S1E1R, X0      // X0의 가상주소를 EL1 stage 1 기준으로 변환 시도\nMRS X1, PAR_EL1   // 결과 확인"
+  },
+  {
+    name: "SB",
+    description: "✓ Speculation Barrier. Prevents the CPU from speculatively executing instructions past this point until all earlier instructions have architecturally completed - a stronger, dedicated barrier against speculative-execution side channels (e.g. as a mitigation for Spectre-class issues), cheaper than a full DSB+ISB pair on cores that implement it.\n\n✓ 추측 실행 배리어. 이전 명령어들이 아키텍처적으로 완전히 끝날 때까지, 이 지점 이후 명령어의 추측 실행을 막습니다. 추측 실행 사이드채널(Spectre류 취약점 완화 등)을 막기 위한 전용 배리어로, 이를 지원하는 코어에서는 DSB+ISB 조합보다 저렴합니다.",
+    syntax: "SB",
+    example: "CMP X0, X1\nB.LO safe_path\nSB              // 잘못된 분기 예측으로 인한 추측 실행 차단\nsafe_path:"
+  },
+  {
+    name: "ERET",
+    description: "✓ Exception Return. Returns from an exception handler to the code that was interrupted, restoring the program counter from ELR_ELx and the processor state (including exception level) from SPSR_ELx. The mandatory last instruction of any exception/interrupt handler.\n\n✓ 예외로부터 복귀. 예외 핸들러에서 중단됐던 코드로 복귀하며, ELR_ELx에서 프로그램 카운터를, SPSR_ELx에서 프로세서 상태(예외 레벨 포함)를 복원합니다. 모든 예외/인터럽트 핸들러의 마지막에 반드시 와야 하는 명령어입니다.",
+    syntax: "ERET",
+    example: "// IRQ 핸들러 마지막\nMSR ELR_EL1, X0    // 복귀할 주소 설정\nMSR SPSR_EL1, X1   // 복귀할 프로세서 상태 설정\nERET"
+  },
+  {
+    name: "HVC",
+    description: "✓ Hypervisor Call. Triggers a synchronous exception that's routed to EL2 (the hypervisor), analogous to how SVC routes to EL1. Used by a guest OS to request a service from a hypervisor (e.g. in a virtualized Yeoji-style kernel).\n\n✓ 하이퍼바이저 호출. SVC가 EL1로 예외를 보내는 것과 비슷하게, EL2(하이퍼바이저)로 향하는 동기 예외를 발생시킵니다. 게스트 OS가 하이퍼바이저에게 서비스를 요청할 때 사용합니다(가상화 환경에서 커널을 돌릴 때 등).",
+    syntax: "HVC #<imm16>",
+    example: "HVC #0      // EL2 하이퍼바이저에 서비스 요청"
+  },
+  {
+    name: "SMC",
+    description: "✓ Secure Monitor Call. Triggers a synchronous exception routed to EL3 (secure monitor firmware), used to request services from firmware such as PSCI (power-state control - CPU on/off, system reset) on real hardware.\n\n✓ 시큐어 모니터 호출. EL3(시큐어 모니터 펌웨어)로 향하는 동기 예외를 발생시킵니다. 실제 하드웨어에서 PSCI(전원 상태 제어 - CPU 켜기/끄기, 시스템 리셋 등) 같은 펌웨어 서비스를 요청할 때 사용합니다.",
+    syntax: "SMC #<imm16>",
+    example: "SMC #0      // 펌웨어(PSCI 등)에 서비스 요청, 인자는 X0-X3 관례 사용"
+  },
+  {
+    name: "HLT",
+    description: "✓ Halt instruction. Traps to an external debugger and halts execution. Distinct from BRK (a software breakpoint the OS/debugger fields as an exception) - HLT is intended for use by external debug hardware/JTAG and behaves unpredictably without one attached, so it's rarely used directly in normal kernel code.\n\n✓ 정지 명령. 외부 디버거로 트랩되어 실행을 정지시킵니다. BRK(OS/디버거가 예외로 처리하는 소프트웨어 브레이크포인트)와는 다르게, HLT는 외부 디버그 하드웨어/JTAG용으로 설계되어 있어 그런 장비가 연결되지 않은 상태에서는 동작이 예측 불가능합니다. 그래서 일반 커널 코드에서 직접 쓰는 일은 드뭅니다.",
+    syntax: "HLT #<imm16>",
+    example: "HLT #0      // 외부 디버거가 붙어있을 때만 의미가 있음"
+  }
+];
+
+// ARM64 Scalar Instructions - filling in gaps (real mnemonics that only had a
+// bare name/short hint before, now with full syntax + example like the rest)
+const arm64ScalarGapFillInstructions = [
+  {
+    name: "EXTR",
+    description: "✓ Extract register (funnel shift). Concatenates two source registers and extracts a register-width window starting at a bit offset - effectively a rotate when the same register is used for both sources. Useful for pulling an unaligned bitfield that straddles two registers, e.g. while parsing a bitstream.\n\n✓ 레지스터 추출 (퍼널 시프트). 두 소스 레지스터를 이어붙인 뒤, 비트 오프셋만큼 떨어진 지점에서 레지스터 폭만큼을 잘라냅니다. 같은 레지스터를 양쪽에 쓰면 사실상 회전(rotate) 연산이 됩니다. 두 레지스터에 걸쳐 있는 비정렬 비트필드를 뽑아낼 때(비트스트림 파싱 등) 유용합니다.",
+    syntax: "EXTR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, #<lsb>",
+    example: "EXTR X0, X1, X2, #16   // {X1:X2}를 이어붙인 뒤 16비트 위치부터 64비트 추출"
+  },
+  {
+    name: "CINC",
+    description: "✓ Conditional Increment. If the condition is true, Rd = Rn + 1; otherwise Rd = Rn. An alias of CSINC that reads more naturally at the call site than spelling out CSINC with a duplicated register.\n\n✓ 조건부 증가. 조건이 참이면 Rd = Rn + 1, 거짓이면 Rd = Rn을 대입합니다. CSINC의 별칭(alias)으로, 레지스터를 중복 기입하는 CSINC보다 호출부에서 의도가 더 잘 드러납니다.",
+    syntax: "CINC <Wd|Xd>, <Wn|Xn>, <cond>",
+    example: "CMP X0, X1\nCINC X2, X3, GT   // X0 > X1 이면 X2 = X3 + 1, 아니면 X2 = X3"
+  },
+  {
+    name: "CINV",
+    description: "✓ Conditional Invert. If the condition is true, Rd = ~Rn (bitwise NOT); otherwise Rd = Rn. An alias of CSINV.\n\n✓ 조건부 비트 반전. 조건이 참이면 Rd = ~Rn(비트 NOT), 거짓이면 Rd = Rn을 대입합니다. CSINV의 별칭입니다.",
+    syntax: "CINV <Wd|Xd>, <Wn|Xn>, <cond>",
+    example: "CMP X0, X1\nCINV X2, X3, EQ"
+  },
+  {
+    name: "CNEG",
+    description: "✓ Conditional Negate. If the condition is true, Rd = -Rn (two's-complement negate); otherwise Rd = Rn. An alias of CSNEG - useful for a branchless abs()-style computation together with a sign check.\n\n✓ 조건부 부호 반전. 조건이 참이면 Rd = -Rn(2의 보수 부호 반전), 거짓이면 Rd = Rn을 대입합니다. CSNEG의 별칭이며, 부호 검사와 함께 쓰면 분기 없는 abs() 계산에 유용합니다.",
+    syntax: "CNEG <Wd|Xd>, <Wn|Xn>, <cond>",
+    example: "CMP X0, #0\nCNEG X0, X0, MI   // X0가 음수(MI)면 부호를 뒤집어 절댓값처럼 만듦"
+  },
+  {
+    name: "CSETM",
+    description: "✓ Conditional Set Mask. If the condition is true, Rd = all-1s (0xFFFF...); otherwise Rd = 0. An alias of CSINV using XZR for both source registers - the scalar counterpart of what CMEQ/CMGT produce per-lane in NEON, handy for building a branchless mask.\n\n✓ 조건부 마스크 설정. 조건이 참이면 Rd = 전체-1(0xFFFF...), 거짓이면 Rd = 0을 대입합니다. 양쪽 소스에 XZR을 쓰는 CSINV의 별칭이며, NEON의 CMEQ/CMGT가 레인별로 만드는 마스크를 스칼라로 흉내낼 때, 분기 없는 마스크를 만들 때 유용합니다.",
+    syntax: "CSETM <Wd|Xd>, <cond>",
+    example: "CMP X0, X1\nCSETM X2, EQ   // 같으면 X2 = 0xFFFFFFFFFFFFFFFF, 다르면 X2 = 0"
+  },
+  {
+    name: "BFXIL",
+    description: "✓ Bitfield eXtract and Insert at Low. Copies a bit range out of the source register and inserts it at the low end of the destination, leaving the destination's other bits untouched. Useful for pulling one packed field (e.g. a status code) out of a word without disturbing the rest of the destination register.\n\n✓ 비트필드 추출 후 하위에 삽입. 소스 레지스터에서 지정한 비트 범위를 뽑아내어 대상 레지스터의 하위 비트에 삽입하며, 대상의 나머지 비트는 그대로 유지합니다. 패킹된 필드(예: 상태 코드) 하나를 워드에서 뽑아내되, 대상 레지스터의 나머지 값은 건드리지 않고 싶을 때 유용합니다.",
+    syntax: "BFXIL <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>",
+    example: "BFXIL X0, X1, #8, #4   // X1의 비트[11:8]을 뽑아 X0의 비트[3:0]에 삽입 (나머지 X0는 그대로)"
+  },
+  {
+    name: "ROR",
+    description: "✓ Rotate Right. Rotates the bits of a register right by an immediate or register-specified amount, with bits shifted off the low end wrapping around to the high end (unlike LSR, no bits are lost).\n\n✓ 오른쪽 비트 회전. 레지스터의 비트를 즉시값 또는 레지스터로 지정한 만큼 오른쪽으로 회전시킵니다. 밀려난 하위 비트가 사라지지 않고(LSR과 달리) 반대쪽 상위로 다시 들어옵니다.",
+    syntax: "ROR <Wd|Xd>, <Wn|Xn>, #<shift>  or  ROR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "ROR X0, X1, #8   // X1을 오른쪽으로 8비트 회전"
+  },
+  {
+    name: "UXTB",
+    description: "✓ Zero-eXTend Byte. Zero-extends the low 8 bits of the source register to the destination register's full width, clearing everything above bit 7. Commonly seen as an alias of `AND <Wd>, <Wn>, #0xff`, used to isolate a single byte (e.g. an unsigned char) from a wider register.\n\n✓ 바이트를 부호 없이 확장. 소스 레지스터의 하위 8비트를 대상 레지스터 전체 폭으로 0 확장하며, 8비트 위쪽은 전부 지워집니다. `AND <Wd>, <Wn>, #0xff`의 별칭으로도 쓰이며, 더 넓은 레지스터에서 바이트 하나(예: unsigned char)만 뽑아낼 때 흔히 사용됩니다.",
+    syntax: "UXTB <Wd>, <Wn>",
+    example: "UXTB W0, W1   // W1의 하위 1바이트만 남기고 나머지는 0으로"
+  },
+  {
+    name: "UXTH",
+    description: "✓ Zero-eXTend Halfword. Zero-extends the low 16 bits of the source register to the destination register's full width, clearing everything above bit 15. The 16-bit counterpart of UXTB, used to isolate an unsigned short/halfword value.\n\n✓ 하프워드를 부호 없이 확장. 소스 레지스터의 하위 16비트를 대상 레지스터 전체 폭으로 0 확장하며, 16비트 위쪽은 전부 지워집니다. UXTB의 16비트 버전으로, unsigned short/하프워드 값을 뽑아낼 때 사용됩니다.",
+    syntax: "UXTH <Wd>, <Wn>",
+    example: "UXTH W0, W1   // W1의 하위 2바이트만 남기고 나머지는 0으로"
+  }
+];
+
 // ARM64 Condition Codes
 // CMP/CMN/FCMP/SUBS 등이 세팅하는 NZCV 플래그를 기반으로 B.<cond>, CSEL, CSET 등에서 사용.
 // N = Negative, Z = Zero, C = Carry, V = Overflow
@@ -1551,5 +1947,8 @@ module.exports = {
   arm64Registers,
   arm64FpSimdRegisters,
   arm64FpInstructions,
+  arm64NeonInstructions,
+  arm64SystemInstructions,
+  arm64ScalarGapFillInstructions,
   arm64ConditionCodes
 };

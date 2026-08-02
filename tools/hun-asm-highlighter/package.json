@@ -4,8 +4,9 @@
   "license": "MIT",
   "displayName": "Hun ARM64 한글 어셈블리 강조",
   "description": "훈(Hun) 프로젝트 전용 - 한글 니모닉과 섹션 매크로를 인식하는 문법 강조, Syntax highlighting for Hun ARM64 Assembly with Korean mnemonics, ARM64 registers, directives, labels and section macros.",
-  "version": "2.3.36",
+  "version": "2.4.1",
   "main": "src/extension.js",
+  "homepage": "https://vivakr.github.io/Hun",
   "activationEvents": [
     "onLanguage:hun-asm"
   ],
@@ -22,6 +23,7 @@
     "assembly",
     "arm64",
     "aarch64",
+    "intellisense",
     "llvm",
     "hun",
     "korean",

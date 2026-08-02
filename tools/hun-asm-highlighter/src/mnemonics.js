@@ -13,10 +13,13 @@
 //    "모르는 명령어"라고 오탐하는 불일치가 있었다.
 //    → arm64-data.js를 여기서도 직접 흡수해서, 앞으로 그 파일에 뭘 추가하든
 //      diagnostics.js가 자동으로 같이 알게 만든다 (진짜 단일 진실 공급원).
-const { arm64Instructions, arm64FpInstructions } = require('./data/arm64-data');
+const { arm64Instructions, arm64FpInstructions, arm64NeonInstructions, arm64SystemInstructions, arm64ScalarGapFillInstructions } = require('./data/arm64-data');
 const ARM64_DATA_MNEMONICS = [
   ...(arm64Instructions || []),
   ...(arm64FpInstructions || []),
+  ...(arm64NeonInstructions || []),
+  ...(arm64SystemInstructions || []),
+  ...(arm64ScalarGapFillInstructions || []),
 ].map((i) => i.name.toLowerCase());
 
 const MNEMONIC_MAP = {

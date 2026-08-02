@@ -20,6 +20,9 @@
 const {
   arm64Instructions,
   arm64FpInstructions,
+  arm64NeonInstructions,
+  arm64SystemInstructions,
+  arm64ScalarGapFillInstructions,
   arm64ConditionCodes,
 } = require('./data/arm64-data');
 
@@ -30,7 +33,7 @@ const {
 } = require('./mnemonics');
 
 // 정수 + 부동소수점 명령어를 하나로 합친 목록 / 영문 소문자 기준 조회 인덱스
-const ALL_ARM_INSTRUCTIONS = [...arm64Instructions, ...(arm64FpInstructions || [])];
+const ALL_ARM_INSTRUCTIONS = [...arm64Instructions, ...(arm64FpInstructions || []), ...(arm64NeonInstructions || []), ...(arm64SystemInstructions || []), ...(arm64ScalarGapFillInstructions || [])];
 const instructionByEnglish = new Map(ALL_ARM_INSTRUCTIONS.map((i) => [i.name.toLowerCase(), i]));
 
 // 조건 코드 인덱스 ("CS / HS" 처럼 슬래시로 묶인 별칭은 개별 키로도 등록)
