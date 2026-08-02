@@ -13,11 +13,68 @@ const arm64Instructions = [
     example: "LDR X0, [X1]\nLDR W2, [SP, #8]"
   },
   {
+    name: "LDRB",
+    description: "✓ Load Register Byte. Loads a single byte (8-bit) from memory into the low 8 bits of the destination register; the remaining upper bits are filled with zero (zero-extension).\n\n✓ 메모리에서 1바이트(8비트)를 읽어 지정한 레지스터에 저장합니다. 이때 레지스터의 나머지 상위 비트는 모두 0으로 채워집니다(Zero-extension).",
+    syntax: "LDRB <Wt>, [<Xn|SP>], #<simm>\nLDRB <Wt>, [<Xn|SP>, #<pimm>]",
+    example: "LDRB W0, [X1]        // 문자열의 문자 한 글자 읽기\nLDRB W2, [X19, #3]"
+  },
+  {
+    name: "LDRH",
+    description: "✓ Load Register Halfword. Loads a 16-bit halfword from memory into the low 16 bits of the destination register; the remaining upper bits are filled with zero (zero-extension).\n\n✓ 레지스터로 하프워드를 적재합니다. 메모리에서 16비트(2바이트)를 읽어 대상 레지스터의 하위 16비트에 저장하며, 나머지 상위 비트는 모두 0으로 채워집니다(Zero-extension).",
+    syntax: "LDRH <Wt>, [<Xn|SP>], #<simm>\nLDRH <Wt>, [<Xn|SP>, #<pimm>]",
+    example: "LDRH W0, [X1]        // unsigned short 값 읽기\nLDRH W2, [X19, #2]"
+  },
+  {
+    name: "LDRSB",
+    description: "✓ Load Register Signed Byte. Loads a single byte from memory and sign-extends it to fill the destination register (32-bit or 64-bit). Use this instead of LDRB when the byte represents a signed value (e.g. a signed char).\n\n✓ 레지스터로 부호 있는 바이트를 적재합니다. 메모리에서 1바이트를 읽어 대상 레지스터(32비트 또는 64비트) 전체에 부호 확장하여 채웁니다. 그 바이트가 부호 있는 값(예: signed char)일 때는 LDRB 대신 이 명령어를 사용해야 합니다.",
+    syntax: "LDRSB <Wt|Xt>, [<Xn|SP>], #<simm>\nLDRSB <Wt|Xt>, [<Xn|SP>, #<pimm>]",
+    example: "LDRSB X0, [X1]       // signed char -> 64비트로 부호 확장하며 읽기"
+  },
+  {
+    name: "LDRSH",
+    description: "✓ Load Register Signed Halfword. Loads a 16-bit halfword from memory and sign-extends it to fill the destination register (32-bit or 64-bit). Use this instead of LDRH when the halfword represents a signed value (e.g. a signed short).\n\n✓ 레지스터로 부호 있는 하프워드를 적재합니다. 메모리에서 16비트를 읽어 대상 레지스터(32비트 또는 64비트) 전체에 부호 확장하여 채웁니다. 그 값이 부호 있는 값(예: signed short)일 때는 LDRH 대신 이 명령어를 사용해야 합니다.",
+    syntax: "LDRSH <Wt|Xt>, [<Xn|SP>], #<simm>\nLDRSH <Wt|Xt>, [<Xn|SP>, #<pimm>]",
+    example: "LDRSH X0, [X1]       // signed short -> 64비트로 부호 확장하며 읽기"
+  },
+  {
+    name: "LDRSW",
+    description: "✓ Load Register Signed Word. Loads a 32-bit word from memory and sign-extends it into a 64-bit destination register. Commonly used to widen a signed 32-bit int stored in memory to a 64-bit value for pointer arithmetic.\n\n✓ 레지스터로 부호 있는 워드를 적재합니다. 메모리에서 32비트를 읽어 64비트 대상 레지스터에 부호 확장하여 저장합니다. 메모리에 저장된 부호 있는 32비트 int 값을 포인터 연산 등을 위해 64비트로 확장할 때 흔히 사용됩니다.",
+    syntax: "LDRSW <Xt>, [<Xn|SP>], #<simm>\nLDRSW <Xt>, [<Xn|SP>, #<pimm>]",
+    example: "LDRSW X0, [X1]       // int -> long 부호 확장하며 읽기"
+  },
+  {
     name: "STR",
     description: "✓ Store Register. Stores a word or doubleword from a register into memory.\n\n✓ 레지스터 값을 메모리에 저장합니다. 레지스터의 워드 또는 더블워드를 메모리에 씁니다.",
     syntax: "STR <Wt|Xt>, [<Xn|SP>], #<simm>\nSTR <Wt|Xt>, [<Xn|SP>, #<pimm>]",
     example: "STR X0, [X1]\nSTR W2, [SP, #8]"
   },
+  {
+    name: "STRB",
+    description: "✓ Store Register Byte. Stores the low 8 bits of the source register into a single byte in memory; the upper bits of the register are ignored.\n\n✓ 레지스터 바이트를 저장합니다. 소스 레지스터의 하위 8비트를 메모리의 1바이트에 씁니다. 레지스터의 상위 비트는 무시됩니다.",
+    syntax: "STRB <Wt>, [<Xn|SP>], #<simm>\nSTRB <Wt>, [<Xn|SP>, #<pimm>]",
+    example: "STRB W0, [X1]        // char 하나 저장\nSTRB WZR, [X19]      // 문자열 끝에 NUL('\\0') 쓰기"
+  },
+  {
+    name: "STRH",
+    description: "✓ Store Register Halfword. Stores the low 16 bits of the source register into a halfword in memory; the upper bits of the register are ignored.\n\n✓ 레지스터 하프워드를 저장합니다. 소스 레지스터의 하위 16비트를 메모리의 하프워드(2바이트)에 씁니다. 레지스터의 상위 비트는 무시됩니다.",
+    syntax: "STRH <Wt>, [<Xn|SP>], #<simm>\nSTRH <Wt>, [<Xn|SP>, #<pimm>]",
+    example: "STRH W0, [X1]        // short 값 저장"
+  },
+
+  // ---- 정렬 제약 없는 Load/Store (Unscaled offset) ----
+  {
+    name: "LDUR",
+    description: "✓ Load Register (Unscaled offset). Loads a word/doubleword from memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by LDR. Useful for reading unaligned struct fields or arbitrary byte positions.\n\n✓ 레지스터를 적재합니다 (정렬 제약 없는 오프셋). LDR과 달리 오프셋이 전송 크기의 배수일 필요가 없는, 임의의 바이트 오프셋을 그대로 사용해 메모리에서 값을 읽습니다. 정렬되지 않은 구조체 필드나 임의 바이트 위치를 읽을 때 유용합니다.",
+    syntax: "LDUR <Wt|Xt>, [<Xn|SP>, #<simm>]",
+    example: "LDUR X0, [X1, #3]    // 오프셋 3처럼 8의 배수가 아니어도 OK (LDR은 불가)"
+  },
+  {
+    name: "STUR",
+    description: "✓ Store Register (Unscaled offset). Stores a word/doubleword to memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by STR.\n\n✓ 레지스터를 저장합니다 (정렬 제약 없는 오프셋). STR과 달리 오프셋이 전송 크기의 배수일 필요가 없는, 임의의 바이트 오프셋으로 메모리에 값을 씁니다.",
+    syntax: "STUR <Wt|Xt>, [<Xn|SP>, #<simm>]",
+    example: "STUR X0, [X1, #-8]   // 음수 오프셋도 자유롭게 사용 가능"
+  },
+
   {
     name: "ADD",
     description: "✓ Add (register or immediate). Adds two operands and stores the result in the destination register.\n\n✓ 덧셈 (레지스터 또는 즉시값). 두 피연산자를 더하여 결과를 대상 레지스터에 저장합니다.",
@@ -247,6 +304,494 @@ const arm64Instructions = [
     description: "✓ Zero-Extend Word (Unsigned eXTend Word). Zero-extends the low 32 bits of the source register to 64 bits and writes the result to the destination register.\n\n✓ 워드를 부호 없이 확장합니다(제로 확장). 소스 레지스터의 하위 32비트를 0으로 채워 64비트로 확장한 뒤 대상 레지스터에 저장합니다.",
     syntax: "UXTW <Xd>, <Wn>",
     example: "UXTW X0, W1"
+  },
+
+  // ---- 원자적 연산 (Load/Store Exclusive, 락 프리 프로그래밍용) ----
+  {
+    name: "LDXR",
+    description: "✓ Load Exclusive Register. Loads a value from memory and marks that memory location as being 'exclusively' monitored by this core. Must be paired with a later STXR to the same address to attempt an atomic update; commonly used to build lock-free counters, spinlocks, and compare-and-swap loops.\n\n✓ 배타적(Exclusive) 레지스터 적재. 메모리에서 값을 읽어오면서 그 메모리 주소를 현재 코어가 '배타적으로' 감시 중이라고 표시합니다. 반드시 같은 주소에 대한 STXR과 짝을 이뤄 원자적 갱신을 시도해야 하며, 락 프리 카운터, 스핀락, compare-and-swap 루프를 만들 때 흔히 사용됩니다.",
+    syntax: "LDXR <Wt|Xt>, [<Xn|SP>]",
+    example: "LDXR X0, [X1]        // X1이 가리키는 값을 배타적으로 읽기"
+  },
+  {
+    name: "STXR",
+    description: "✓ Store Exclusive Register. Attempts to store a value to the address previously loaded with LDXR, but only succeeds if no other core has written to that address in the meantime. Writes a status code (0 = success, 1 = failure) to a separate result register; on failure the caller must retry the whole LDXR/STXR pair in a loop.\n\n✓ 배타적(Exclusive) 레지스터 저장. LDXR으로 읽었던 주소에 값을 쓰려고 시도하되, 그 사이에 다른 코어가 같은 주소를 건드리지 않았을 때만 성공합니다. 별도의 결과 레지스터에 상태 코드(0=성공, 1=실패)를 씁니다. 실패하면 호출자는 LDXR/STXR 쌍 전체를 루프로 다시 시도해야 합니다.",
+    syntax: "STXR <Ws>, <Wt|Xt>, [<Xn|SP>]",
+    example: "// 원자적 증가(atomic increment) 예시\n.L_retry:\n    LDXR X0, [X19]        // 현재 값 배타적으로 읽기\n    ADD  X0, X0, #1        // 값 + 1\n    STXR W1, X0, [X19]     // 배타적으로 쓰기 시도, W1 = 상태(0=성공)\n    CBNZ W1, .L_retry       // 실패했으면(다른 코어가 끼어들었으면) 재시도"
+  },
+  {
+    name: "LDAXR",
+    description: "✓ Load-Acquire Exclusive Register. Same as LDXR, but additionally acts as a memory barrier: no later memory access by this core can be reordered before this load (acquire semantics). Used together with STLXR when the atomic operation must also be visible in the correct order to other cores.\n\n✓ 획득(Acquire) 배타적 레지스터 적재. LDXR과 동일하게 동작하지만, 추가로 메모리 배리어 역할을 합니다: 이 코어의 이후 메모리 접근이 이 적재보다 먼저 실행되도록 재배치될 수 없습니다(획득 의미론). 원자적 연산이 다른 코어에게도 올바른 순서로 보여야 할 때 STLXR과 짝을 이뤄 사용합니다.",
+    syntax: "LDAXR <Wt|Xt>, [<Xn|SP>]",
+    example: "LDAXR X0, [X1]       // 스핀락 획득 루틴 등에서 사용"
+  },
+  {
+    name: "STLXR",
+    description: "✓ Store-Release Exclusive Register. Same as STXR, but additionally acts as a memory barrier: no earlier memory access by this core can be reordered after this store (release semantics). Used together with LDAXR to implement correctly-ordered locks and lock-free data structures.\n\n✓ 해제(Release) 배타적 레지스터 저장. STXR과 동일하게 동작하지만, 추가로 메모리 배리어 역할을 합니다: 이 코어의 이전 메모리 접근이 이 저장보다 뒤로 재배치될 수 없습니다(해제 의미론). 순서가 보장된 락이나 락 프리 자료구조를 구현할 때 LDAXR과 짝을 이뤄 사용합니다.",
+    syntax: "STLXR <Ws>, <Wt|Xt>, [<Xn|SP>]",
+    example: "STLXR W1, X0, [X19]  // 스핀락 해제 루틴 등에서 사용, W1 = 상태(0=성공)"
+  },
+  {
+    name: "CLREX",
+    description: "✓ Clear Exclusive. Manually clears the exclusive-access monitor set by a prior LDXR/LDAXR without performing a store. Used when an LDXR was issued but the code decides to abandon the atomic attempt (e.g. taking an early-exit branch) instead of following through with STXR.\n\n✓ 배타적 모니터 해제. 이전 LDXR/LDAXR로 설정된 배타적 접근 감시 상태를 실제 저장 없이 수동으로 해제합니다. LDXR을 실행했지만 이후 STXR로 이어가지 않고 원자적 시도를 포기해야 할 때(예: 조기 종료 분기를 타는 경우) 사용합니다.",
+    syntax: "CLREX",
+    example: "CLREX                // LDXR 이후 STXR 없이 루틴을 빠져나갈 때"
+  },
+
+  // ---- 산술 (플래그 설정 / 캐리 확장) ----
+  {
+    name: "ADDS",
+    description: "✓ Add, setting flags. Same as ADD but also updates the NZCV condition flags based on the result. XZR as destination makes this the CMN alias (compare negative, result discarded).\n\n✓ 덧셈 후 플래그 설정. ADD와 동일하게 더하지만, 결과에 따라 NZCV 조건 플래그도 함께 갱신합니다. 대상 레지스터를 XZR로 쓰면 결과를 버리는 CMN(음수 비교) 별칭이 됩니다.",
+    syntax: "ADDS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ADDS <Wd|Xd>, <Wn|Xn>, #<imm>",
+    example: "ADDS X0, X1, X2\nB.VS overflow_label   // 오버플로 발생시 분기"
+  },
+  {
+    name: "SUBS",
+    description: "✓ Subtract, setting flags. Same as SUB but also updates the NZCV condition flags. This is the underlying instruction CMP is an alias of (CMP = SUBS with discarded destination).\n\n✓ 뺄셈 후 플래그 설정. SUB와 동일하게 빼지만 NZCV 조건 플래그도 함께 갱신합니다. CMP가 바로 이 명령어의 별칭입니다(결과를 버리는 SUBS).",
+    syntax: "SUBS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  SUBS <Wd|Xd>, <Wn|Xn>, #<imm>",
+    example: "SUBS X0, X1, #1\nB.LT underflow_label"
+  },
+  {
+    name: "CMN",
+    description: "✓ Compare Negative. Adds two operands and updates the condition flags without storing the result; equivalent to comparing against a negative value. Alias for ADDS with a discarded destination.\n\n✓ 음수 비교. 두 피연산자를 더하여 조건 플래그만 갱신하고 결과는 버립니다. 음수와 비교하는 것과 동일한 효과이며, 결과를 버리는 ADDS의 별칭입니다.",
+    syntax: "CMN <Wn|Xn>, <Wm|Xm>  or  CMN <Wn|Xn>, #<imm>",
+    example: "CMN X0, #1        // X0 == -1 인지 검사하는 것과 동일"
+  },
+  {
+    name: "ADC",
+    description: "✓ Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.\n\n✓ 캐리를 포함한 덧셈. 두 피연산자와 현재 캐리 플래그를 함께 더합니다(Xd = Xn + Xm + C). 64비트보다 큰 값을 여러 레지스터에 걸쳐 더할 때, 하위 워드의 ADDS 다음에 이어서 사용합니다.",
+    syntax: "ADC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "ADDS X0, X2, X4   // 하위 64비트 더하기 (캐리 플래그 갱신)\nADC  X1, X3, X5   // 상위 64비트 + 캐리 -> 128비트 덧셈 완성"
+  },
+  {
+    name: "SBC",
+    description: "✓ Subtract with Carry (borrow). Subtracts the second operand and the inverted carry flag from the first (Xd = Xn - Xm - NOT(C)). Used to chain subtraction across multiple registers for values wider than 64 bits.\n\n✓ 캐리(빌림)를 포함한 뺄셈. 첫 번째 피연산자에서 두 번째 피연산자와 반전된 캐리 플래그를 뺍니다(Xd = Xn - Xm - NOT(C)). 64비트보다 큰 값을 여러 레지스터에 걸쳐 뺄 때 사용합니다.",
+    syntax: "SBC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "SUBS X0, X2, X4   // 하위 64비트 빼기 (캐리 플래그 갱신)\nSBC  X1, X3, X5   // 상위 64비트 - 빌림 -> 128비트 뺄셈 완성"
+  },
+  {
+    name: "ADCS",
+    description: "✓ Add with Carry, setting flags. Same as ADC but also updates the NZCV flags, allowing the carry chain to continue into a further ADC/ADCS for even wider (192-bit+) arithmetic.\n\n✓ 캐리를 포함한 덧셈 후 플래그 설정. ADC와 동일하지만 NZCV 플래그도 갱신하여, 더 넓은(192비트 이상) 연산을 위해 캐리 체인을 계속 이어갈 수 있습니다.",
+    syntax: "ADCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "ADCS X1, X3, X5"
+  },
+  {
+    name: "SBCS",
+    description: "✓ Subtract with Carry, setting flags. Same as SBC but also updates the NZCV flags, allowing the borrow chain to continue further.\n\n✓ 캐리(빌림)를 포함한 뺄셈 후 플래그 설정. SBC와 동일하지만 NZCV 플래그도 갱신하여 빌림 체인을 계속 이어갈 수 있습니다.",
+    syntax: "SBCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "SBCS X1, X3, X5"
+  },
+
+  // ---- 논리 연산 (NOT 결합형) ----
+  {
+    name: "BIC",
+    description: "✓ Bitwise Bit Clear. Computes Xn AND (NOT Xm) and writes the result to the destination; used to force specific bits of a value to zero using a mask.\n\n✓ 비트 클리어. Xn AND (NOT Xm)을 계산하여 결과를 저장합니다. 마스크를 이용해 값의 특정 비트들을 강제로 0으로 만들 때 사용합니다.",
+    syntax: "BIC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "BIC X0, X1, X2    // X1의 비트 중 X2에서 1인 자리를 0으로 지움"
+  },
+  {
+    name: "ORN",
+    description: "✓ Bitwise OR NOT. Computes Xn OR (NOT Xm) and writes the result to the destination register.\n\n✓ 비트 단위 OR NOT. Xn OR (NOT Xm)을 계산하여 결과를 대상 레지스터에 저장합니다.",
+    syntax: "ORN <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "ORN X0, X1, X2"
+  },
+  {
+    name: "EON",
+    description: "✓ Bitwise Exclusive OR NOT. Computes Xn XOR (NOT Xm), equivalent to a bitwise XNOR, and writes the result to the destination register.\n\n✓ 비트 단위 XOR NOT. Xn XOR (NOT Xm)을 계산합니다(비트 단위 XNOR과 동일)하여 결과를 대상 레지스터에 저장합니다.",
+    syntax: "EON <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+    example: "EON X0, X1, X2"
+  },
+
+  // ---- 상수 적재 (Move Wide - 64비트 상수를 16비트씩 조립) ----
+  {
+    name: "MOVZ",
+    description: "✓ Move (Zero others). Writes a 16-bit immediate into a specified 16-bit slot of the destination register, and clears all other bits to zero. Typically the FIRST instruction when building a large 64-bit constant piece by piece.\n\n✓ 상수 이동(나머지는 0으로). 16비트 즉치값을 대상 레지스터의 지정한 16비트 구간에 쓰고, 나머지 비트는 전부 0으로 채웁니다. 큰 64비트 상수를 조각조각 조립할 때 보통 첫 번째로 사용하는 명령어입니다.",
+    syntax: "MOVZ <Wd|Xd>, #<imm16>{, LSL #<shift>}",
+    example: "MOVZ X0, #0x1234, LSL #16   // X0 = 0x0000000012340000"
+  },
+  {
+    name: "MOVN",
+    description: "✓ Move (Not). Writes the bitwise complement of a shifted 16-bit immediate into the destination register. Useful for efficiently loading constants that consist mostly of 1 bits (e.g. small negative numbers).\n\n✓ 상수 이동(반전). 시프트된 16비트 즉치값의 비트 반전 값을 대상 레지스터에 씁니다. 대부분 비트가 1로 채워진 상수(예: 작은 음수)를 효율적으로 만들 때 사용합니다.",
+    syntax: "MOVN <Wd|Xd>, #<imm16>{, LSL #<shift>}",
+    example: "MOVN X0, #0        // X0 = NOT(0) = 0xFFFFFFFFFFFFFFFF (-1)"
+  },
+  {
+    name: "MOVK",
+    description: "✓ Move (Keep others). Writes a 16-bit immediate into a specified 16-bit slot of the destination register WITHOUT touching the other bits. Used after MOVZ to fill in the remaining 16-bit chunks of a full 64-bit constant.\n\n✓ 상수 이동(나머지는 유지). 16비트 즉치값을 대상 레지스터의 지정한 16비트 구간에만 쓰고, 나머지 비트는 그대로 유지합니다. MOVZ 이후에 이어서 써서 64비트 상수의 나머지 조각들을 채울 때 사용합니다.",
+    syntax: "MOVK <Wd|Xd>, #<imm16>{, LSL #<shift>}",
+    example: "MOVZ X0, #0x0004, LSL #0    // X0 = 0x0000000000000004\nMOVK X0, #0x1234, LSL #16   // X0 = 0x0000000012340004 (하위 16비트는 유지)"
+  },
+
+  // ---- 비트 조작 ----
+  {
+    name: "CLZ",
+    description: "✓ Count Leading Zeros. Counts the number of consecutive zero bits starting from the most significant bit, and writes the count to the destination register.\n\n✓ 선행 0 개수. 최상위 비트부터 연속으로 이어지는 0 비트의 개수를 세어 대상 레지스터에 저장합니다.",
+    syntax: "CLZ <Wd|Xd>, <Wn|Xn>",
+    example: "CLZ X0, X1        // X1=0x0F... 이면 앞쪽 0의 개수 반환"
+  },
+  {
+    name: "CLS",
+    description: "✓ Count Leading Sign bits. Counts the number of bits following the sign bit that are identical to the sign bit (i.e. how many bits before the value 'changes'), and writes the count to the destination register.\n\n✓ 선행 부호 비트 개수. 부호 비트와 동일한 값이 그 뒤로 몇 개나 이어지는지(즉 값이 '바뀌기' 전까지의 비트 수)를 세어 대상 레지스터에 저장합니다.",
+    syntax: "CLS <Wd|Xd>, <Wn|Xn>",
+    example: "CLS X0, X1"
+  },
+  {
+    name: "RBIT",
+    description: "✓ Reverse Bits. Reverses the bit order of the source register (bit 0 becomes the top bit, and vice versa) and writes the result to the destination.\n\n✓ 비트 순서 반전. 소스 레지스터의 비트 순서를 완전히 뒤집습니다(0번 비트가 최상위 비트가 되는 식) 결과를 대상 레지스터에 저장합니다.",
+    syntax: "RBIT <Wd|Xd>, <Wn|Xn>",
+    example: "RBIT X0, X1"
+  },
+  {
+    name: "REV",
+    description: "✓ Reverse bytes. Reverses the byte order of the whole register (swaps endianness) and writes the result to the destination register.\n\n✓ 바이트 순서 반전. 레지스터 전체의 바이트 순서를 뒤집습니다(엔디안 변환) 결과를 대상 레지스터에 저장합니다.",
+    syntax: "REV <Wd|Xd>, <Wn|Xn>",
+    example: "REV W0, W1        // 리틀엔디안 <-> 빅엔디안 변환"
+  },
+  {
+    name: "REV16",
+    description: "✓ Reverse bytes in each halfword. Reverses the byte order independently within each 16-bit halfword of the register.\n\n✓ 하프워드 단위 바이트 반전. 레지스터를 16비트(하프워드) 단위로 쪼개어, 각 하프워드 안에서만 바이트 순서를 뒤집습니다.",
+    syntax: "REV16 <Wd|Xd>, <Wn|Xn>",
+    example: "REV16 W0, W1"
+  },
+  {
+    name: "REV32",
+    description: "✓ Reverse bytes in each word (64-bit register only). Reverses the byte order independently within each 32-bit word packed into the 64-bit register.\n\n✓ 워드 단위 바이트 반전(64비트 레지스터 전용). 64비트 레지스터에 담긴 값을 32비트(워드) 단위로 쪼개어, 각 워드 안에서만 바이트 순서를 뒤집습니다.",
+    syntax: "REV32 <Xd>, <Xn>",
+    example: "REV32 X0, X1"
+  },
+
+  // ---- 비트필드 추출/삽입 ----
+  {
+    name: "SBFX",
+    description: "✓ Signed Bitfield Extract. Extracts a bitfield of a given width starting at a given bit position, and sign-extends it to fill the destination register.\n\n✓ 부호 있는 비트필드 추출. 지정한 시작 비트 위치에서 지정한 폭만큼 비트를 뽑아내어, 대상 레지스터 전체에 부호 확장하여 채웁니다.",
+    syntax: "SBFX <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>",
+    example: "SBFX X0, X1, #4, #8   // X1의 4~11번 비트(8비트)를 뽑아 부호확장"
+  },
+  {
+    name: "UBFX",
+    description: "✓ Unsigned Bitfield Extract. Extracts a bitfield of a given width starting at a given bit position, and zero-extends it to fill the destination register.\n\n✓ 부호 없는 비트필드 추출. 지정한 시작 비트 위치에서 지정한 폭만큼 비트를 뽑아내어, 대상 레지스터 전체에 0으로 채워 넣습니다.",
+    syntax: "UBFX <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>",
+    example: "UBFX X0, X1, #4, #8   // X1의 4~11번 비트(8비트)를 뽑아 제로확장"
+  },
+  {
+    name: "BFI",
+    description: "✓ Bitfield Insert. Copies a bitfield of a given width from the low bits of the source register into a specified position of the destination register, leaving the destination's other bits unchanged.\n\n✓ 비트필드 삽입. 소스 레지스터의 하위 비트 중 지정한 폭만큼을 대상 레지스터의 지정한 위치에 끼워넣고, 대상 레지스터의 나머지 비트는 그대로 유지합니다.",
+    syntax: "BFI <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>",
+    example: "BFI X0, X1, #8, #4    // X1의 하위 4비트를 X0의 8번 비트 위치에 삽입"
+  },
+
+  // ---- 조건부 연산 확장 ----
+  {
+    name: "CCMP",
+    description: "✓ Conditional Compare. If the given condition is true, performs a normal CMP and updates NZCV accordingly; if false, sets NZCV directly to the given 4-bit immediate instead. Used to evaluate compound boolean conditions (e.g. 'a > 0 && b < 10') without branching.\n\n✓ 조건부 비교. 주어진 조건이 참이면 일반 CMP처럼 비교하여 NZCV를 갱신하고, 거짓이면 대신 주어진 4비트 즉치값을 NZCV에 그대로 씁니다. 분기 없이 복합 논리 조건('a > 0 && b < 10' 같은)을 평가할 때 사용합니다.",
+    syntax: "CCMP <Wn|Xn>, <Wm|Xm>, #<nzcv>, <cond>",
+    example: "CMP  X0, #0\nCCMP X1, #10, #0b0000, GT   // X0>0 이면서 X1<10 인지 검사\nB.LT both_conditions_true"
+  },
+  {
+    name: "CCMN",
+    description: "✓ Conditional Compare Negative. Same as CCMP but performs a CMN-style (addition-based) comparison when the condition is true.\n\n✓ 조건부 음수 비교. CCMP와 동일하지만, 조건이 참일 때 CMN 방식(덧셈 기반)으로 비교합니다.",
+    syntax: "CCMN <Wn|Xn>, <Wm|Xm>, #<nzcv>, <cond>",
+    example: "CCMN X0, X1, #0b0100, EQ"
+  },
+  {
+    name: "CSINC",
+    description: "✓ Conditional Select Increment. Writes Xn to the destination if the condition is true, otherwise writes (Xm + 1). CSET is built from this instruction (CSINC with XZR, XZR and the inverted condition).\n\n✓ 조건부 선택 증가. 조건이 참이면 Xn을, 거짓이면 (Xm + 1)을 대상 레지스터에 씁니다. CSET 명령어가 바로 이것(XZR, XZR과 반전된 조건)의 별칭으로 만들어집니다.",
+    syntax: "CSINC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>",
+    example: "CSINC X0, X1, X2, EQ   // X0 = (조건참) ? X1 : X2+1"
+  },
+  {
+    name: "CSINV",
+    description: "✓ Conditional Select Invert. Writes Xn to the destination if the condition is true, otherwise writes the bitwise NOT of Xm.\n\n✓ 조건부 선택 반전. 조건이 참이면 Xn을, 거짓이면 Xm의 비트 반전값을 대상 레지스터에 씁니다.",
+    syntax: "CSINV <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>",
+    example: "CSINV X0, X1, X2, EQ   // X0 = (조건참) ? X1 : ~X2"
+  },
+  {
+    name: "CSNEG",
+    description: "✓ Conditional Select Negate. Writes Xn to the destination if the condition is true, otherwise writes the two's-complement negation of Xm.\n\n✓ 조건부 선택 부호반전. 조건이 참이면 Xn을, 거짓이면 Xm의 2의 보수(음수화)를 대상 레지스터에 씁니다.",
+    syntax: "CSNEG <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>",
+    example: "CSNEG X0, X1, X2, EQ   // X0 = (조건참) ? X1 : -X2  (예: abs() 구현에 사용)"
+  },
+
+  // ---- 확장 곱셈 (32x32->64, 64x64->128) ----
+  {
+    name: "SMULL",
+    description: "✓ Signed Multiply Long. Multiplies two signed 32-bit values (from Wn, Wm) and writes the full, non-truncated 64-bit product into the 64-bit destination register. Avoids the overflow that plain MUL (Wd, Wn, Wm) would cause.\n\n✓ 부호 있는 긴 곱셈. 두 개의 부호 있는 32비트 값(Wn, Wm)을 곱한 결과를 잘리지 않은 온전한 64비트 값으로 64비트 대상 레지스터에 저장합니다. 일반 MUL(Wd,Wn,Wm)에서 발생할 수 있는 오버플로를 피할 수 있습니다.",
+    syntax: "SMULL <Xd>, <Wn>, <Wm>",
+    example: "SMULL X0, W1, W2   // 32비트 x 32비트 -> 64비트 (오버플로 없음)"
+  },
+  {
+    name: "UMULL",
+    description: "✓ Unsigned Multiply Long. Multiplies two unsigned 32-bit values and writes the full 64-bit product into the destination register.\n\n✓ 부호 없는 긴 곱셈. 두 개의 부호 없는 32비트 값을 곱한 전체 64비트 결과를 대상 레지스터에 저장합니다.",
+    syntax: "UMULL <Xd>, <Wn>, <Wm>",
+    example: "UMULL X0, W1, W2"
+  },
+  {
+    name: "SMULH",
+    description: "✓ Signed Multiply High. Multiplies two signed 64-bit values and writes only the UPPER 64 bits of the full 128-bit product into the destination register. Used together with a plain MUL (for the lower bits) to implement 128-bit signed multiplication.\n\n✓ 부호 있는 곱셈 상위비트. 두 개의 부호 있는 64비트 값을 곱한 전체 128비트 결과 중 상위 64비트만 대상 레지스터에 저장합니다. 하위 비트를 담당하는 일반 MUL과 함께 써서 128비트 곱셈을 구현할 때 사용합니다.",
+    syntax: "SMULH <Xd>, <Xn>, <Xm>",
+    example: "MUL   X0, X1, X2   // 128비트 곱셈 결과의 하위 64비트\nSMULH X3, X1, X2   // 128비트 곱셈 결과의 상위 64비트"
+  },
+  {
+    name: "UMULH",
+    description: "✓ Unsigned Multiply High. Multiplies two unsigned 64-bit values and writes only the upper 64 bits of the full 128-bit product into the destination register.\n\n✓ 부호 없는 곱셈 상위비트. 두 개의 부호 없는 64비트 값을 곱한 128비트 결과 중 상위 64비트만 대상 레지스터에 저장합니다.",
+    syntax: "UMULH <Xd>, <Xn>, <Xm>",
+    example: "UMULH X0, X1, X2"
+  },
+
+  // ---- 시스템 / 동기화 / 메모리 배리어 ----
+  {
+    name: "SVC",
+    description: "✓ Supervisor Call. Triggers an exception that transfers control to the operating system kernel, typically used to invoke a system call.\n\n✓ 슈퍼바이저 호출. 운영체제 커널로 제어를 넘기는 예외를 발생시킵니다. 일반적으로 시스템 콜을 호출할 때 사용됩니다.",
+    syntax: "SVC #<imm>",
+    example: "SVC #0x80   // 커널에 시스템 콜 요청 (플랫폼별 규약 상이)"
+  },
+  {
+    name: "BRK",
+    description: "✓ Breakpoint instruction. Triggers a software breakpoint exception, halting execution for a debugger to inspect state. Commonly generated by compilers for assert()/trap-style failures.\n\n✓ 브레이크포인트 명령. 소프트웨어 브레이크포인트 예외를 발생시켜 디버거가 상태를 살펴볼 수 있도록 실행을 멈춥니다. assert() 실패 같은 트랩 상황에서 컴파일러가 흔히 생성합니다.",
+    syntax: "BRK #<imm>",
+    example: "BRK #0x1"
+  },
+  {
+    name: "MSR",
+    description: "✓ Move to System Register. Writes a general-purpose register's value into a special/system register (e.g. NZCV, control/status registers).\n\n✓ 시스템 레지스터로 이동. 범용 레지스터의 값을 특수/시스템 레지스터(예: NZCV, 제어/상태 레지스터)에 씁니다.",
+    syntax: "MSR <system_reg>, <Xt>",
+    example: "MSR NZCV, X0"
+  },
+  {
+    name: "MRS",
+    description: "✓ Move from System Register. Reads a special/system register's value into a general-purpose register (e.g. reading NZCV or a hardware counter).\n\n✓ 시스템 레지스터에서 이동. 특수/시스템 레지스터(예: NZCV, 하드웨어 카운터)의 값을 범용 레지스터로 읽어옵니다.",
+    syntax: "MRS <Xt>, <system_reg>",
+    example: "MRS X0, NZCV"
+  },
+  {
+    name: "DMB",
+    description: "✓ Data Memory Barrier. Ensures that all memory accesses issued before the barrier (by this core) are observed by other cores/agents before any memory accesses issued after the barrier.\n\n✓ 데이터 메모리 배리어. 이 배리어 이전에 발생시킨 메모리 접근이, 배리어 이후에 발생시킨 메모리 접근보다 다른 코어/장치에 먼저 보이도록 순서를 보장합니다.",
+    syntax: "DMB <option>   // 예: ISH, SY, OSH 등",
+    example: "DMB ISH   // 같은 이너 공유 도메인 내 순서 보장"
+  },
+  {
+    name: "DSB",
+    description: "✓ Data Synchronization Barrier. Stronger than DMB: blocks execution of any further instructions on this core until all prior memory accesses have fully completed.\n\n✓ 데이터 동기화 배리어. DMB보다 강력합니다: 이전의 모든 메모리 접근이 완전히 끝날 때까지 이 코어의 이후 명령어 실행 자체를 막습니다.",
+    syntax: "DSB <option>",
+    example: "DSB SY   // 전체 시스템 범위로 완료를 기다림"
+  },
+  {
+    name: "ISB",
+    description: "✓ Instruction Synchronization Barrier. Flushes the instruction pipeline so that all instructions after the barrier are fetched fresh; used after modifying code or system control registers that affect instruction execution.\n\n✓ 명령어 동기화 배리어. 명령어 파이프라인을 비워서 배리어 이후의 모든 명령어를 새로 가져오게(fetch) 합니다. 코드나 실행에 영향을 주는 시스템 제어 레지스터를 수정한 직후에 사용합니다.",
+    syntax: "ISB {<option>}",
+    example: "ISB"
+  },
+  {
+    name: "WFE",
+    description: "✓ Wait For Event. Puts the core into a low-power sleep state until an event signal arrives (from SEV or an exclusive-access failure). Commonly used in spinlock backoff loops to save power while waiting.\n\n✓ 이벤트 대기. 이벤트 신호(SEV로부터, 또는 배타적 접근 실패시)가 도착할 때까지 코어를 저전력 대기 상태로 만듭니다. 스핀락 대기 루프에서 전력을 아끼기 위해 흔히 사용됩니다.",
+    syntax: "WFE",
+    example: "WFE   // 락이 풀릴 때까지 저전력으로 대기"
+  },
+  {
+    name: "WFI",
+    description: "✓ Wait For Interrupt. Puts the core into a low-power sleep state until an interrupt arrives.\n\n✓ 인터럽트 대기. 인터럽트가 도착할 때까지 코어를 저전력 대기 상태로 만듭니다.",
+    syntax: "WFI",
+    example: "WFI"
+  },
+  {
+    name: "SEV",
+    description: "✓ Send Event. Signals an event to all cores, waking up any core that is currently sleeping in a WFE instruction.\n\n✓ 이벤트 전송. 모든 코어에 이벤트를 신호로 보내, WFE로 대기 중인 다른 코어를 깨웁니다.",
+    syntax: "SEV",
+    example: "SEV   // 락 해제 후 대기 중인 다른 코어를 깨움"
+  },
+  {
+    name: "YIELD",
+    description: "✓ Yield hint. A hint to the hardware/scheduler that the current thread is in a busy-wait spin loop and could benefit from yielding execution resources (e.g. on an SMT core).\n\n✓ 양보 힌트. 현재 스레드가 바쁜 대기(spin loop) 상태이며 실행 자원을 양보하면 도움이 될 수 있다는 힌트를 하드웨어/스케줄러에 전달합니다(SMT 코어 등에서 유효).",
+    syntax: "YIELD",
+    example: "YIELD   // 스핀락 재시도 루프 안에서 사용"
+  },
+
+  // ---- 프리페치 ----
+  {
+    name: "PRFM",
+    description: "✓ Prefetch Memory. A performance hint that requests the memory system start loading data into cache before it is actually needed by a later load instruction, reducing wait time.\n\n✓ 메모리 프리페치. 이후 load 명령어가 실제로 그 데이터를 필요로 하기 전에 미리 캐시에 불러오도록 요청하는 성능 힌트로, 대기 시간을 줄여줍니다.",
+    syntax: "PRFM <prfop>, [<Xn|SP>{, #<imm>}]",
+    example: "PRFM PLDL1KEEP, [X0, #64]   // 앞으로 쓸 데이터를 L1 캐시로 미리 당겨오기"
+  },
+
+  // ---- 포인터 인증 (Pointer Authentication, Apple Silicon 보안 기능) ----
+  {
+    name: "PACIASP",
+    description: "✓ Pointer Authentication Code for Instruction address, key A, using SP. Cryptographically signs the return address in X30(LR) using SP as a modifier, embedding the signature into unused high bits of the pointer. Emitted by the compiler at the START of a function to protect the return address from being overwritten (ROP attack mitigation).\n\n✓ 명령어 주소 포인터 인증 코드(키 A, SP 사용). X30(LR)에 담긴 복귀 주소를 SP를 변형값(modifier)으로 삼아 암호학적으로 서명하고, 그 서명을 포인터의 사용되지 않는 상위 비트에 심습니다. 함수 시작부에서 컴파일러가 자동 삽입하여, 복귀 주소가 조작당하는 공격(ROP)을 막는 데 사용됩니다.",
+    syntax: "PACIASP",
+    example: "PACIASP              // 함수 프롤로그 맨 앞, STP x29,x30 저장 전에 흔히 삽입됨"
+  },
+  {
+    name: "PACIBSP",
+    description: "✓ Same as PACIASP but signs X30 using key B instead of key A. The OS/compiler picks one key consistently; the two keys exist so different contexts (e.g. kernel vs. user, or different compilation units) can use independent signing keys.\n\n✓ PACIASP와 동일하지만 키 A 대신 키 B로 X30을 서명합니다. 서로 다른 문맥(예: 커널과 유저 모드, 또는 서로 다른 컴파일 단위)이 독립된 서명 키를 쓸 수 있도록 두 개의 키가 존재하며, OS/컴파일러가 일관되게 하나를 선택해 사용합니다.",
+    syntax: "PACIBSP",
+    example: "PACIBSP"
+  },
+  {
+    name: "AUTIASP",
+    description: "✓ Authenticate Instruction address, key A, using SP. Verifies the signature embedded in X30 (that was added by PACIASP) using SP as the modifier, and strips it back to a plain address if valid. If the signature is invalid (return address was tampered with), the resulting address becomes corrupt and the following RET faults instead of jumping to attacker-controlled code.\n\n✓ 명령어 주소 인증(키 A, SP 사용). PACIASP가 X30에 심어둔 서명을 SP를 변형값으로 검증하고, 유효하면 순수한 주소로 되돌립니다. 서명이 유효하지 않다면(복귀 주소가 변조됨) 결과 주소가 깨진 값이 되어, 뒤이은 RET이 공격자가 원하는 코드로 점프하는 대신 그대로 오류를 일으킵니다.",
+    syntax: "AUTIASP",
+    example: "AUTIASP               // 함수 에필로그, LDP x29,x30 복원 후 RET 직전에 삽입됨\nRET"
+  },
+  {
+    name: "AUTIBSP",
+    description: "✓ Same as AUTIASP but verifies the key-B signature added by PACIBSP.\n\n✓ AUTIASP와 동일하지만 PACIBSP가 심어둔 키 B 서명을 검증합니다.",
+    syntax: "AUTIBSP",
+    example: "AUTIBSP\nRET"
+  },
+  {
+    name: "RETAA",
+    description: "✓ Return, Authenticating with key A. Combines AUTIASP (verify the return address signature) and RET (branch to X30) into a single instruction — the common, compact form generated in real compiled code instead of writing AUTIASP + RET separately.\n\n✓ 키 A로 인증하며 복귀. AUTIASP(복귀 주소 서명 검증)와 RET(X30으로 분기)을 한 명령어로 합친 것으로, AUTIASP + RET을 따로 쓰는 대신 실제 컴파일된 코드에서 흔히 생성되는 압축된 형태입니다.",
+    syntax: "RETAA",
+    example: "RETAA   // AUTIASP + RET 을 한 번에"
+  },
+  {
+    name: "RETAB",
+    description: "✓ Same as RETAA but verifies the key-B signature (combines AUTIBSP + RET).\n\n✓ RETAA와 동일하지만 키 B 서명을 검증합니다 (AUTIBSP + RET을 합친 것).",
+    syntax: "RETAB",
+    example: "RETAB"
+  },
+  {
+    name: "XPACLRI",
+    description: "✓ Strip Pointer Authentication code from LR, without checking it. Removes the embedded signature bits from X30 to recover the plain address, WITHOUT verifying whether the signature was valid. Used by debuggers, crash reporters, and stack unwinders that need to read a raw return address for a backtrace, where a full authentication failure/crash would be unwanted.\n\n✓ 서명 검증 없이 LR에서 포인터 인증 코드만 제거. X30에 심어진 서명 비트를 검증하지 않고 그냥 제거하여 순수 주소만 복원합니다. 백트레이스를 위해 원본 복귀 주소를 읽어야 하는 디버거, 크래시 리포터, 스택 언와인더 등에서 사용되며, 이런 곳에서는 인증 실패로 인한 크래시가 발생하면 곤란하기 때문에 검증 없는 이 명령어를 씁니다.",
+    syntax: "XPACLRI   // 암묵적으로 X30(LR)에 대해 동작",
+    example: "XPACLRI   // 이후 X30에는 순수 주소만 남음 (백트레이스용)"
+  },
+
+  // ---- 암호화 확장 (Crypto Extension - AES / SHA, 128비트 벡터 레지스터 사용) ----
+  {
+    name: "AESE",
+    description: "✓ AES Single Round Encryption. Performs one round of AES encryption on a 128-bit block held in a vector register, combining the AddRoundKey, SubBytes, and ShiftRows steps. Chained across multiple rounds (with AESMC between them) to implement full AES encryption without a software S-box lookup table.\n\n✓ AES 단일 라운드 암호화. 벡터 레지스터에 담긴 128비트 블록에 대해 AddRoundKey, SubBytes, ShiftRows 단계를 결합한 AES 암호화 한 라운드를 수행합니다. 여러 라운드에 걸쳐(사이사이 AESMC와 함께) 반복하면 소프트웨어 S-box 조회 테이블 없이 완전한 AES 암호화를 구현할 수 있습니다.",
+    syntax: "AESE <Vd>.16B, <Vn>.16B",
+    example: "AESE V0.16B, V1.16B"
+  },
+  {
+    name: "AESD",
+    description: "✓ AES Single Round Decryption. Performs one round of AES decryption (the inverse operations of AESE) on a 128-bit block held in a vector register.\n\n✓ AES 단일 라운드 복호화. 벡터 레지스터에 담긴 128비트 블록에 대해 AESE의 역연산인 AES 복호화 한 라운드를 수행합니다.",
+    syntax: "AESD <Vd>.16B, <Vn>.16B",
+    example: "AESD V0.16B, V1.16B"
+  },
+  {
+    name: "AESMC",
+    description: "✓ AES Mix Columns. Applies the MixColumns transformation of the AES encryption algorithm to a 128-bit block, typically applied after AESE within each encryption round.\n\n✓ AES 열 혼합. AES 암호화 알고리즘의 MixColumns 변환을 128비트 블록에 적용합니다. 보통 각 암호화 라운드에서 AESE 다음에 이어서 사용됩니다.",
+    syntax: "AESMC <Vd>.16B, <Vn>.16B",
+    example: "AESMC V0.16B, V0.16B"
+  },
+  {
+    name: "AESIMC",
+    description: "✓ AES Inverse Mix Columns. Applies the inverse MixColumns transformation, used within AES decryption rounds alongside AESD.\n\n✓ AES 역 열 혼합. AES 복호화 라운드에서 AESD와 함께 사용되는, MixColumns의 역변환을 적용합니다.",
+    syntax: "AESIMC <Vd>.16B, <Vn>.16B",
+    example: "AESIMC V0.16B, V0.16B"
+  },
+  {
+    name: "SHA1C",
+    description: "✓ SHA1 Hash update (choose). Advances the SHA-1 hash state by one set of rounds using the 'choose' round function, combining the current hash state, message schedule words, and a round constant.\n\n✓ SHA1 해시 갱신(choose 함수). 현재 해시 상태, 메시지 스케줄 워드, 라운드 상수를 결합하여 'choose' 라운드 함수로 SHA-1 해시 상태를 한 묶음의 라운드만큼 진행시킵니다.",
+    syntax: "SHA1C <Qd>, <Sn>, <Vm>.4S",
+    example: "SHA1C Q0, S1, V2.4S"
+  },
+  {
+    name: "SHA1H",
+    description: "✓ SHA1 Fixed Rotate. Performs the fixed 30-bit rotation used internally by the SHA-1 algorithm on a single 32-bit lane.\n\n✓ SHA1 고정 회전. SHA-1 알고리즘 내부에서 사용되는 고정된 30비트 회전을 단일 32비트 레인에 대해 수행합니다.",
+    syntax: "SHA1H <Sd>, <Sn>",
+    example: "SHA1H S0, S1"
+  },
+  {
+    name: "SHA1SU0",
+    description: "✓ SHA1 Schedule Update 0. Performs the first stage of computing the next set of SHA-1 message schedule words from earlier ones.\n\n✓ SHA1 스케줄 갱신 0단계. 이전 메시지 스케줄 워드들로부터 다음 스케줄 워드를 계산하는 첫 번째 단계를 수행합니다.",
+    syntax: "SHA1SU0 <Vd>.4S, <Vn>.4S, <Vm>.4S",
+    example: "SHA1SU0 V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "SHA1SU1",
+    description: "✓ SHA1 Schedule Update 1. Performs the second stage of computing the next set of SHA-1 message schedule words, completing what SHA1SU0 started.\n\n✓ SHA1 스케줄 갱신 1단계. SHA1SU0에서 시작한 다음 메시지 스케줄 워드 계산의 두 번째 단계를 완료합니다.",
+    syntax: "SHA1SU1 <Vd>.4S, <Vn>.4S",
+    example: "SHA1SU1 V0.4S, V1.4S"
+  },
+  {
+    name: "SHA256H",
+    description: "✓ SHA256 Hash update, part 1. Advances the first half of the SHA-256 hash state by one set of rounds, combining the current state, message schedule words, and round constants.\n\n✓ SHA256 해시 갱신 1부. 현재 해시 상태, 메시지 스케줄 워드, 라운드 상수를 결합하여 SHA-256 해시 상태의 앞쪽 절반을 한 묶음의 라운드만큼 진행시킵니다.",
+    syntax: "SHA256H <Qd>, <Qn>, <Vm>.4S",
+    example: "SHA256H Q0, Q1, V2.4S"
+  },
+  {
+    name: "SHA256H2",
+    description: "✓ SHA256 Hash update, part 2. Advances the second half of the SHA-256 hash state, completing what SHA256H started for the same set of rounds.\n\n✓ SHA256 해시 갱신 2부. 같은 라운드 묶음에 대해 SHA256H가 시작한 SHA-256 해시 상태의 나머지 절반을 진행시킵니다.",
+    syntax: "SHA256H2 <Qd>, <Qn>, <Vm>.4S",
+    example: "SHA256H2 Q0, Q1, V2.4S"
+  },
+  {
+    name: "SHA256SU0",
+    description: "✓ SHA256 Schedule Update 0. Performs the first stage of computing the next set of SHA-256 message schedule words from earlier ones.\n\n✓ SHA256 스케줄 갱신 0단계. 이전 메시지 스케줄 워드들로부터 다음 스케줄 워드를 계산하는 첫 번째 단계를 수행합니다.",
+    syntax: "SHA256SU0 <Vd>.4S, <Vn>.4S",
+    example: "SHA256SU0 V0.4S, V1.4S"
+  },
+  {
+    name: "SHA256SU1",
+    description: "✓ SHA256 Schedule Update 1. Performs the second stage of computing the next set of SHA-256 message schedule words, completing what SHA256SU0 started.\n\n✓ SHA256 스케줄 갱신 1단계. SHA256SU0에서 시작한 다음 메시지 스케줄 워드 계산의 두 번째 단계를 완료합니다.",
+    syntax: "SHA256SU1 <Vd>.4S, <Vn>.4S, <Vm>.4S",
+    example: "SHA256SU1 V0.4S, V1.4S, V2.4S"
+  },
+
+  // ---- LSE 원자적 명령어 확장 (ARMv8.1, LDXR/STXR 재시도 루프 불필요) ----
+  {
+    name: "CAS",
+    description: "✓ Compare And Swap. Atomically compares the value at a memory address with Ws; if equal, writes Wt to that address. Either way, the OLD memory value is returned into Ws. Replaces an entire LDXR/CMP/STXR retry loop with one instruction. Suffix variants control memory ordering: CASA (acquire), CASL (release), CASAL (both) — the same A/L/AL suffix pattern applies to the whole LSE family below.\n\n✓ 비교 후 교환. 메모리 주소의 값을 Ws와 원자적으로 비교하여, 같으면 그 주소에 Wt를 씁니다. 어느 쪽이든 원래 메모리 값이 Ws에 반환됩니다. LDXR/CMP/STXR 재시도 루프 전체를 명령어 하나로 대체합니다. 접미사로 메모리 순서를 제어합니다: CASA(획득), CASL(해제), CASAL(둘 다) — 이 A/L/AL 접미사 규칙은 아래 LSE 계열 전체에 동일하게 적용됩니다.",
+    syntax: "CAS <Ws>, <Wt>, [<Xn|SP>]",
+    example: "CAS W0, W1, [X19]   // *X19 == W0 이면 *X19 = W1, 항상 원래값을 W0에 반환"
+  },
+  {
+    name: "SWP",
+    description: "✓ Atomic Swap. Atomically loads the value at a memory address into Ws while storing Wt into that address, in a single instruction — no comparison needed.\n\n✓ 원자적 교환. 메모리 주소의 값을 Ws로 읽어옴과 동시에 그 주소에 Wt를 저장합니다 — 비교 과정 없이 명령어 하나로 완료됩니다.",
+    syntax: "SWP <Ws>, <Wt>, [<Xn|SP>]",
+    example: "SWP W0, W1, [X19]   // 이전 값 -> W0, 새 값 W1 저장"
+  },
+  {
+    name: "LDADD",
+    description: "✓ Atomic Load and Add. Atomically adds Ws to the value at a memory address, and returns the OLD value into Wt, in a single instruction. When the old value isn't needed, the STADD alias (Wt = XZR) is commonly used for a pure atomic increment.\n\n✓ 원자적 로드 후 덧셈. 메모리 주소의 값에 Ws를 원자적으로 더하고, 원래 값을 Wt에 반환합니다. 원래 값이 필요 없다면 순수 원자적 증가를 위해 STADD 별칭(Wt=XZR)을 흔히 씁니다.",
+    syntax: "LDADD <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDADD W0, W1, [X19]   // *X19 += W0, 이전 값은 W1에 반환\nSTADD W0, [X19]        // *X19 += W0, 이전 값 필요 없을 때"
+  },
+  {
+    name: "LDCLR",
+    description: "✓ Atomic Load and Clear (bit clear). Atomically computes (memory AND NOT Ws) and stores it back, returning the OLD value into Wt.\n\n✓ 원자적 로드 후 비트 클리어. 메모리 값에 대해 (메모리 AND NOT Ws)를 원자적으로 계산해 다시 저장하고, 원래 값을 Wt에 반환합니다.",
+    syntax: "LDCLR <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDCLR W0, W1, [X19]   // *X19 &= ~W0"
+  },
+  {
+    name: "LDEOR",
+    description: "✓ Atomic Load and Exclusive-OR. Atomically XORs Ws into the value at a memory address, returning the OLD value into Wt.\n\n✓ 원자적 로드 후 XOR. 메모리 값에 Ws를 원자적으로 XOR 연산하여 저장하고, 원래 값을 Wt에 반환합니다.",
+    syntax: "LDEOR <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDEOR W0, W1, [X19]   // *X19 ^= W0"
+  },
+  {
+    name: "LDSET",
+    description: "✓ Atomic Load and Set (bit set). Atomically ORs Ws into the value at a memory address, returning the OLD value into Wt.\n\n✓ 원자적 로드 후 비트 셋. 메모리 값에 Ws를 원자적으로 OR 연산하여 저장하고, 원래 값을 Wt에 반환합니다.",
+    syntax: "LDSET <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDSET W0, W1, [X19]   // *X19 |= W0"
+  },
+  {
+    name: "LDSMAX",
+    description: "✓ Atomic Load Signed Maximum. Atomically compares (as signed values) Ws with the memory value and stores whichever is larger, returning the OLD value into Wt.\n\n✓ 원자적 로드 후 부호 있는 최댓값. 메모리 값과 Ws를 부호 있는 값으로 원자적으로 비교하여 더 큰 값을 저장하고, 원래 값을 Wt에 반환합니다.",
+    syntax: "LDSMAX <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDSMAX W0, W1, [X19]"
+  },
+  {
+    name: "LDSMIN",
+    description: "✓ Atomic Load Signed Minimum. Atomically compares (as signed values) Ws with the memory value and stores whichever is smaller, returning the OLD value into Wt.\n\n✓ 원자적 로드 후 부호 있는 최솟값. 메모리 값과 Ws를 부호 있는 값으로 원자적으로 비교하여 더 작은 값을 저장하고, 원래 값을 Wt에 반환합니다.",
+    syntax: "LDSMIN <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDSMIN W0, W1, [X19]"
+  },
+  {
+    name: "LDUMAX",
+    description: "✓ Atomic Load Unsigned Maximum. Same as LDSMAX but compares the values as unsigned.\n\n✓ 원자적 로드 후 부호 없는 최댓값. LDSMAX와 동일하지만 부호 없는 값으로 비교합니다.",
+    syntax: "LDUMAX <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDUMAX W0, W1, [X19]"
+  },
+  {
+    name: "LDUMIN",
+    description: "✓ Atomic Load Unsigned Minimum. Same as LDSMIN but compares the values as unsigned.\n\n✓ 원자적 로드 후 부호 없는 최솟값. LDSMIN과 동일하지만 부호 없는 값으로 비교합니다.",
+    syntax: "LDUMIN <Ws>, <Wt>, [<Xn|SP>]",
+    example: "LDUMIN W0, W1, [X19]"
   },
 
   // ---- 기타 ----

@@ -4,6 +4,20 @@
 // (LDP/STP/LDR/STR 은 diagnostics.js 에서 직접 검증 로직을 갖고 있으므로
 //  이름 뜻도 확실하게 넣어둠. 나머지 한글 니모닉은 실제 AsmLexer.cpp 의
 //  테이블을 보고 여기에 하나씩 채워 넣으면 hover 설명도 정확해진다.)
+//
+// 🔗 [단일 진실 공급원 보강] KNOWN_SET(diagnostics.js가 "모르는 명령어" 경고를
+//    낼 때 쓰는 목록)이 예전엔 ENGLISH_MNEMONICS(손으로 적은 목록)만 봤었다.
+//    반면 hover/completion은 mnemonic-info.js를 통해 data/arm64-data.js를
+//    직접 참조해서 이미 훨씬 많은 명령어(MOVN, LDADD, CAS 등)를 알고 있었음.
+//    그래서 arm64-data.js에 새 명령어를 추가해도 diagnostics.js는 계속
+//    "모르는 명령어"라고 오탐하는 불일치가 있었다.
+//    → arm64-data.js를 여기서도 직접 흡수해서, 앞으로 그 파일에 뭘 추가하든
+//      diagnostics.js가 자동으로 같이 알게 만든다 (진짜 단일 진실 공급원).
+const { arm64Instructions, arm64FpInstructions } = require('./data/arm64-data');
+const ARM64_DATA_MNEMONICS = [
+  ...(arm64Instructions || []),
+  ...(arm64FpInstructions || []),
+].map((i) => i.name.toLowerCase());
 
 const MNEMONIC_MAP = {
   // === 기존에 넣어둔 4대 천왕 ===
@@ -176,7 +190,7 @@ const HANGUL_MNEMONICS = [
   '배타적', '왼쉬프트', '오른쉬프트', '돌림', '부호확장', '비트추출', '비트삽입',
 ];
 
-const ALL_MNEMONICS = Array.from(new Set([...ENGLISH_MNEMONICS, ...HANGUL_MNEMONICS]));
+const ALL_MNEMONICS = Array.from(new Set([...ENGLISH_MNEMONICS, ...HANGUL_MNEMONICS, ...ARM64_DATA_MNEMONICS]));
 const KNOWN_SET = new Set(ALL_MNEMONICS);
 
 module.exports = { MNEMONIC_MAP, ALL_MNEMONICS, KNOWN_SET, ENGLISH_MNEMONICS, HANGUL_MNEMONICS };
