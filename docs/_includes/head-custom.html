@@ -1,14 +1,28 @@
 <style>
-  .language-mermaid,
-  pre.highlight:has(.language-mermaid),
-  div.highlighter-rouge:has(.language-mermaid) {
+  /* Cayman 테마의 코드 블록 배경과 테두리를 강제로 제거 (Mermaid 전용) */
+  body .main-content div.highlighter-rouge:has(.language-mermaid),
+  body .main-content pre.highlight:has(.language-mermaid),
+  body .main-content .language-mermaid {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }
+
+  /* Mermaid가 생성한 SVG 내부의 텍스트가 테마 색상에 묻히지 않도록 방지 */
+  .mermaid svg {
+    background: transparent !important;
+  }
 </style>
+<!-- KaTeX 수식 렌더링 스크립트 추가 -->
+{% if page.use_math or site.use_math %}
+<link rel="stylesheet" href="https://jsdelivr.net">
+<script defer src="https://jsdelivr.net"></script>
+<script defer src="https://jsdelivr.net"
+        onload="renderMathInElement(document.body);"></script>
+{% endif %}
 
 <script type="module">
   Array.from(document.getElementsByClassName("language-mermaid")).forEach(element => {
