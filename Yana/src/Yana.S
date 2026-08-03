@@ -57,6 +57,7 @@ str_adc:               .asciz "ADC"
 str_madd:              .asciz "MADD"
 str_msub:              .asciz "MSUB"
 str_sys_print:         .asciz "sys print"
+str_sys_print_fmt:     .asciz "sys print fmt"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -84,6 +85,7 @@ menu_table:
 		.quad _mnemonic_madd, str_madd                  // 22
 		.quad _mnemonic_msub, str_msub                  // 23
 		.quad _run_sys_print, str_sys_print             // 24
+		.quad _run_sys_print_fmt, str_sys_print_fmt     // 25
 menu_table_end:
 
 CODE_SECTION
