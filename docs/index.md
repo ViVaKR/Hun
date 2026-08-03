@@ -10,12 +10,13 @@
 
 ```mermaid
 flowchart LR
-   A@{ shape: braces, label: "ADC" }
+   A@{ shape: braces, label: "ADC" } 
 ```
 
-- **EN:** Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.  
+- $\divideontimes$ `Add with Carry` Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.  
 
-- **KO:** 캐리를 포함한 덧셈. 두 피연산자와 현재 캐리 플래그를 함께 더합니다(Xd = Xn + Xm + C). 64비트보다 큰 값을 여러 레지스터에 걸쳐 더할 때, 하위 워드의 ADDS 다음에 이어서 사용합니다.
+
+- $\bigcirc$ `캐리를 포함한 덧셈`. 두 피연산자와 현재 캐리 플래그를 함께 더합니다(Xd = Xn + Xm + C). 64비트보다 큰 값을 여러 레지스터에 걸쳐 더할 때, 하위 워드의 ADDS 다음에 이어서 사용합니다.
 
 **Syntax**
 ```asm
