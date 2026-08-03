@@ -1,22 +1,3 @@
-<style>
-  /* Cayman 테마의 코드 블록 배경과 테두리를 강제로 제거 (Mermaid 전용) */
-  body .main-content div.highlighter-rouge:has(.language-mermaid),
-  body .main-content pre.highlight:has(.language-mermaid),
-  body .main-content .language-mermaid {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Mermaid가 생성한 SVG 내부의 텍스트가 테마 색상에 묻히지 않도록 방지 */
-  .mermaid svg {
-    background: transparent !important;
-  }
-</style>
-
 <!-- KaTeX 수식 렌더링 스크립트 복구 및 추가 -->
 {% if page.use_math or site.use_math %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css"
@@ -30,7 +11,14 @@
 <!-- To automatically render math in text elements, include the auto-render extension: -->
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/auto-render.min.js"
         integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous"
-        onload="renderMathInElement(document.body);"></script>
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+          ]
+        });"></script>
 {% endif %}
 
 <script type="module">
@@ -38,6 +26,6 @@
   Array.from(document.getElementsByClassName("language-mermaid")).forEach(element => {
     element.classList.add("mermaid");
   });
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs';
   mermaid.initialize({ startOnLoad: true });
 </script>
