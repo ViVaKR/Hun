@@ -2,8 +2,7 @@
    title: Hun ARM64 Mnemonic Dictionary
 ---
 
-# Hun ARM64 Mnemonic Dictionary **224**
-
+# **Hun ARM64 Mnemonic Dictionary**
 
 ```mermaid
 flowchart LR
@@ -31,18 +30,35 @@ ADC  X1, X3, X5   // 상위 64비트 + 캐리 -> 128비트 덧셈 완성
 ```mermaid
 flowchart LR
    ADCS@{ shape: braces} 
+   ADCS --> desc["Add with Carry<br>캐리를 포함한 덧셈 후 플래그 설정"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Add with Carry, setting flags` Same as ADC but also updates the NZCV flags, allowing the carry chain to continue into a further ADC/ADCS for even wider (192-bit+) arithmetic.
 
 $\checkmark$ `캐리를 포함한 덧셈 후 플래그 설정` ADC와 동일하지만 NZCV 플래그도 갱신하여, 더 넓은(192비트 이상) 연산을 위해 캐리 체인을 계속 이어갈 수 있습니다.
 
+$\checkmark$ `NZCV` 레지스터 값으로 통째로 읽기
+
+```arm
+// 방법 1
+// Move from System Register
+// PSTATE의 NZCV 4비트를 범용 레지스터(X0) 에 통째로 복사 하는 명령 
+MRS x0, NZCV
+
+// 방법 2
+// 방금 플래그가 EQ 조건을 만족했으면 X0 = 1, 아니면 X0 = 0
+CSET X0, EQ 
+```
+
 **Syntax**
+
 ```arm
 ADCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```
 
 **Example**
+
 ```arm
 ADCS X1, X3, X5
 ```
@@ -514,7 +530,7 @@ B.NE label
 ```mermaid
 flowchart LR
    BFI@{ shape: braces}    
-   BFI --> desc["비트필드 삽입"]
+   BFI --> desc["Bitfield Insert<br>비트필드 삽입"]
    style desc fill:none,stroke:none
 ```
 
@@ -536,15 +552,16 @@ BFI X0, X1, #8, #4    // X1의 하위 4비트를 X0의 8번 비트 위치에 삽
 ```mermaid
 flowchart LR
    BFXIL@{ shape: braces}    
-   BFXIL --> desc["비트필드 추출 후 하위에 삽입"]
+   BFXIL --> desc["Bitfield Extract and Insert<br>비트필드 추출 후 하위에 삽입"]
    style desc fill:none,stroke:none
 ```
 
-$\checkmark$ Bitfield eXtract and Insert at Low. Copies a bit range out of the source register and inserts it at the low end of the destination, leaving the destination's other bits untouched. Useful for pulling one packed field (e.g. a status code) out of a word without disturbing the rest of the destination register.
+$\checkmark$ `Bitfield Extract and Insert at Low`. Copies a bit range out of the source register and inserts it at the low end of the destination, leaving the destination's other bits untouched. Useful for pulling one packed field (e.g. a status code) out of a word without disturbing the rest of the destination register.
 
-$\checkmark$ 비트필드 추출 후 하위에 삽입. 소스 레지스터에서 지정한 비트 범위를 뽑아내어 대상 레지스터의 하위 비트에 삽입하며, 대상의 나머지 비트는 그대로 유지합니다. 패킹된 필드(예: 상태 코드) 하나를 워드에서 뽑아내되, 대상 레지스터의 나머지 값은 건드리지 않고 싶을 때 유용합니다.
+$\checkmark$ `비트필드 추출 후 하위에 삽입`. 소스 레지스터에서 지정한 비트 범위를 뽑아내어 대상 레지스터의 하위 비트에 삽입하며, 대상의 나머지 비트는 그대로 유지합니다. 패킹된 필드(예: 상태 코드) 하나를 워드에서 뽑아내되, 대상 레지스터의 나머지 값은 건드리지 않고 싶을 때 유용합니다.
 
 **Syntax**
+
 ```arm
 BFXIL <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 ```
@@ -598,291 +615,395 @@ BIF <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 BIF V0.16B, V1.16B, V2.16B
 ```
 
----
+```mermaid
+flowchart LR
+   BIT@{ shape: braces}    
+   BIT --> desc["Bitwise Insert if True<br>조건부(참) 비트 삽입"]
+   style desc fill:none,stroke:none
+```
 
-## `BIT`
+$\checkmark$ `Bitwise Insert if True`. Inserts bits from Vn into the destination wherever the mask in Vm is 1, leaving the rest of the destination unchanged.
 
-$\checkmark$ Bitwise Insert if True. Inserts bits from Vn into the destination wherever the mask in Vm is 1, leaving the rest of the destination unchanged.
-
-$\checkmark$ 조건부(참) 비트 삽입. 마스크 Vm의 비트가 1인 자리에만 Vn의 비트를 대상에 삽입합니다. 나머지 자리는 원래 값 그대로 유지됩니다.
+$\checkmark$ `조건부(참) 비트 삽입`. 마스크 Vm의 비트가 1인 자리에만 Vn의 비트를 대상에 삽입합니다. 나머지 자리는 원래 값 그대로 유지됩니다.
 
 **Syntax**
+
 ```arm
 BIT <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```
 
 **Example**
+
 ```arm
 BIT V0.16B, V1.16B, V2.16B
 ```
 
----
+```mermaid
+flowchart LR
+   BL@{ shape: braces}    
+   BL --> desc["Branch with Link<br>링크와 함께 분기합니다"]
+   style desc fill:none,stroke:none
+```
 
-## `BL` (불러감)
+$\checkmark$ `Branch with Link`. Calls a subroutine, saving the return address in X30 (Link Register).
 
-$\checkmark$ Branch with Link. Calls a subroutine, saving the return address in X30 (Link Register).
-
-$\checkmark$ 링크와 함께 분기합니다. 서브루틴을 호출하면서 복귀 주소를 X30 (링크 레지스터)에 저장합니다.
+$\checkmark$ `링크와 함께 분기합니다`. 서브루틴을 호출하면서 복귀 주소를 X30 (링크 레지스터)에 저장합니다.
 
 **Syntax**
+
 ```arm
 BL <label>
 ```
 
 **Example**
+
 ```arm
 BL my_function
 ```
 
----
+```mermaid
+flowchart LR
+   BLR@{ shape: braces}    
+   BLR --> desc["Branch with Link to Register<br>레지스터의 주소로 링크와 함께 분기합니다."]
+   style desc fill:none,stroke:none
+```
 
-## `BLE`
+## `BLR`
 
+$\checkmark$ `Branch with Link to Register`. Calls a subroutine whose address is held in a register, saving the return address in X30 (Link Register).
 
-$\checkmark$ 설명 준비 중인 Hun-ASM 니모닉입니다.
-
----
-
-## `BLR` (주소불러감)
-
-$\checkmark$ Branch with Link to Register. Calls a subroutine whose address is held in a register, saving the return address in X30 (Link Register).
-
-$\checkmark$ 레지스터로 링크와 함께 분기합니다. 주소가 레지스터에 담긴 서브루틴을 호출하며, 복귀 주소를 X30(링크 레지스터)에 저장합니다.
+$\checkmark$ `레지스터의 주소로 링크와 함께 분기합니다`. 주소가 레지스터에 담긴 서브루틴을 호출하며, 복귀 주소를 X30(링크 레지스터)에 저장합니다. 닷넷의 델리게이트와 같이 컴파일타임에 주소를 모르는 경우.
 
 **Syntax**
+
 ```arm
 BLR <Xn>
 ```
 
 **Example**
+
 ```arm
 BLR X8
 ```
 
----
+```mermaid
+flowchart LR
+   BR@{ shape: braces}    
+   BR --> desc["Branch to Register<br>레지스터로 분기합니다."]
+   style desc fill:none,stroke:none
+```
 
-## `BLT`
+$\checkmark$ `Branch to Register`. Branches unconditionally to the address held in a register, without linking a return address (no update to X30).
 
-
-$\checkmark$ 설명 준비 중인 Hun-ASM 니모닉입니다.
-
----
-
-## `BNE`
-
-
-$\checkmark$ 설명 준비 중인 Hun-ASM 니모닉입니다.
-
----
-
-## `BR`
-
-$\checkmark$ Branch to Register. Branches unconditionally to the address held in a register, without linking a return address (no update to X30).
-
-$\checkmark$ 레지스터로 분기합니다. 복귀 주소를 링크하지 않고(X30 갱신 없이) 레지스터에 담긴 주소로 무조건 분기합니다.
+$\checkmark$ `레지스터로 분기합니다`. 복귀 주소를 링크하지 않고(X30 갱신 없이) 레지스터에 담긴 주소로 무조건 분기합니다.
 
 **Syntax**
+
 ```arm
 BR <Xn>
 ```
 
 **Example**
+
 ```arm
 BR X16
 ```
 
----
+```mermaid
+flowchart LR
+   BRK@{ shape: braces}    
+   BRK --> desc["Breakpoint instruction<br>브레이크포이트 명령"]
+   style desc fill:none,stroke:none
+```
 
-## `BRK`
+$\checkmark$ `Breakpoint instruction`. Triggers a software breakpoint exception, halting execution for a debugger to inspect state. Commonly generated by compilers for assert()/trap-style failures.
 
-$\checkmark$ Breakpoint instruction. Triggers a software breakpoint exception, halting execution for a debugger to inspect state. Commonly generated by compilers for assert()/trap-style failures.
-
-$\checkmark$ 브레이크포인트 명령. 소프트웨어 브레이크포인트 예외를 발생시켜 디버거가 상태를 살펴볼 수 있도록 실행을 멈춥니다. assert() 실패 같은 트랩 상황에서 컴파일러가 흔히 생성합니다.
+$\checkmark$ `브레이크포인트 명령`. 소프트웨어 브레이크포인트 예외를 발생시켜 디버거가 상태를 살펴볼 수 있도록 실행을 멈춥니다. assert() 실패 같은 트랩 상황에서 컴파일러가 흔히 생성합니다.
 
 **Syntax**
+
 ```arm
 BRK #<imm>
 ```
 
 **Example**
+
 ```arm
 BRK #0x1
 ```
 
----
+```mermaid
+flowchart LR
+   BSL@{ shape: braces}    
+   BSL --> desc["Bitwise Select<br>비트 단위 선택"]
+   style desc fill:none,stroke:none
+```
 
-## `BSL`
+$\checkmark$ `Bitwise Select`. Uses the destination register's current bits as a mask: where the mask bit is 1, keeps the bit from Vn; where it's 0, takes the bit from Vm. Typically paired with a CMxx instruction to build a branchless if/else over vector lanes.
 
-$\checkmark$ Bitwise Select. Uses the destination register's current bits as a mask: where the mask bit is 1, keeps the bit from Vn; where it's 0, takes the bit from Vm. Typically paired with a CMxx instruction to build a branchless if/else over vector lanes.
-
-$\checkmark$ 비트 단위 선택. 대상 레지스터에 이미 들어있는 값을 마스크로 사용해서, 마스크 비트가 1인 자리는 Vn의 비트를, 0인 자리는 Vm의 비트를 가져와 채웁니다. 보통 CMxx 계열 명령어와 짝지어, 분기 없이 벡터 레인 단위 if/else를 구현할 때 씁니다.
+$\checkmark$ `비트 단위 선택`. 대상 레지스터에 이미 들어있는 값을 마스크로 사용해서, 마스크 비트가 1인 자리는 Vn의 비트를, 0인 자리는 Vm의 비트를 가져와 채웁니다. 보통 CMxx 계열 명령어와 짝지어, 분기 없이 벡터 레인 단위 if/else를 구현할 때 씁니다.
 
 **Syntax**
+
 ```arm
 BSL <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```
 
 **Example**
+
 ```arm
 CMGT V3.4S, V1.4S, V2.4S   // 마스크 생성
 BSL  V3.16B, V1.16B, V2.16B  // 마스크에 따라 V1/V2 중 선택
 ```
 
----
+```mermaid
+flowchart LR
+   CAS@{ shape: braces}    
+   CAS --> desc["Bitwise Select<br>비트 단위 선택"]
+   style desc fill:none,stroke:none
+```
 
-## `CAS`
+$\checkmark$ `Compare And Swap`. Atomically compares the value at a memory address with Ws; if equal, writes Wt to that address. Either way, the OLD memory value is returned into Ws. Replaces an entire LDXR/CMP/STXR retry loop with one instruction. Suffix variants control memory ordering: CASA (acquire), CASL (release), CASAL (both) — the same A/L/AL suffix pattern applies to the whole LSE family below.
 
-$\checkmark$ Compare And Swap. Atomically compares the value at a memory address with Ws; if equal, writes Wt to that address. Either way, the OLD memory value is returned into Ws. Replaces an entire LDXR/CMP/STXR retry loop with one instruction. Suffix variants control memory ordering: CASA (acquire), CASL (release), CASAL (both) — the same A/L/AL suffix pattern applies to the whole LSE family below.
-
-$\checkmark$ 비교 후 교환. 메모리 주소의 값을 Ws와 원자적으로 비교하여, 같으면 그 주소에 Wt를 씁니다. 어느 쪽이든 원래 메모리 값이 Ws에 반환됩니다. LDXR/CMP/STXR 재시도 루프 전체를 명령어 하나로 대체합니다. 접미사로 메모리 순서를 제어합니다: CASA(획득), CASL(해제), CASAL(둘 다) — 이 A/L/AL 접미사 규칙은 아래 LSE 계열 전체에 동일하게 적용됩니다.
+$\checkmark$ `비교 후 교환`. 메모리 주소의 값을 Ws와 원자적으로 비교하여, 같으면 그 주소에 Wt를 씁니다. 어느 쪽이든 원래 메모리 값이 Ws에 반환됩니다. LDXR/CMP/STXR 재시도 루프 전체를 명령어 하나로 대체합니다. 접미사로 메모리 순서를 제어합니다: CASA(획득), CASL(해제), CASAL(둘 다) — 이 A/L/AL 접미사 규칙은 아래 LSE 계열 전체에 동일하게 적용됩니다.
 
 **Syntax**
+
 ```arm
 CAS <Ws>, <Wt>, [<Xn|SP>]
 ```
 
 **Example**
+
 ```arm
 CAS W0, W1, [X19]   // *X19 == W0 이면 *X19 = W1, 항상 원래값을 W0에 반환
 ```
 
----
+```mermaid
+flowchart LR
+   CBNZ@{ shape: braces}    
+   CBNZ --> desc["Compare and Branch if Not Zero<br>비교 후 0이 아니면 분기합니다."]
+   style desc fill:none,stroke:none
+```
 
-## `CBNZ` (영아니면뜀)
+$\checkmark$ `Compare and Branch if Not Zero`. Branches to a label if the register is nonzero, without affecting the condition flags.
 
-$\checkmark$ Compare and Branch if Not Zero. Branches to a label if the register is nonzero, without affecting the condition flags.
-
-$\checkmark$ 비교 후 0이 아니면 분기합니다. 조건 플래그에 영향을 주지 않고, 레지스터 값이 0이 아니면 지정한 라벨로 분기합니다.
+$\checkmark$ `비교 후 0이 아니면 분기합니다`. 조건 플래그에 영향을 주지 않고, 레지스터 값이 0이 아니면 지정한 라벨로 분기합니다.
 
 **Syntax**
+
 ```arm
 CBNZ <Wt|Xt>, <label>
 ```
 
 **Example**
+
 ```arm
 CBNZ X0, loop
 ```
 
----
+```mermaid
+flowchart LR
+   CBZ@{ shape: braces}    
+   CBZ --> desc["Compare and Branch if Zero<br>비교 후 0이면 분기합니다."]
+   style desc fill:none,stroke:none
+```
 
-## `CBZ`
+$\checkmark$ `Compare and Branch if Zero`. Branches to a label if the register equals zero, without affecting the condition flags.
 
-$\checkmark$ Compare and Branch if Zero. Branches to a label if the register equals zero, without affecting the condition flags.
-
-$\checkmark$ 비교 후 0이면 분기합니다. 조건 플래그에 영향을 주지 않고, 레지스터 값이 0이면 지정한 라벨로 분기합니다.
+$\checkmark$ `비교 후 0이면 분기합니다`. 조건 플래그에 영향을 주지 않고, 레지스터 값이 0이면 지정한 라벨로 분기합니다.
 
 **Syntax**
+
 ```arm
 CBZ <Wt|Xt>, <label>
 ```
 
 **Example**
+
 ```arm
 CBZ X0, done
 ```
 
----
+```mermaid
+flowchart LR
+   CCMN@{ shape: braces}    
+   CCMN --> desc["Conditional Compare Negative<br>조건분 음수 비교"]
+   style desc fill:none,stroke:none
+```
 
-## `CCMN`
+$\checkmark$ `Conditional Compare Negative`. Same as CCMP but performs a CMN-style (addition-based) comparison when the condition is true.
 
-$\checkmark$ Conditional Compare Negative. Same as CCMP but performs a CMN-style (addition-based) comparison when the condition is true.
-
-$\checkmark$ 조건부 음수 비교. CCMP와 동일하지만, 조건이 참일 때 CMN 방식(덧셈 기반)으로 비교합니다.
+$\checkmark$ `조건부 음수 비교`. CCMP와 동일하지만, 조건이 참일 때 CMN 방식(덧셈 기반)으로 비교합니다.
 
 **Syntax**
+
 ```arm
 CCMN <Wn|Xn>, <Wm|Xm>, #<nzcv>, <cond>
 ```
 
 **Example**
+
 ```arm
 CCMN X0, X1, #0b0100, EQ
 ```
 
----
+```mermaid
+flowchart LR
+   CCMP@{ shape: braces}    
+   CCMP --> desc["Conditional Compare Negative<br>조건분 음수 비교"]
+   style desc fill:none,stroke:none
+```
 
-## `CCMP` (조건비교)
+$\checkmark$ `Conditional Compare`. If the given condition is true, performs a normal CMP and updates NZCV accordingly; if false, sets NZCV directly to the given 4-bit immediate instead. Used to evaluate compound boolean conditions (e.g. 'a > 0 && b < 10') without branching.
 
-$\checkmark$ Conditional Compare. If the given condition is true, performs a normal CMP and updates NZCV accordingly; if false, sets NZCV directly to the given 4-bit immediate instead. Used to evaluate compound boolean conditions (e.g. 'a > 0 && b < 10') without branching.
-
-$\checkmark$ 조건부 비교. 주어진 조건이 참이면 일반 CMP처럼 비교하여 NZCV를 갱신하고, 거짓이면 대신 주어진 4비트 즉치값을 NZCV에 그대로 씁니다. 분기 없이 복합 논리 조건('a > 0 && b < 10' 같은)을 평가할 때 사용합니다.
+$\checkmark$ `조건부 비교`. 주어진 조건이 참이면 일반 CMP처럼 비교하여 NZCV를 갱신하고, 거짓이면 대신 주어진 4비트 즉시값을 NZCV에 그대로 씁니다. 분기 없이 복합 논리 조건('a > 0 && b < 10' 같은)을 평가할 때 사용합니다.
 
 **Syntax**
+
 ```arm
 CCMP <Wn|Xn>, <Wm|Xm>, #<nzcv>, <cond>
 ```
 
 **Example**
+
 ```arm
 CMP  X0, #0
 CCMP X1, #10, #0b0000, GT   // X0>0 이면서 X1<10 인지 검사
 B.LT both_conditions_true
 ```
 
----
+```mermaid
+flowchart LR
+   CINC@{ shape: braces}    
+   CINC --> desc["Conditional Increment<br>조건부 증가"]
+   style desc fill:none,stroke:none
+```
 
-## `CINC`
+$\checkmark$ `Conditional Increment`. If the condition is true, Rd = Rn + 1; otherwise Rd = Rn. An alias of CSINC that reads more naturally at the call site than spelling out CSINC with a duplicated register.
 
-$\checkmark$ Conditional Increment. If the condition is true, Rd = Rn + 1; otherwise Rd = Rn. An alias of CSINC that reads more naturally at the call site than spelling out CSINC with a duplicated register.
-
-$\checkmark$ 조건부 증가. 조건이 참이면 Rd = Rn + 1, 거짓이면 Rd = Rn을 대입합니다. CSINC의 별칭(alias)으로, 레지스터를 중복 기입하는 CSINC보다 호출부에서 의도가 더 잘 드러납니다.
+$\checkmark$ `조건부 증가`. 조건이 참이면 Rd = Rn + 1, 거짓이면 Rd = Rn을 대입합니다. CSINC의 별칭(alias)으로, 레지스터를 중복 기입하는 CSINC보다 호출부에서 의도가 더 잘 드러납니다.
 
 **Syntax**
+
 ```arm
 CINC <Wd|Xd>, <Wn|Xn>, <cond>
 ```
 
 **Example**
+
 ```arm
 CMP X0, X1
 CINC X2, X3, GT   // X0 > X1 이면 X2 = X3 + 1, 아니면 X2 = X3
 ```
 
----
+```mermaid
+flowchart LR
+   CINV@{ shape: braces}    
+   CINV --> desc["Conditional Invert<br>조건부 비트 반전"]
+   style desc fill:none,stroke:none
+```
 
-## `CINV`
+$\checkmark$ `Conditional Invert`. If the condition is true, Rd = ~Rn (bitwise NOT); otherwise Rd = Rn. An alias of CSINV.
 
-$\checkmark$ Conditional Invert. If the condition is true, Rd = ~Rn (bitwise NOT); otherwise Rd = Rn. An alias of CSINV.
-
-$\checkmark$ 조건부 비트 반전. 조건이 참이면 Rd = ~Rn(비트 NOT), 거짓이면 Rd = Rn을 대입합니다. CSINV의 별칭입니다.
+$\checkmark$ `조건부 비트 반전`. 조건이 참이면 Rd = ~Rn(비트 NOT), 거짓이면 Rd = Rn을 대입합니다. CSINV의 별칭입니다.
 
 **Syntax**
+
 ```arm
 CINV <Wd|Xd>, <Wn|Xn>, <cond>
 ```
 
 **Example**
+
 ```arm
 CMP X0, X1
 CINV X2, X3, EQ
 ```
 
----
+```mermaid
+flowchart LR
+   CLREX@{ shape: braces}    
+   CLREX --> desc["Clear Exclusive<br>배타적 감시 해제"]
+   style desc fill:none,stroke:none
+```
 
-## `CLREX`
+$\checkmark$ `Clear Exclusive`. Manually clears the exclusive-access monitor set by a prior LDXR/LDAXR without performing a store. Used when an LDXR was issued but the code decides to abandon the atomic attempt (e.g. taking an early-exit branch) instead of following through with STXR.
 
-$\checkmark$ Clear Exclusive. Manually clears the exclusive-access monitor set by a prior LDXR/LDAXR without performing a store. Used when an LDXR was issued but the code decides to abandon the atomic attempt (e.g. taking an early-exit branch) instead of following through with STXR.
-
-$\checkmark$ 배타적 모니터 해제. 이전 LDXR/LDAXR로 설정된 배타적 접근 감시 상태를 실제 저장 없이 수동으로 해제합니다. LDXR을 실행했지만 이후 STXR로 이어가지 않고 원자적 시도를 포기해야 할 때(예: 조기 종료 분기를 타는 경우) 사용합니다.
+$\checkmark$ `배타적 감시 해제`. 이전 LDXR/LDAXR로 설정된 배타적 접근 감시 상태를 실제 저장 없이 수동으로 해제합니다. LDXR을 실행했지만 이후 STXR로 이어가지 않고 원자적 시도를 포기해야 할 때(예: 조기 종료 분기를 타는 경우) 사용합니다.
 
 **Syntax**
+
 ```arm
 CLREX
 ```
 
 **Example**
+
 ```arm
 CLREX                // LDXR 이후 STXR 없이 루틴을 빠져나갈 때
 ```
 
+```mermaid
+flowchart LR
+   CLS@{ shape: braces}    
+   CLS --> desc["Count Leading Sign bits<br>선행 부호 비트 개수"]
+   style desc fill:none,stroke:none
+```
+
+$\checkmark$ `Count Leading Sign bits`. Counts the number of bits following the sign bit that are identical to the sign bit (i.e. how many bits before the value 'changes'), and writes the count to the destination register.
+
+$\checkmark$ `선행 부호 비트 개수`. 부호 비트와 동일한 값이 그 뒤로 몇 개나 이어지는지(즉 값이 '바뀌기' 전까지의 비트 수)를 세어 대상 레지스터에 저장합니다.
+
 ---
 
-## `CLS`
+### 먼저 동작을 숫자로 확인
 
-$\checkmark$ Count Leading Sign bits. Counts the number of bits following the sign bit that are identical to the sign bit (i.e. how many bits before the value 'changes'), and writes the count to the destination register.
+```arm
+X1 = 0b1111 1111 1111 0110 ... (앞쪽에 1이 쭉 이어지다가 어딘가서 바뀜)
+```
 
-$\checkmark$ 선행 부호 비트 개수. 부호 비트와 동일한 값이 그 뒤로 몇 개나 이어지는지(즉 값이 '바뀌기' 전까지의 비트 수)를 세어 대상 레지스터에 저장합니다.
+- `CLS`는 **부호비트(맨 앞 1비트) 다음부터, 그 부호비트와 "같은" 값이 몇 개 연속되는지**를 세요.  
+- 즉 "값이 바뀌기 직전까지 몇 비트가 낭비(?)되고 있는가"를 알려줌.  
+
+#### 실전 목적 1: "이 숫자, 더 작은 타입에 넣어도 안전한가?" 체크
+
+```c
+int64_t x = 5;   // 64비트를 다 쓸 필요 없는 작은 값
+```
+
+- `5`를 64비트로 저장하면 사실 상위 61비트가 전부 부호비트(0)와 똑같은 낭비 공간이에요. `CLS X0, X1` 하면 결과가 **61**(또는 그 근처) 같은 큰 값이 나오고, 이걸 보고:  
+
+- "이 값은 상위 비트가 다 낭비되고 있으니, `int8_t`나 `int16_t`로 압축해도 정보 손실이 없겠구나" 라고 **런타임에 즉시 판단**할 수 있음. 
+
+- 실제로 컴파일러 최적화(값 범위 좁혀서 레지스터 폭 줄이기)나 **동적 타입 언어의 정수 압축(예: Python/JS 내부 구현에서 작은 정수를 특수 태그로 압축하는 기법)**에 이런 카운트가 쓰여요.
+
+#### 실전 목적 2: 오버플로우 여유(Headroom) 계산
+
+```c
+int64_t a, b;
+int64_t sum = a + b;  // 오버플로우 안 나겠지?
+```
+
+- 덧셈하기 **전에** `a`와 `b` 각각의 `CLS` 값을 보면, "이 두 수를 더해도 부호비트가 안 뒤집힐 만큼 여유가 있는가"를 **미리** 가늠할 수 있어요. 
+- 나눗셈/곱셈 전에 결과가 오버플로우 안 할지 빠르게 사전 체크하는 트릭으로 씁니다.
+
+#### 실전 목적 3: 부호 있는 값의 "선행 0/1 압축" — 데이터 인코딩
+
+네트워크 패킷이나 파일 포맷에서 **가변 길이 정수 인코딩(varint 계열)** 할 때, "이 숫자를 표현하는 데 실제로 몇 비트가 필요한가"를 빨리 알아야 해요. 부호 없는 값이면 `CLZ`(Count Leading Zeros)를 쓰지만, **부호 있는 값이면 `CLS`**가 그 역할을 해요.
+
+#### `CLZ`와의 관계로 정리
+
+| 니모닉                            | 대상     | 세는 것                                                       |
+| --------------------------------- | -------- | ------------------------------------------------------------- |
+| **CLZ** (Count Leading Zeros)     | Unsigned | 맨 앞부터 이어지는 **0**의 개수                               |
+| **CLS** (Count Leading Sign bits) | Signed   | 부호비트 **다음부터** 이어지는, 부호비트와 **같은 값**의 개수 |
+
+- **둘 다 목적은 동일: "이 숫자, 실제로 몇 비트나 의미 있게 쓰고 있나?"** 
+- 다만 부호 없는 값은 그냥 0의 개수만 보면 되고, 
+- 부호 있는 값은 부호비트를 기준으로 "일치하는 구간"을 봐야 하니 `CLS`가 따로 존재하는 거예요. 
+- 음수는 앞쪽이 1로 채워지니까요 — 2의 보수 표현 특성 상.
+
 
 **Syntax**
 ```arm
@@ -894,20 +1015,25 @@ CLS <Wd|Xd>, <Wn|Xn>
 CLS X0, X1
 ```
 
----
+```mermaid
+flowchart LR
+   CLZ@{ shape: braces}    
+   CLZ --> desc["Count Leading Zeros<br>선행 0 개수"]
+   style desc fill:none,stroke:none
+```
 
-## `CLZ`
+$\checkmark$ `Count Leading Zeros`. Counts the number of consecutive zero bits starting from the most significant bit, and writes the count to the destination register.
 
-$\checkmark$ Count Leading Zeros. Counts the number of consecutive zero bits starting from the most significant bit, and writes the count to the destination register.
-
-$\checkmark$ 선행 0 개수. 최상위 비트부터 연속으로 이어지는 0 비트의 개수를 세어 대상 레지스터에 저장합니다.
+$\checkmark$ `선행 0 개수`. 최상위 비트부터 연속으로 이어지는 0 비트의 개수를 세어 대상 레지스터에 저장합니다.
 
 **Syntax**
+
 ```arm
 CLZ <Wd|Xd>, <Wn|Xn>
 ```
 
 **Example**
+
 ```arm
 CLZ X0, X1        // X1=0x0F... 이면 앞쪽 0의 개수 반환
 ```
