@@ -4,19 +4,18 @@
 
 # Hun ARM64 Mnemonic Dictionary
 
-
-_224 mnemonics / 니모닉 224종_
+> 224 mnemonics  
 
 ---
 
 ```mermaid
 flowchart LR
-  str([ADC])
+   A@{ shape: braces, label: "ADC" }
 ```
 
-**EN:** Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.  
+- **EN:** Add with Carry. Adds two operands plus the current carry flag (Xd = Xn + Xm + C). Used to chain addition across multiple registers for values wider than 64 bits, following an ADDS on the lower word.  
 
-**KO:** 캐리를 포함한 덧셈. 두 피연산자와 현재 캐리 플래그를 함께 더합니다(Xd = Xn + Xm + C). 64비트보다 큰 값을 여러 레지스터에 걸쳐 더할 때, 하위 워드의 ADDS 다음에 이어서 사용합니다.
+- **KO:** 캐리를 포함한 덧셈. 두 피연산자와 현재 캐리 플래그를 함께 더합니다(Xd = Xn + Xm + C). 64비트보다 큰 값을 여러 레지스터에 걸쳐 더할 때, 하위 워드의 ADDS 다음에 이어서 사용합니다.
 
 **Syntax**
 ```asm
@@ -31,11 +30,14 @@ ADC  X1, X3, X5   // 상위 64비트 + 캐리 -> 128비트 덧셈 완성
 
 ---
 
-## `ADCS`
+```mermaid
+flowchart LR
+  str([ADCS])
+```
 
 **EN:** Add with Carry, setting flags. Same as ADC but also updates the NZCV flags, allowing the carry chain to continue into a further ADC/ADCS for even wider (192-bit+) arithmetic.
 
-**KO:** 캐리를 포함한 덧셈 후 플래그 설정. ADC와 동일하지만 NZCV 플래그도 갱신하여, 더 넓은(192비트 이상) 연산을 위해 캐리 체인을 계속 이어갈 수 있습니다.
+**KO:** 캐리를 포함한 덧셈 후 플래그 설정. `ADC`와 동일하지만 `NZCV` 플래그도 갱신하여, 더 넓은(192비트 이상) 연산을 위해 캐리 체인을 계속 이어갈 수 있습니다.
 
 **Syntax**
 ```asm
@@ -49,18 +51,23 @@ ADCS X1, X3, X5
 
 ---
 
-## `ADD`
+```mermaid
+flowchart LR
+  str([ADD])
+```
 
 **EN:** Add (register or immediate). Adds two operands and stores the result in the destination register.
 
 **KO:** 덧셈 (레지스터 또는 즉시값). 두 피연산자를 더하여 결과를 대상 레지스터에 저장합니다.
 
 **Syntax**
+
 ```asm
 ADD <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ADD <Wd|Xd>, <Wn|Xn>, #<imm>
 ```
 
 **Example**
+
 ```asm
 ADD X0, X1, X2
 ADD W0, W1, #5
@@ -68,9 +75,12 @@ ADD W0, W1, #5
 
 ---
 
-## `ADDS`
-
+```mermaid
+flowchart LR
+  str([ADDS])
+```
 **EN:** Add, setting flags. Same as ADD but also updates the NZCV condition flags based on the result. XZR as destination makes this the CMN alias (compare negative, result discarded).
+
 **KO:** 덧셈 후 플래그 설정. ADD와 동일하게 더하지만, 결과에 따라 NZCV 조건 플래그도 함께 갱신합니다. 대상 레지스터를 XZR로 쓰면 결과를 버리는 CMN(음수 비교) 별칭이 됩니다.
 
 **Syntax**
@@ -86,9 +96,13 @@ B.VS overflow_label   // 오버플로 발생시 분기
 
 ---
 
-## `ADDV`
+```mermaid
+flowchart LR
+  str([ADDV])
+```
 
 **EN:** Add across Vector. Sums every lane of a vector together into a single scalar result written to one lane of the destination. The classic horizontal-reduction step after a vectorized dot product.
+
 **KO:** 벡터 전체 합산. 벡터의 모든 레인 값을 다 더해서 하나의 스칼라 결과로 만들어 대상 레인에 씁니다. 벡터화된 내적 계산 뒤에 흔히 오는 수평 축소(reduction) 단계입니다.
 
 **Syntax**
