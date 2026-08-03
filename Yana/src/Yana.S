@@ -15,7 +15,7 @@ CONST_SECTION
 CSTRING_SECTION
 newline_str:  .asciz "\n"
 menu_format:  .asciz "%2d: %-15s"
-line_char:    .asciz "👻"                     // 간단 - mov w1, #'*'
+line_char:    .asciz "👻"
 fmt_demo:     .asciz "total: %d, count: %d\n"
 fmt_qs:       .asciz "%lld "
 label_before: .asciz "\n정렬 전: "
@@ -55,6 +55,8 @@ str_is_palindrome:     .asciz "Palindrome"
 str_quicksort:         .asciz "Quick Sort"
 str_adc:               .asciz "ADC"
 str_madd:              .asciz "MADD"
+str_msub:              .asciz "MSUB"
+str_sys_print:         .asciz "sys print"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -80,6 +82,8 @@ menu_table:
 		.quad _quicksort, str_quicksort                 // 20
 		.quad _mnemonic_adc, str_adc                    // 21
 		.quad _mnemonic_madd, str_madd                  // 22
+		.quad _mnemonic_msub, str_msub                  // 23
+		.quad _run_sys_print, str_sys_print             // 24
 menu_table_end:
 
 CODE_SECTION

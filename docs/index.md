@@ -1699,20 +1699,25 @@ FMOV X0, D0
 FMOV D0, #1.0
 ```
 
----
+```mermaid
+flowchart LR
+   FMSUB@{ shape: braces}    
+   FMSUB --> desc["Floating-point Fused Multiply-Subtract<br>부동소수점 유합 곱셈-뺄셈"]
+   style desc fill:none,stroke:none
+```
 
-## `FMSUB`
+$\checkmark$ `Floating-point Fused Multiply-Subtract`. Computes Dd = Da - (Dn * Dm) in a single rounding step.
 
-$\checkmark$ Floating-point Fused Multiply-Subtract. Computes Dd = Da - (Dn * Dm) in a single rounding step.
-
-$\checkmark$ 부동소수점 융합 곱셈-뺄셈. Dd = Da - (Dn * Dm)을 한 번의 반올림으로 계산합니다.
+$\checkmark$ `부동소수점 융합 곱셈-뺄셈`. Dd = Da - (Dn * Dm)을 한 번의 반올림으로 계산합니다.
 
 **Syntax**
+
 ```arm
 FMSUB <Sd|Dd>, <Sn|Dn>, <Sm|Dm>, <Sa|Da>
 ```
 
 **Example**
+
 ```arm
 FMSUB D0, D1, D2, D3   // D0 = D3 - (D1 * D2)
 ```
@@ -2495,20 +2500,25 @@ MSR <system_reg>, <Xt>
 MSR NZCV, X0
 ```
 
----
+```mermaid
+flowchart LR
+   MSUB@{ shape: braces}    
+   MSUB --> desc["Multiply-Subtract<br>곱셈-뺄셈"]
+   style desc fill:none,stroke:none
+```
 
-## `MSUB` (곱뺌)
+$\checkmark$ `Multiply-Subtract`. Multiplies two registers, subtracts the product from a third, and writes the result to the destination register: Xd = Xa - (Xn * Xm).
 
-$\checkmark$ Multiply-Subtract. Multiplies two registers, subtracts the product from a third, and writes the result to the destination register: Xd = Xa - (Xn * Xm).
-
-$\checkmark$ 곱셈-뺄셈. 두 레지스터를 곱한 값을 세 번째 레지스터에서 빼서 결과를 저장합니다: Xd = Xa - (Xn * Xm).)
+$\checkmark$ `곱셈-뺄셈`. 두 레지스터를 곱한 값을 세 번째 레지스터에서 빼서 결과를 저장합니다: Xd = Xa - (Xn * Xm).
 
 **Syntax**
+
 ```arm
 MSUB <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <Wa|Xa>
 ```
 
 **Example**
+
 ```arm
 MSUB X0, X1, X2, X3   // X0 = X3 - (X1 * X2)
 ```
