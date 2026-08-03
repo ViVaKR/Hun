@@ -53,6 +53,7 @@ str_sum_numbers:       .asciz "Sum Numbers"
 str_gcd:               .asciz "GCD"
 str_is_palindrome:     .asciz "Palindrome"
 str_quicksort:         .asciz "Quick Sort"
+str_adc:               .asciz "ADC"
 CONST_DATA_SECTION
 menu_table:
     .quad _menu_exit, str_exit                      // 0
@@ -76,6 +77,7 @@ menu_table:
 		.quad _gcd, str_gcd                             // 18
 		.quad _is_palindrome, str_is_palindrome         // 19
 		.quad _quicksort, str_quicksort                 // 20
+		.quad _mnemonic_adc, str_adc                    // 21
 menu_table_end:
 
 CODE_SECTION
