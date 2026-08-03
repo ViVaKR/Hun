@@ -2,13 +2,12 @@
    title: Hun ARM64 Mnemonic Dictionary
 ---
 
-# Hun ARM64 Mnemonic Dictionary / 니모닉 사전
+# Hun ARM64 Mnemonic Dictionary
+
 
 _224 mnemonics / 니모닉 224종_
 
 ---
-
-## `ADC`
 
 ```mermaid
 flowchart LR
