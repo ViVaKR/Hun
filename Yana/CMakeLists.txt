@@ -146,6 +146,10 @@ foreach(rust_target
     cargo-build_hun_test_runner      
     cargo-clean_hun_test_runner      
     cargo-prebuild_hun_test_runner   
+    _cargo-build_hun_macro
+    cargo-build_hun_macro
+    cargo-clean_hun_macro
+    cargo-prebuild_hun_macro
     cargo-clean
     cargo-prebuild
 )

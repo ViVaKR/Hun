@@ -1,23 +1,5 @@
 .include "section_macros.inc"
 
-// [초기화된 변수]
-// __DATA,__data
-DATA_SECTION
-array: .quad 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-
-// [읽기전용 변수/포인터 테이블]
-// __DATA,__const
-CONST_DATA_SECTION
-
-// [읽기전용 상수 데이터]
-//__TEXT,__const
-CONST_SECTION
-
-// [C-스타일 문자열 리터럴]
-// __TEXT,__cstring,cstring_literals
-CSTRING_SECTION
-fmt_result: .asciz "resutl: %lld\n"
-
 // [코드 구역]
 // __TEXT,__text, regular, pure_instructions
 CODE_SECTION
@@ -53,11 +35,11 @@ CODE_SECTION
 FUNC_START_FULL mnemonic_madd, 128
   
 	// 1. 초기화
-	mov  x0, #0                 // x0(sum) = 0
-	adrp x1, array@PAGE
-	add  x1, x1, array@PAGEOFF
-	mov  x2, #10                // x2 (loop counter) = 10
-	mov  x3, #4                 // x3 (factor) = 2
+	mov  x0, #0                       // x0(sum) = 0
+	adrp x1, _madd_array@PAGE
+	add  x1, x1, _madd_array@PAGEOFF
+	mov  x2, #10                      // x2 (loop counter) = 10
+	mov  x3, #4                       // x3 (factor) = 2
 
 .L_loop:
 	// 2. 배열에서 값 읽기 & 포인터 이동 (Post-index LDR)
@@ -76,8 +58,8 @@ FUNC_START_FULL mnemonic_madd, 128
 	mov  x19, x0
 .L_print_and_exit:
   
-	adrp x0, fmt_result@PAGE
-	add  x0, x0, fmt_result@PAGEOFF
+	adrp x0, _fmt_result_madd@PAGE
+	add  x0, x0, _fmt_result_madd@PAGEOFF
   
 	sub sp, sp, #16
 	str x19, [sp, #0]

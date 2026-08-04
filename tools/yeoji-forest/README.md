@@ -25,6 +25,25 @@
 * **범용성:** Web 개발(JS/TS, CSS)부터 시스템 프로그래밍(ASM, C/C++)까지 세밀한 문법 하이라이팅을 지원합니다.
 * **조화로운 색감:** 눈에 거슬리는 자극적인 원색을 배제하고, 자연에서 영감을 받은 배색을 사용했습니다.
 
+### 🚀 설치 방법
+
+### 1. VS Code 마켓플레이스에서 설치 (가장 추천)
+1. VS Code 확장 프로그램 탭(`Ctrl+Shift+X` / Mac: `Cmd+Shift+X`)을 열기
+2. **Yeoji Forest** 검색 후 설치
+3. `Ctrl+K Ctrl+T` (Mac: `Cmd+K Cmd+T`)를 눌러 **Yeoji Forest** 테마 선택!
+
+### 2. Open VSX Registry (VSCodium, Cursor 등)
+1. 에디터 확장 패널에서 **Yeoji Forest** 검색 후 Install
+
+### 3. VSIX 파일로 수동 직접 설치
+1. [GitHub Releases](https://github.com/ViVaKR/Hun/releases)에서 최신 `yeoji-forest-x.x.x.vsix` 파일 다운로드
+2. `Cmd+Shift+P` (Win: `Ctrl+Shift+P`) → `Extensions: Install from VSIX...` 선택 후 다운로드한 파일 지정
+
+### 🌲 v1.1.0 변경 사항 (Release Notes)
+* **TOML 완벽 지원:** `Cargo.toml` 등 TOML 설정 파일의 섹션, 키, 문자열 하이라이팅 스코프 탑재
+* **YAML 하이라이팅 추가:** Docker, Kubernetes, GitHub Actions 설정 파일 지원
+* **에디터 UI 디테일 개선:** Breadcrumbs(상단 파일 경로) 및 리스트 선택 항목을 '여지의 숲' 팔레트에 맞게 다듬음
+
 ## 🤝 함께 만드는 숲
 
 이 테마는 'Hun' 프로젝트의 일부로서, 함께 성장해 나갑니다.
@@ -40,6 +59,7 @@
 버그 리포트나 더 좋은 색감에 대한 제안이 있다면 [GitHub 저장소](https://www.google.com/search?q=https://github.com/ViVaKR/Hun/issues)로 언제든 들려주세요. PR은 언제나 환영입니다!
 
 ---
+
 
 **나무아미타불** 🙏
 

@@ -6,6 +6,7 @@ use std::io::{self, Write};
 use std::os::raw::c_char;
 
 pub mod console;
+pub mod demo;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn calc_sum(a: u64, b: u64) {

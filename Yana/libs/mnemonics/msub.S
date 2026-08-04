@@ -1,30 +1,9 @@
-
 .include "section_macros.inc"
 
-// [초기화된 변수]
-// __DATA,__data
-DATA_SECTION
-
-// [읽기전용 변수/포인터 테이블]
-// __DATA,__const
-CONST_DATA_SECTION
-
-// [읽기전용 상수 데이터]
-//__TEXT,__const
-CONST_SECTION
-
-// [C-스타일 문자열 리터럴]
-// __TEXT,__cstring,cstring_literals
 CSTRING_SECTION
 fmt_message: .asciz "나머지 연산을 시행할 두수를 입력하세요: "
-fmt_scanf:   .asciz "%lld %lld"
-
 fmt_confirm: .asciz "첫번째 입력값: %lld, 두번째 입력값: %lld\n"
 
-fmt_result: .asciz "%lld %% %lld = %lld\n"
-
-// [코드 구역]
-// __TEXT,__text, regular, pure_instructions
 CODE_SECTION
 FUNC_START_FULL mnemonic_msub, 128
   
@@ -41,8 +20,8 @@ FUNC_START_FULL mnemonic_msub, 128
   
 	// 3. [scanf 호출] - Apple Silicon ABI 규칙 준수!
 	// 포맷은 x0, 가변인자(지역 변수 주소들)는 스택으로 전달
-	adrp x0, fmt_scanf@PAGE
-	add  x0, x0, fmt_scanf@PAGEOFF
+	adrp x0, _fmt_scanf_2@PAGE
+	add  x0, x0, _fmt_scanf_2@PAGEOFF
    
 	add x1, sp, #0  // local_a 의 주소 sp + 0
 	add x2, sp, #8  // local_b 의 주소 sp + 8
@@ -71,8 +50,8 @@ FUNC_START_FULL mnemonic_msub, 128
 	msub x1, x0, x22, x21  // x21 -(x0 - x22), 나머지 계산
 	
 	mov  x25, x1
-	adrp x0, fmt_result@PAGE
-	add  x0, x0, fmt_result@PAGEOFF
+	adrp x0, _fmt_result_mod@PAGE
+	add  x0, x0, _fmt_result_mod@PAGEOFF
 	
 	sub sp, sp, #32
 	str x21, [sp, #0]
@@ -84,5 +63,7 @@ FUNC_START_FULL mnemonic_msub, 128
 	// 6. [지역 변수 메모리 해제]
 	// 할당했던 16바이트 지역 변수 공간을 원상 복구 합니다.
 	add sp, sp, #16
+	
+	mov x0, #0
 
 FUNC_EXIT_FULL 128

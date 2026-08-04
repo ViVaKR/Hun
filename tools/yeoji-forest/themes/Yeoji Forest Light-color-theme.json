@@ -1,0 +1,141 @@
+{
+  "name": "Yeoji Forest Light",
+  "colors": {
+    // ---- 1. 기본 에디터 (눈이 편안한 따뜻한 크림/양장지 톤) ----
+    "editor.background": "#F4F0E8",
+    "editor.foreground": "#2D3832",
+    "editor.lineHighlightBackground": "#EBE5D8",
+    "editor.selectionBackground": "#D2E3D8",
+    "editor.selectionHighlightBackground": "#D2E3D880",
+    "editor.wordHighlightBackground": "#D2E3D850",
+    "editor.findMatchBackground": "#7AA85055",
+    "editor.findMatchHighlightBackground": "#7AA85025",
+    "editorCursor.foreground": "#4D7A27",
+    "editorWhitespace.foreground": "#C8C0B0",
+    "editorLineNumber.foreground": "#A09888",
+    "editorLineNumber.activeForeground": "#2D3832",
+    "editorIndentGuide.background1": "#E0D8C8",
+    "editorIndentGuide.activeBackground1": "#008A96",
+
+    // ---- 2. 사이드바 / 액티비티 바 ----
+    "activityBar.background": "#E8E2D4",
+    "activityBar.foreground": "#2D3832",
+    "activityBar.inactiveForeground": "#8A8070",
+    "activityBarBadge.background": "#4D7A27",
+    "activityBarBadge.foreground": "#FFFFFF",
+    "sideBar.background": "#EFEAD8",
+    "sideBar.foreground": "#3D4842",
+    "sideBarTitle.foreground": "#2D3832",
+    "sideBarSectionHeader.background": "#E8E2D4",
+
+    // ---- 3. 상태 바 ----
+    "statusBar.background": "#E8E2D4",
+    "statusBar.foreground": "#3D4842",
+    "statusBar.debuggingBackground": "#C22B75",
+    "statusBar.debuggingForeground": "#FFFFFF",
+    "statusBar.noFolderBackground": "#E8E2D4",
+
+    // ---- 4. 탭 / 에디터 그룹 ----
+    "tab.activeBackground": "#F4F0E8",
+    "tab.inactiveBackground": "#E8E2D4",
+    "tab.activeForeground": "#2D3832",
+    "tab.inactiveForeground": "#8A8070",
+    "tab.border": "#DFD8C8",
+    "editorGroupHeader.tabsBackground": "#E8E2D4",
+
+    // ---- 5. 터미널 ----
+    "terminal.background": "#F4F0E8",
+    "terminal.foreground": "#2D3832",
+    "terminal.ansiRed": "#C52A30",
+    "terminal.ansiGreen": "#4D7A27",
+    "terminal.ansiYellow": "#B57A00",
+    "terminal.ansiBlue": "#008A96",
+    "terminal.ansiMagenta": "#C22B75",
+    "terminal.ansiCyan": "#008A96",
+
+    // ---- 6. Git 데코레이션 ----
+    "gitDecoration.addedResourceForeground": "#4D7A27",
+    "gitDecoration.modifiedResourceForeground": "#B57A00",
+    "gitDecoration.deletedResourceForeground": "#C52A30",
+
+    // ---- 7. 기타 UI ----
+    "focusBorder": "#008A96",
+    "breadcrumb.foreground": "#8A8070",
+    "breadcrumb.focusForeground": "#2D3832",
+    "breadcrumb.activeSelectionForeground": "#4D7A27",
+    "breadcrumbPicker.background": "#E8E2D4",
+    "diffEditor.insertedTextBackground": "#4D7A2722",
+    "diffEditor.removedTextBackground": "#C52A3022",
+    "list.hoverBackground": "#EBE5D8",
+    "list.activeSelectionBackground": "#D2E3D8",
+    "list.activeSelectionForeground": "#2D3832",
+    "list.highlightForeground": "#008A96"
+  },
+  "tokenColors": [
+    {
+      "name": "Comment",
+      "scope": ["comment", "punctuation.definition.comment"],
+      "settings": { "fontStyle": "italic", "foreground": "#7A8B80" }
+    },
+    {
+      "name": "Variables",
+      "scope": ["variable", "string constant.other.placeholder"],
+      "settings": { "foreground": "#2D3832" }
+    },
+    {
+      "name": "Keyword, Storage",
+      "scope": ["keyword", "storage.type", "storage.modifier"],
+      "settings": { "foreground": "#C22B75" }
+    },
+    {
+      "name": "Operator, Misc",
+      "scope": ["keyword.control", "constant.other.color", "punctuation", "meta.tag", "punctuation.definition.tag"],
+      "settings": { "foreground": "#008A96" }
+    },
+    {
+      "name": "Function, Special Method",
+      "scope": ["entity.name.function", "meta.function-call", "variable.function", "support.function"],
+      "settings": { "foreground": "#008556" }
+    },
+    {
+      "name": "Number, Constant",
+      "scope": ["constant.numeric", "constant.language", "support.constant", "constant.character"],
+      "settings": { "foreground": "#D65D0E" }
+    },
+    {
+      "name": "String, Symbols",
+      "scope": ["string", "constant.other.symbol", "constant.other.key"],
+      "settings": { "foreground": "#4D7A27" }
+    },
+    {
+      "name": "Class, Support",
+      "scope": ["entity.name", "support.type", "support.class"],
+      "settings": { "foreground": "#B57A00" }
+    },
+    {
+      "name": "TOML - Table / Section Header",
+      "scope": [
+        "entity.other.attribute-name.table.toml",
+        "entity.name.section.toml",
+        "support.type.property-name.table.toml",
+        "punctuation.definition.table.toml"
+      ],
+      "settings": { "foreground": "#C22B75", "fontStyle": "bold" }
+    },
+    {
+      "name": "TOML - Keys",
+      "scope": ["variable.key.toml", "keyword.key.toml", "support.type.property-name.toml"],
+      "settings": { "foreground": "#008A96" }
+    },
+    {
+      "name": "TOML - Strings & Values",
+      "scope": ["string.quoted.single.toml", "string.quoted.double.toml"],
+      "settings": { "foreground": "#4D7A27" }
+    },
+    {
+      "name": "YAML - Key",
+      "scope": ["entity.name.tag.yaml", "attribute-name.yaml"],
+      "settings": { "foreground": "#008A96" }
+    }
+  ]
+}
