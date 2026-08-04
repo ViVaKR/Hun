@@ -69,7 +69,23 @@
     // ---- 7. 기타 ----
     "focusBorder": "#5CD8E0",
     "scrollbarSlider.background": "#3A454A80",
-    "scrollbarSlider.hoverBackground": "#3A454AC0"
+    "scrollbarSlider.hoverBackground": "#3A454AC0",
+
+    // ---- 8. Breadcrumbs (에디터 상단 파일 경로 표시 줄) ----
+    "breadcrumb.foreground": "#5A6B62",
+    "breadcrumb.focusForeground": "#E8DCC0",
+    "breadcrumb.activeSelectionForeground": "#9ECE6A",
+    "breadcrumbPicker.background": "#20262A",
+
+    // ---- 9. Diff / Git 비교 뷰 ----
+    "diffEditor.insertedTextBackground": "#9ECE6A22",
+    "diffEditor.removedTextBackground": "#FF6B7022",
+
+    // ---- 10. 리스트 / 선택 항목 ----
+    "list.hoverBackground": "#2E363B",
+    "list.activeSelectionBackground": "#3E4B47",
+    "list.activeSelectionForeground": "#9ECE6A",
+    "list.highlightForeground": "#5CD8E0"
   },
 
   // ============================================================
@@ -604,6 +620,59 @@
       "scope": ["markup.table"],
       "settings": {
         "foreground": "#E8DCC0"
+      }
+    },
+    // ===== 8. TOML (Cargo.toml 등) =====
+    {
+      "name": "TOML - Table / Section Header",
+      "scope": [
+        "entity.other.attribute-name.table.toml",
+        "entity.name.section.toml",
+        "support.type.property-name.table.toml",
+        "punctuation.definition.table.toml"
+      ],
+      "settings": {
+        "foreground": "#FF7AC6",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "TOML - Keys (name, version, edition)",
+      "scope": [
+        "variable.key.toml",
+        "keyword.key.toml",
+        "support.type.property-name.toml",
+        "support.type.property-name.table.array.toml"
+      ],
+      "settings": {
+        "foreground": "#5CD8E0"
+      }
+    },
+    {
+      "name": "TOML - Strings & Values",
+      "scope": [
+        "string.quoted.single.toml",
+        "string.quoted.double.toml",
+        "string.quoted.triple.single.toml",
+        "string.quoted.triple.double.toml"
+      ],
+      "settings": {
+        "foreground": "#9ECE6A"
+      }
+    },
+    // ===== 9. YAML (Docker / K8s / GitHub Actions) =====
+    {
+      "name": "YAML - Key",
+      "scope": ["entity.name.tag.yaml", "attribute-name.yaml"],
+      "settings": {
+        "foreground": "#5CD8E0"
+      }
+    },
+    {
+      "name": "YAML - Scalar / Punctuation",
+      "scope": ["punctuation.definition.block.sequence.item.yaml"],
+      "settings": {
+        "foreground": "#FF7AC6"
       }
     }
   ]
