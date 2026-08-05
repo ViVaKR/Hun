@@ -17,9 +17,12 @@ _flush_stdin:
 	cmp  w0, #10
 	b.eq .L_flush_success
   
-  // 2. EOF(-1)를 만나면 종료 상태로 탈출 !
+	// 2. EOF(-1)를 만나면 종료 상태로 탈출 !
 	cmp  w0, #-1
 	b.eq .L_flush_eof
+	
+	// 3. 일반 문자면 계속 루프
+	b .L_flush_loop
 
 .L_flush_success:
 	mov w0, #0        // 성공 코드 0반환

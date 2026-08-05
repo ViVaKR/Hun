@@ -5,7 +5,6 @@
 //  목적: C-String, 상수 테이블, 리터럴 통합 관리
 // ====================================================
 
-
 // ------------------------------------------------
 // [문자열 리터럴] __TEXT,__cstring,cstring_literals
 // printf 포맷 스트링 등 널 종료(null-terminated)
@@ -13,26 +12,46 @@
 // -----------------------------------------------
 CSTRING_SECTION
 .global _helloworld
-.global _newline_str, _menu_format, _line_char, _fmt_demo, _fmt_qs
-.global _label_before, _label_after, _format_str, _icon_heart, _menu_title
-.global _input_prompt, _scanf_format, _err_format, _press_enter, _exit_message
+.global _err_format
+.global _exit_message
+.global _press_enter
+.global _line_char
+.global _newline_str
+.global _icon_heart
+
+.global _menu_format, _menu_title
+.global _label_before, _label_after
+.global _char_format, _char_len
+.global _ldrb_sample_string
+
+.global _input_prompt_select_menu, _input_prompt_numbers
+
 .global _str_exit, _str_forloop, _str_csel, _str_welcome_rust, _str_if_else
 .global _str_string_to_integer, _str_readline, _str_delegate, _str_function_call, _str_loop_int
 .global _str_demo_madd, _str_console_writeline, _str_ldrb, _str_guess_game, _str_fib
 .global _str_variable_size, _str_hanoi, _str_sum_numbers, _str_gcd, _str_is_palindrome
 .global _str_quicksort, _str_adc, _str_madd, _str_msub, _str_sys_print, _str_sys_print_fmt
-.global _str_rust_demo, _str_rust_demo_tup, _char_format, _char_len
-.global _ldrb_sample_string, _fmt_loop, _fmt_sum, _fmt_for_loop
+.global _str_rust_demo, _str_rust_demo_tup
+
+.global _fmt_sum, _fmt_loop, _fmt_for_loop, _fmt_demo
 .global _fmt_sum_float, _fmt_loop_deciaml, _fmt_result_madd
-.global _fmt_result_mod, _fmt_scanf_2, _input_prompt_numbers
-.global _fmt_result, _fmt_delegate_add, _fmt_delegate_sub, _msg_input_error
+.global _fmt_result_mod, _fmt_scanf_1, _fmt_scanf_2
+.global _fmt_result, _fmt_delegate_add, _fmt_delegate_sub
+.global _fmt_fib_result
 
+.global _msg_input_number_fib, _msg_input_error
 
-// -------------- //
-_input_prompt:         .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
-_input_prompt_numbers: .asciz "두 정수 입력: "
+/*                      [ format string ]                    */
 
-_fmt_scanf_2:      .asciz "%lld %lld"
+_input_prompt_select_menu: .asciz "\n🍒 원하는 메뉴를 선택하세요 🍒 ⇢ "
+_input_prompt_numbers:     .asciz "두 정수 입력: "
+
+_msg_input_number_fib: .asciz "피보나치 시행 할 정수 입력: "
+_msg_input_error:      .asciz "잘못된 입력입니다.\n"
+
+_fmt_scanf_1: .asciz "%lld"
+_fmt_scanf_2: .asciz "%lld %lld"
+
 _fmt_sum:          .asciz "%lld + %lld = %lld\n"
 _fmt_sum_float:    .asciz "%.2f + %.2f = %.3f\n"
 _fmt_for_loop:     .asciz "%lld 회 합계 %lld\n"
@@ -41,15 +60,13 @@ _fmt_result:       .asciz "결과: %lld\n"
 _fmt_result_madd:  .asciz "madd result: %lld\n"
 _fmt_result_mod:   .asciz "%lld %% %lld = %lld\n"
 _fmt_demo:         .asciz "total: %d, count: %d\n"
-_fmt_qs:           .asciz "%lld "
 _fmt_float:        .asciz "🍓 Float  (32-bit PI) : %.7f\n"
 _fmt_double:       .asciz "🍒 Double (64-bit PI) : %.15lf\n"
 _fmt_delegate_add: .asciz "%lld + %lld = %lld\n"
 _fmt_delegate_sub: .asciz "%lld - %lld = %lld\n"
+_fmt_fib_result:   .asciz "(fib)\ninput\t--> %lld\nresult\t--> %lld\n" // 피보나치 출력
 
-_msg_input_error: .asciz "잘못된 입력입니다.\n"
-
-_list_format: .asciz "Index [%lld]: Value = %d\n"
+_list_format: .asciz "Index [%lld]: Value = %lld\n"
 _newline_str: .asciz "\n"
 
 _menu_format: .asciz "%2d: %-15s"
@@ -61,10 +78,9 @@ _label_after:  .asciz "정렬 후: "
 
 _icon_heart: .asciz "💖 "
 
-_char_format:  .asciz "%c"
-_char_len:     .asciz "\n총 문자수: %lld"
-_scanf_format: .asciz "%d"
-_err_format:   .asciz "잘못된 선택입니다. (선택범위: 1 ~ %d)\n"
+_char_format: .asciz "%c"
+_char_len:    .asciz "\n총 문자수: %lld"
+_err_format:  .asciz "잘못된 선택입니다. (선택범위: 1 ~ %lld)\n"
 
 _press_enter:        .asciz "\n🧚 엔터(Enter) 키를 누르면 메뉴로 돌아갑니다..."
 _exit_message:       .asciz "\n👻 👻 👻 좋은 경험이었습니다. 다음에 또 멋지게 만나요!! 👻 👻 👻\n\n"
@@ -105,6 +121,9 @@ CONST_DATA_SECTION
 .global _menu_table, _menu_table_end
 .global _delegate_add, _delegate_sub
 
+_delegate_add: .quad _callback_add // 덧셈
+_delegate_sub: .quad _callback_sub // 뺄셈
+
 _menu_table:
     .quad _menu_exit, _str_exit                      // 0
     .quad _menu_forloop, _str_forloop
@@ -136,8 +155,6 @@ _menu_table:
     .quad _pi_print, _str_pi_print
 _menu_table_end:
 
-_delegate_add: .quad _callback_add // 덧셈
-_delegate_sub: .quad _callback_sub // 뺄셈
 
 
 // ==================================

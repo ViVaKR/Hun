@@ -74,7 +74,7 @@ FUNC_START_FULL main, 128
 	// --------------------------------======================
 	mov  x1, x21          // x21 (현재 인덱스 i = 0), x1 = 현재 인덱스 (0, 1, 2, 3...)
 	add  x1, x1, #1       // x1 = 현재 출력된 메뉴 개수 (1, 2, 3, 4, 5...)
-	mov  x2, #4           // 나누기 연산으로 5의 배수인지 검사
+	mov  x2, #5           // 나누기 연산으로 5의 배수인지 검사
 	udiv x3, x1, x2       // x3 = x1 / 5
 	msub x4, x3, x2, x1   // x4 = x1 - (x3 * 5) -> 즉, 5로 나눈 나머지!
 	cmp  x4, #0           // 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
@@ -105,13 +105,13 @@ FUNC_START_FULL main, 128
 
 .L_ask_input:
 	// 입력 프롬프트 출력
-	adrp x0, _input_prompt@PAGE
-	add  x0, x0, _input_prompt@PAGEOFF
+	adrp x0, _input_prompt_select_menu@PAGE
+	add  x0, x0, _input_prompt_select_menu@PAGEOFF
 	bl   _printf
 
 	// 입력 받기
-	adrp x0, _scanf_format@PAGE
-	add  x0, x0, _scanf_format@PAGEOFF
+	adrp x0, _fmt_scanf_1@PAGE
+	add  x0, x0, _fmt_scanf_1@PAGEOFF
 	adrp x1, _user_input@PAGE
 	add  x1, x1, _user_input@PAGEOFF
     
@@ -154,16 +154,16 @@ FUNC_START_FULL main, 128
 	bl .L_insert_line  // ★ 상단 구분선 (새로 추가)
 
 	// 💞 메뉴별 사전 설정 💞
-	cmp  x22, #11              // Console.WriteLine() 모델링
+	cmp  x22, #10              // Console.WriteLine() 모델링
 	b.eq .L_console_writeline
 
-	cmp  x22, #14    // _fib_print
+	cmp  x22, #13    // _fib_print
 	b.eq .L_run_fib
 
-	cmp  x22, #16      // _hanoi
+	cmp  x22, #15      // _hanoi
 	b.eq .L_run_hanoi
   
-	cmp  x22, #20           // _quicksort
+	cmp  x22, #19           // _quicksort
 	b.eq .L_exec_quicksort
 
 	// ---- //
@@ -194,8 +194,6 @@ FUNC_START_FULL main, 128
 	add sp, sp, #16
 	b   .L_display_menu
 
-
-// _quicksort
 .L_exec_quicksort:
 	adrp x25, _quicksort_arr@PAGE
 	add  x25, x25, _quicksort_arr@PAGEOFF
@@ -241,7 +239,7 @@ FUNC_START_FULL main, 128
 
 // (실행) 14. 피보나치 수열
 .L_run_fib:
-	mov x0, #13
+	mov x0, #5
 	b   .L_exec
 
 // (실행) 17. 하노이 탑
