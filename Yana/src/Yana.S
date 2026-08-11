@@ -8,7 +8,7 @@
 CODE_SECTION
 FUNC_START_FULL main, 128
   
-	// 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트)
+	// 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트
 	adrp x10, _menu_table@PAGE
 	add  x10, x10, _menu_table@PAGEOFF
 	adrp x11, _menu_table_end@PAGE

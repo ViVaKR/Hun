@@ -73,3 +73,5 @@ docs/REF.md
 Yeoji/kernel.elf
 Yeoji/*.o
 tools/hun-asm-highlighter/releases/*.vsix
+
+.vscode/
