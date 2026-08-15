@@ -1337,8 +1337,6 @@ flowchart LR
    style desc fill:none,stroke:none
 ```
 
-## `CSETM`
-
 $\checkmark$ Conditional Set Mask. If the condition is true, Rd = all-1s (0xFFFF...); otherwise Rd = 0. An alias of CSINV using XZR for both source registers - the scalar counterpart of what CMEQ/CMGT produce per-lane in NEON, handy for building a branchless mask.
 
 $\checkmark$ 조건부 마스크 설정. 조건이 참이면 Rd = 전체-1(0xFFFF...), 거짓이면 Rd = 0을 대입합니다. 양쪽 소스에 XZR을 쓰는 CSINV의 별칭이며, NEON의 CMEQ/CMGT가 레인별로 만드는 마스크를 스칼라로 흉내낼 때, 분기 없는 마스크를 만들 때 유용합니다.
@@ -1360,7 +1358,12 @@ CSETM X2, EQ   // 같으면 X2 = 0xFFFFFFFFFFFFFFFF, 다르면 X2 = 0
 
 ---
 
-## `CSINC`
+```mermaid
+flowchart LR
+   CSINC@{ shape: braces}
+   CSINC --> desc["Conditinal Select Increment<br>조건부 선택 증가"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Conditional Select Increment. Writes Xn to the destination if the condition is true, otherwise writes (Xm + 1). CSET is built from this instruction (CSINC with XZR, XZR and the inverted condition).
 
@@ -1378,9 +1381,16 @@ CSINC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSINC X0, X1, X2, EQ   // X0 = (조건참) ? X1 : X2+1
 ```
 
+**[Open Example](examples/csinc_csinv_csneg.md#csinc)**
+
 ---
 
-## `CSINV`
+```mermaid
+flowchart LR
+   CSINV@{ shape: braces}
+   CSINV --> desc["Conditinal Select Invert<br>조건부 선택 반전"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Conditional Select Invert. Writes Xn to the destination if the condition is true, otherwise writes the bitwise NOT of Xm.
 
@@ -1398,9 +1408,16 @@ CSINV <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSINV X0, X1, X2, EQ   // X0 = (조건참) ? X1 : ~X2
 ```
 
+**[Open Example](examples/csinc_csinv_csneg.md#csinv)**
+
 ---
 
-## `CSNEG`
+```mermaid
+flowchart LR
+   CSNEG@{ shape: braces}
+   CSNEG --> desc["Conditinal Select Negate<br>조건부 선택 부호반전"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Conditional Select Negate. Writes Xn to the destination if the condition is true, otherwise writes the two's-complement negation of Xm.
 
@@ -1418,9 +1435,16 @@ CSNEG <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSNEG X0, X1, X2, EQ   // X0 = (조건참) ? X1 : -X2  (예: abs() 구현에 사용)
 ```
 
+**[Open Example](examples/csinc_csinv_csneg.md#csneg)**
+
 ---
 
-## `DC`
+```mermaid
+flowchart LR
+   DC@{ shape: braces}
+   DC --> desc["Data Cache operation<br>데이터 캐시 유지보수 명령"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Data Cache operation. Performs a cache-maintenance action (clean, invalidate, or zero) on the cache line containing the address in the given register. Essential in bare-metal/kernel code whenever data written by the CPU must actually reach memory that a non-coherent observer (DMA device, another core before MMU is up, etc.) will read - e.g. after writing page tables, before enabling the MMU.
 
@@ -1436,12 +1460,19 @@ DC <op>, <Xt>   // op: IVAC, ISW, CVAC, CSW, CVAU, CIVAC, CISW, ZVA ...
 
 ```arm
 DC CVAC, X0      // X0 주소의 캐시 라인을 메모리로 clean
-DSB SY            // clean이 실제로 끝날 때까지 대기
+DSB SY           // clean이 실제로 끝날 때까지 대기
 ```
+
+**[Open Example](examples/dc_dmb_dsb.md#dc)**
 
 ---
 
-## `DMB`
+```mermaid
+flowchart LR
+   DMB@{ shape: braces}
+   DMB --> desc["Data Memory Barrier<br>데이터 메모리 배리어"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Data Memory Barrier. Ensures that all memory accesses issued before the barrier (by this core) are observed by other cores/agents before any memory accesses issued after the barrier.
 
@@ -1459,9 +1490,16 @@ DMB <option>   // 예: ISH, SY, OSH 등
 DMB ISH   // 같은 이너 공유 도메인 내 순서 보장
 ```
 
+**[Open Example](examples/dc_dmb_dsb.md#dmb)**
+
 ---
 
-## `DSB`
+```mermaid
+flowchart LR
+   DSB@{ shape: braces}
+   DSB --> desc["Data Synchronization Barrier<br>데이터 동기화 배리어"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Data Synchronization Barrier. Stronger than DMB: blocks execution of any further instructions on this core until all prior memory accesses have fully completed.
 
@@ -1479,13 +1517,20 @@ DSB <option>
 DSB SY   // 전체 시스템 범위로 완료를 기다림
 ```
 
+**[Open Example](examples/dc_dmb_dsb.md#dsb)**
+
 ---
 
-## `DUP`
+```mermaid
+flowchart LR
+   DUP@{ shape: braces}
+   DUP --> desc["Duplicate (broadcast)<br>복제 (브로드캐스트)"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Duplicate (broadcast). Copies a single value - from a general-purpose register or from one lane of a vector - into every lane of the destination vector. The classic way to build a constant vector, e.g. for adding the same value to every pixel.
 
-$\checkmark$ 복제(브로드캐스트). 범용 레지스터 값이나 벡터의 특정 레인 하나를, 대상 벡터의 모든 레인에 똑같이 복사해 채웁니다. 모든 픽셀에 같은 값을 더하고 싶을 때처럼, 상수 벡터를 만드는 기본 방법입니다.
+$\checkmark$ 복제 (브로드캐스트). 범용 레지스터 값이나 벡터의 특정 레인 하나를, 대상 벡터의 모든 레인에 똑같이 복사해 채웁니다. 모든 픽셀에 같은 값을 더하고 싶을 때처럼, 상수 벡터를 만드는 기본 방법입니다.
 
 **Syntax**
 
@@ -1499,9 +1544,16 @@ DUP <Vd>.<T>, <Rn>  or  DUP <Vd>.<T>, <Vn>.<Ts>[<index>]
 DUP V0.4S, W0        // W0 값을 4개 레인 전부에 복제
 ```
 
+**[Open Example](examples/dup.md#example)**
+
 ---
 
-## `EON`
+```mermaid
+flowchart LR
+   EON@{ shape: braces}
+   EON --> desc["Bitwise Exclusive OR NOT<br>비트 단위 XOR NOT"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Bitwise Exclusive OR NOT. Computes Xn XOR (NOT Xm), equivalent to a bitwise XNOR, and writes the result to the destination register.
 
@@ -1518,6 +1570,8 @@ EON <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 EON X0, X1, X2
 ```
+
+**[Open Example](examples/eon.md#example)**
 
 ---
 
