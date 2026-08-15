@@ -1164,7 +1164,12 @@ CMHI V0.16B, V1.16B, V2.16B
 
 ---
 
-## `CMHS`
+```mermaid
+flowchart LR
+   CMHS@{ shape: braces}
+   CMHS --> desc["Compare Higher or Same, unsigned (vector)<br>벡터 비교(더 높거나 같음, 부호없음)"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Compare Higher or Same, unsigned (vector). Per-lane unsigned greater-or-equal comparison, producing an all-1s/all-0s mask.
 
@@ -1182,13 +1187,20 @@ CMHS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 CMHS V0.16B, V1.16B, V2.16B
 ```
 
+**[Open Example](examples/cmhs.md#explain)**
+
 ---
 
-## `CMN`
+```mermaid
+flowchart LR
+   CMN@{ shape: braces}
+   CMN --> desc["Compare Negative<br>음수비교"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Compare Negative. Adds two operands and updates the condition flags without storing the result; equivalent to comparing against a negative value. Alias for ADDS with a discarded destination.
 
-$\checkmark$ 음수 비교. 두 피연산자를 더하여 조건 플래그만 갱신하고 결과는 버립니다. 음수와 비교하는 것과 동일한 효과이며, 결과를 버리는 ADDS의 별칭입니다.
+$\checkmark$ 음수 비교. 두 피연산자를 더하여 조건 플래그만 갱신하고 결과는 버립니다. 음수와 비교하는 것과 동일한 효과이며, 결과를 버리는 ADDS의 별칭입니다. (두 값을 더했을 때 결과가 0인지 음수인지 등을 비교하는 명령어)
 
 **Syntax**
 
@@ -1202,9 +1214,16 @@ CMN <Wn|Xn>, <Wm|Xm>  or  CMN <Wn|Xn>, #<imm>
 CMN X0, #1        // X0 == -1 인지 검사하는 것과 동일
 ```
 
+**[Open Example](examples/cmn.md#explain)**
+
 ---
 
-## `CMP` (비교)
+```mermaid
+flowchart LR
+   CMP@{ shape: braces}
+   CMP --> desc["Compare<br>비교"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Compare. Compares two operands by subtracting them and updates the condition flags.
 
@@ -1223,9 +1242,16 @@ CMP X0, X1
 CMP W2, #0
 ```
 
+**[Open Example](examples/cmp.md#explain)**
+
 ---
 
-## `CNEG`
+```mermaid
+flowchart LR
+   CNEG@{ shape: braces}
+   CNEG --> desc["Conditinal Negate<br>조건분 부호 반전"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Conditional Negate. If the condition is true, Rd = -Rn (two's-complement negate); otherwise Rd = Rn. An alias of CSNEG - useful for a branchless abs()-style computation together with a sign check.
 
@@ -1244,9 +1270,16 @@ CMP X0, #0
 CNEG X0, X0, MI   // X0가 음수(MI)면 부호를 뒤집어 절댓값처럼 만듦
 ```
 
+**[Open Example](examples/cneg.md#explain)**
+
 ---
 
-## `CSEL` (조건선택)
+```mermaid
+flowchart LR
+   CSEL@{ shape: braces}
+   CSEL --> desc["Conditinal Select<br>조건분 선택"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Conditional Select. Writes one of two source registers to the destination depending on the condition flags, without branching (branchless if/else).
 
@@ -1264,7 +1297,16 @@ CSEL <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSEL X0, X1, X2, GT   // X0 = (X1 > X2) ? X1 : X2 (after a prior CMP)
 ```
 
+**[Open Example](examples/csel.md#explain)**
+
 ---
+
+```mermaid
+flowchart LR
+   CSET@{ shape: braces}
+   CSET --> desc["Conditinal Set<br>조건분 설정"]
+   style desc fill:none,stroke:none
+```
 
 ## `CSET` (조건셋)
 
@@ -1284,7 +1326,16 @@ CSET <Wd|Xd>, <cond>
 CSET X0, EQ
 ```
 
+**[Open Example](examples/cset.md#explain)**
+
 ---
+
+```mermaid
+flowchart LR
+   CSETM@{ shape: braces}
+   CSETM --> desc["Conditinal Set Mask<br>조건부 마스크 설정"]
+   style desc fill:none,stroke:none
+```
 
 ## `CSETM`
 
@@ -1304,6 +1355,8 @@ CSETM <Wd|Xd>, <cond>
 CMP X0, X1
 CSETM X2, EQ   // 같으면 X2 = 0xFFFFFFFFFFFFFFFF, 다르면 X2 = 0
 ```
+
+**[Open Example](examples/csetm.md#explain)**
 
 ---
 
