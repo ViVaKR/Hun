@@ -1575,11 +1575,16 @@ EON X0, X1, X2
 
 ---
 
-## `EOR` (배타적)
+```mermaid
+flowchart LR
+   EOR@{ shape: braces}
+   EOR --> desc["Bitwise Exclusive OR<br>비트단위 배타적 논리합 OR (레지스터 또는 즉시값)"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Bitwise Exclusive OR (register or immediate). XORs two operands bit by bit; commonly used to zero a register (EOR Xd, Xd, Xd).
 
-$\checkmark$ 비트 단위 배타적 OR(레지스터 또는 즉치값). 두 피연산자를 비트 단위로 XOR 연산합니다. 레지스터를 0으로 만들 때(EOR Xd, Xd, Xd) 흔히 사용됩니다.
+$\checkmark$ 비트 단위 배타적 논리합 OR(레지스터 또는 즉시값). 두 피연산자를 비트 단위로 XOR 연산합니다. 레지스터를 0으로 만들 때(EOR Xd, Xd, Xd) 흔히 사용됩니다.
 
 **Syntax**
 
@@ -1593,9 +1598,16 @@ EOR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  EOR <Wd|Xd>, <Wn|Xn>, #<imm>
 EOR X0, X0, X0   // X0 = 0
 ```
 
+**[Open Example](examples/eor.md#example)**
+
 ---
 
-## `ERET`
+```mermaid
+flowchart LR
+   ERET@{ shape: braces}
+   ERET --> desc["Exception Return<br>예외로부터 복귀"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Exception Return. Returns from an exception handler to the code that was interrupted, restoring the program counter from ELR_ELx and the processor state (including exception level) from SPSR_ELx. The mandatory last instruction of any exception/interrupt handler.
 
@@ -1616,9 +1628,16 @@ MSR SPSR_EL1, X1   // 복귀할 프로세서 상태 설정
 ERET
 ```
 
+**[Open Example](examples/ret_eret.md#example)**
+
 ---
 
-## `EXT`
+```mermaid
+flowchart LR
+   EXT@{ shape: braces}
+   EXT --> desc["Extract vector from pair<br>벡터 쌍에서 추출"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Extract vector from pair. Conceptually concatenates two vectors and extracts a 128-bit window starting at a byte offset - like a sliding window or byte-granular rotate across two registers. Handy for shifting a stream by a few bytes.
 
@@ -1636,9 +1655,16 @@ EXT <Vd>.16B, <Vn>.16B, <Vm>.16B, #<index>
 EXT V0.16B, V1.16B, V2.16B, #4   // V1V2를 이어붙인 뒤 4바이트 밀어서 추출
 ```
 
+**[Open Example](examples/ext.md#example)**
+
 ---
 
-## `EXTR`
+```mermaid
+flowchart LR
+   EXTR@{ shape: braces}
+   EXTR --> desc["Extract vector from pair<br>벡터 쌍에서 추출"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Extract register (funnel shift). Concatenates two source registers and extracts a register-width window starting at a bit offset - effectively a rotate when the same register is used for both sources. Useful for pulling an unaligned bitfield that straddles two registers, e.g. while parsing a bitstream.
 
@@ -1656,9 +1682,16 @@ EXTR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, #<lsb>
 EXTR X0, X1, X2, #16   // {X1:X2}를 이어붙인 뒤 16비트 위치부터 64비트 추출
 ```
 
+**[Open Example](examples/extr.md#summary)**
+
 ---
 
-## `FABS`
+```mermaid
+flowchart LR
+   FABS@{ shape: braces}
+   FABS --> desc["Floating-point Absolute Value<br>부동소수점 절댓값"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Absolute Value. Clears the sign bit of a floating-point register and writes the result to the destination.
 
@@ -1676,9 +1709,16 @@ FABS <Sd|Dd>, <Sn|Dn>
 FABS D0, D1
 ```
 
+**[Open Example](examples/fabs_fadd_fcmp.md#fabs)**
+
 ---
 
-## `FADD`
+```mermaid
+flowchart LR
+   FADD@{ shape: braces}
+   FADD --> desc["Floating-point Add<br>부동소수점 덧셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Add. Adds two floating-point registers and writes the result to the destination register.
 
@@ -1696,9 +1736,16 @@ FADD <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FADD D0, D1, D2
 ```
 
+**[Open Example](examples/fabs_fadd_fcmp.md#fadd)**
+
 ---
 
-## `FCMP`
+```mermaid
+flowchart LR
+   FCMP@{ shape: braces}
+   FCMP --> desc["Floating-point Compare<br>부동소수점 비교"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Compare. Compares two floating-point registers (or a register and zero) and updates the NZCV condition flags.
 
@@ -1716,6 +1763,8 @@ FCMP <Sn|Dn>, <Sm|Dm>  or  FCMP <Sn|Dn>, #0.0
 FCMP D0, D1
 B.GT greater_label
 ```
+
+**[Open Example](examples/fabs_fadd_fcmp.md#fcmp)**
 
 ---
 
@@ -3029,7 +3078,7 @@ RBIT X0, X1
 
 ---
 
-## `RET` (돌아감)
+## `RET`
 
 $\checkmark$ Return from subroutine. Branches to the address in the Link Register (usually X30).
 
@@ -3046,6 +3095,8 @@ RET {<Xn>}
 ```arm
 RET
 ```
+
+**[Open Example](examples/ret_eret.md#ret)**
 
 ---
 
