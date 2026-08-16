@@ -726,6 +726,8 @@ BR <Xn>
 BR X16
 ```
 
+---
+
 ```mermaid
 flowchart LR
    BRK@{ shape: braces}
@@ -748,6 +750,10 @@ BRK #<imm>
 ```arm
 BRK #0x1
 ```
+
+**[Open Example](examples/brk.md#summary)**
+
+---
 
 ```mermaid
 flowchart LR
@@ -1904,7 +1910,12 @@ FMADD D0, D1, D2, D3   // D0 = D3 + (D1 * D2)
 
 ---
 
-## `FMAX`
+```mermaid
+flowchart LR
+   FMAX@{ shape: braces}
+   FMAX --> desc["Floating-point Maximum<br>부동소수점 최댓값"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Maximum. Writes the numerically larger of two floating-point operands to the destination register (NaN-propagating).
 
@@ -1926,7 +1937,12 @@ FMAX D0, D1, D2
 
 ---
 
-## `FMIN`
+```mermaid
+flowchart LR
+   FMIN@{ shape: braces}
+   FMIN --> desc["Floating-point Minimum<br>부동소수점 최솟값"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Minimum. Writes the numerically smaller of two floating-point operands to the destination register (NaN-propagating).
 
@@ -1948,7 +1964,12 @@ FMIN D0, D1, D2
 
 ---
 
-## `FMLA`
+```mermaid
+flowchart LR
+   FMLA@{ shape: braces}
+   FMLA --> desc["Floating-point fused Multiply-Add<br>부동소수점 벡터 융합 곱셈-덧셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point fused Multiply-Add (vector). Per-lane: Vd = Vd + (Vn \* Vm), computed in a single rounding step. The workhorse of vectorized audio mixing and matrix/dot-product math.
 
@@ -1966,9 +1987,16 @@ FMLA <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 FMLA V0.4S, V1.4S, V2.4S   // 오디오 4채널 믹싱 등에 활용
 ```
 
+**[Open Example](examples/fmla_fmls.md#fmla)**
+
 ---
 
-## `FMLS`
+```mermaid
+flowchart LR
+   FMLS@{ shape: braces}
+   FMLS --> desc["Floating-point fused Multiply-Subtract<br>부동소수점 벡터 융합 곱셈-뺄셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point fused Multiply-Subtract (vector). Per-lane: Vd = Vd - (Vn \* Vm), single rounding step.
 
@@ -1986,9 +2014,16 @@ FMLS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 FMLS V0.4S, V1.4S, V2.4S
 ```
 
+**[Open Example](examples/fmla_fmls.md#fmls)**
+
 ---
 
-## `FMOV` (실수이동)
+```mermaid
+flowchart LR
+   FMOV@{ shape: braces}
+   FMOV --> desc["Floating-point Move<br>부동소수점 이동"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Move. Copies a value between FP registers, or between a general-purpose register and an FP register, or loads a small FP immediate.
 
@@ -2008,10 +2043,14 @@ FMOV X0, D0
 FMOV D0, #1.0
 ```
 
+**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fmov)**
+
+---
+
 ```mermaid
 flowchart LR
    FMSUB@{ shape: braces}
-   FMSUB --> desc["Floating-point Fused Multiply-Subtract<br>부동소수점 유합 곱셈-뺄셈"]
+   FMSUB --> desc["Floating-point Fused Multiply-Subtract<br>부동소수점 융합 곱셈-뺄셈"]
    style desc fill:none,stroke:none
 ```
 
@@ -2031,9 +2070,16 @@ FMSUB <Sd|Dd>, <Sn|Dn>, <Sm|Dm>, <Sa|Da>
 FMSUB D0, D1, D2, D3   // D0 = D3 - (D1 * D2)
 ```
 
+**[Open Example](examples/fmsub.md)**
+
 ---
 
-## `FMUL`
+```mermaid
+flowchart LR
+   FMUL@{ shape: braces}
+   FMUL --> desc["Floating-point Multiply<br>부동소수점 곱셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Multiply. Multiplies two floating-point registers and writes the result to the destination register.
 
@@ -2051,9 +2097,16 @@ FMUL <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FMUL S0, S1, S2
 ```
 
+**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fmul)**
+
 ---
 
-## `FNEG`
+```mermaid
+flowchart LR
+   FNEG@{ shape: braces}
+   FNEG --> desc["Floating-point Negate<br>부동소수점 부호 반전"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Negate. Flips the sign bit of a floating-point register and writes the result to the destination.
 
@@ -2071,9 +2124,16 @@ FNEG <Sd|Dd>, <Sn|Dn>
 FNEG D0, D1
 ```
 
+**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fneg)**
+
 ---
 
-## `FSQRT`
+```mermaid
+flowchart LR
+   FSQRT@{ shape: braces}
+   FSQRT --> desc["Floating-point Square Root<br>부동소수점 제곱근"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Square Root. Computes the square root of a floating-point register and writes the result to the destination.
 
@@ -2091,9 +2151,16 @@ FSQRT <Sd|Dd>, <Sn|Dn>
 FSQRT D0, D1
 ```
 
+**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fsqrt)**
+
 ---
 
-## `FSUB`
+```mermaid
+flowchart LR
+   FSUB@{ shape: braces}
+   FSUB --> desc["Floating-point Subtract<br>부동소수점 뺄셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Floating-point Subtract. Subtracts the second floating-point operand from the first and writes the result to the destination register.
 
@@ -2111,9 +2178,16 @@ FSUB <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FSUB D0, D1, D2
 ```
 
+**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fsub)**
+
 ---
 
-## `HLT`
+```mermaid
+flowchart LR
+   HLT@{ shape: braces}
+   HLT --> desc["Halt instruction<br>정지 명령"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Halt instruction. Traps to an external debugger and halts execution. Distinct from BRK (a software breakpoint the OS/debugger fields as an exception) - HLT is intended for use by external debug hardware/JTAG and behaves unpredictably without one attached, so it's rarely used directly in normal kernel code.
 
@@ -2131,9 +2205,16 @@ HLT #<imm16>
 HLT #0      // 외부 디버거가 붙어있을 때만 의미가 있음
 ```
 
+**[Open Example](examples/hlt.md#summary)**
+
 ---
 
-## `HVC`
+```mermaid
+flowchart LR
+   HVC@{ shape: braces}
+   HVC --> desc["Hypervisor Call<br>하이퍼바이저 호출"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Hypervisor Call. Triggers a synchronous exception that's routed to EL2 (the hypervisor), analogous to how SVC routes to EL1. Used by a guest OS to request a service from a hypervisor (e.g. in a virtualized Yeoji-style kernel).
 
@@ -2151,7 +2232,16 @@ HVC #<imm16>
 HVC #0      // EL2 하이퍼바이저에 서비스 요청
 ```
 
+**[Open Summary](examples/hvc.md#summary)**
+
 ---
+
+```mermaid
+flowchart LR
+   IC@{ shape: braces}
+   IC --> desc["Instruction Cache operation<br>명령어 캐시 유지보수"]
+   style desc fill:none,stroke:none
+```
 
 ## `IC`
 
@@ -2172,6 +2262,8 @@ IC IVAU, X0      // X0 주소의 명령어 캐시 라인 무효화
 DSB ISH
 ISB               // 파이프라인 플러시 - 새 코드가 보이도록
 ```
+
+**[Open Example](examples/ic.md#summary)**
 
 ---
 
@@ -2376,7 +2468,12 @@ LDEOR W0, W1, [X19]   // *X19 ^= W0
 
 ---
 
-## `LDP` (쌍적재)
+```mermaid
+flowchart LR
+   LDP@{ shape: braces}
+   LDP --> desc["Load Pari of Registers<br>레지스터 쌍을 적재합니다."]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Pair of Registers. Loads two words or doublewords from consecutive memory locations into two registers in a single instruction. Commonly used to restore callee-saved registers in epilogues.
 
@@ -2396,9 +2493,16 @@ LDP X19, X20, [SP, #16]
 LDP X29, X30, [SP], #48
 ```
 
+**[Open Example](examples/stp_ldp.md#summary)**
+
 ---
 
-## `LDR` (적재)
+```mermaid
+flowchart LR
+   LDR@{ shape: braces}
+   LDR --> desc["Load Register<br>레지스터로 값을 적재합니다."]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Register. Loads a word or doubleword from memory into a register.
 
@@ -2418,9 +2522,16 @@ LDR X0, [X1]
 LDR W2, [SP, #8]
 ```
 
+**[Open Example](examples/ldr_str.md#ldr)**
+
 ---
 
-## `LDRB`
+```mermaid
+flowchart LR
+   LDRB@{ shape: braces}
+   LDRB --> desc["Load Register Byte<br>메모리에서 1바이트(8비트)를 읽어 지정한 레지스터에 저장"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Register Byte. Loads a single byte (8-bit) from memory into the low 8 bits of the destination register; the remaining upper bits are filled with zero (zero-extension).
 
@@ -2440,9 +2551,16 @@ LDRB W0, [X1]        // 문자열의 문자 한 글자 읽기
 LDRB W2, [X19, #3]
 ```
 
+**[Open Example](examples/ldr_str.md#ldr)**
+
 ---
 
-## `LDRH`
+```mermaid
+flowchart LR
+   LDRH@{ shape: braces}
+   LDRH --> desc["Load Register Halfword<br>레지스터로 하프워드를 적재합니다."]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Register Halfword. Loads a 16-bit halfword from memory into the low 16 bits of the destination register; the remaining upper bits are filled with zero (zero-extension).
 
@@ -2462,7 +2580,16 @@ LDRH W0, [X1]        // unsigned short 값 읽기
 LDRH W2, [X19, #2]
 ```
 
+**[Open Example](examples/ldr_str.md#ldr)**
+
 ---
+
+```mermaid
+flowchart LR
+   LDRSB@{ shape: braces}
+   LDRSB --> desc["Load Register Signed Byte<br>레지스터로 부호 있는 바이트를 적재합니다."]
+   style desc fill:none,stroke:none
+```
 
 ## `LDRSB`
 
@@ -2483,7 +2610,16 @@ LDRSB <Wt|Xt>, [<Xn|SP>, #<pimm>]
 LDRSB X0, [X1]       // signed char -> 64비트로 부호 확장하며 읽기
 ```
 
+**[Open Example](examples/ldr_str.md#ldr)**
+
 ---
+
+```mermaid
+flowchart LR
+   LDRSH@{ shape: braces}
+   LDRSH --> desc["Load Register Signed Halfword<br>레지스터로 부호 있는 하프워드를 적재합니다."]
+   style desc fill:none,stroke:none
+```
 
 ## `LDRSH`
 
@@ -2504,9 +2640,16 @@ LDRSH <Wt|Xt>, [<Xn|SP>, #<pimm>]
 LDRSH X0, [X1]       // signed short -> 64비트로 부호 확장하며 읽기
 ```
 
+**[Open Example](examples/ldr_str.md#ldr)**
+
 ---
 
-## `LDRSW`
+```mermaid
+flowchart LR
+   LDRSW@{ shape: braces}
+   LDRSW --> desc["Load Register Signed Word<br>레지스터로 부호 있는 워드를 적재합니다."]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Register Signed Word. Loads a 32-bit word from memory and sign-extends it into a 64-bit destination register. Commonly used to widen a signed 32-bit int stored in memory to a 64-bit value for pointer arithmetic.
 
@@ -2524,6 +2667,8 @@ LDRSW <Xt>, [<Xn|SP>, #<pimm>]
 ```arm
 LDRSW X0, [X1]       // int -> long 부호 확장하며 읽기
 ```
+
+**[Open Example](examples/ldr_str.md#ldr)**
 
 ---
 
@@ -3824,11 +3969,18 @@ STLXR W1, X0, [X19]  // 스핀락 해제 루틴 등에서 사용, W1 = 상태(0=
 
 ---
 
-## `STP` (쌍저장)
+```mermaid
+flowchart LR
+   STP@{ shape: braces}
+   STP --> desc["Store Paire of Registers<br>레지스터 쌍을 저장합니다."]
+   style desc fill:none,stroke:none
+```
+
+## `STP`
 
 $\checkmark$ Store Pair of Registers. Stores two words or doublewords to consecutive memory locations in a single instruction. Commonly used to save callee-saved registers / FP+LR in prologues.
 
-$\checkmark$ 레지스터 쌍을 저장합니다. 두 레지스터의 값을 연속된 메모리 위치에 한 번에 씁니다. 함수 프롤로그에서 callee-saved 레지스터나 FP+LR을 저장할 때 흔히 사용됩니다.)
+$\checkmark$ 레지스터 쌍을 저장합니다. 두 레지스터의 값을 연속된 메모리 위치에 한 번에 씁니다. 함수 프롤로그에서 callee-saved 레지스터나 FP+LR을 저장할 때 흔히 사용됩니다.
 
 **Syntax**
 
@@ -3843,6 +3995,8 @@ STP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>], #<imm>
 STP x29, x30, [sp, #-48]!
 STP X19, X20, [SP, #16]
 ```
+
+**[Open Example](examples/stp_ldp.md#summary)**
 
 ---
 
@@ -3866,6 +4020,8 @@ STR X0, [X1]
 STR W2, [SP, #8]
 ```
 
+**[Open Example](examples/ldr_str.md#str)**
+
 ---
 
 ## `STRB`
@@ -3888,6 +4044,8 @@ STRB W0, [X1]        // char 하나 저장
 STRB WZR, [X19]      // 문자열 끝에 NUL('\0') 쓰기
 ```
 
+**[Open Example](examples/ldr_str.md#str)**
+
 ---
 
 ## `STRH`
@@ -3908,6 +4066,8 @@ STRH <Wt>, [<Xn|SP>, #<pimm>]
 ```arm
 STRH W0, [X1]        // short 값 저장
 ```
+
+**[Open Example](examples/ldr_str.md#str)**
 
 ---
 
