@@ -609,6 +609,10 @@ BIC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 BIC X0, X1, X2    // X1의 비트 중 X2에서 1인 자리를 0으로 지움
 ```
 
+**[Open Example](examples/bic.md#example)**
+
+---
+
 ```mermaid
 flowchart LR
    BIF@{ shape: braces}
@@ -2243,8 +2247,6 @@ flowchart LR
    style desc fill:none,stroke:none
 ```
 
-## `IC`
-
 $\checkmark$ Instruction Cache operation. Invalidates instruction-cache entries so the CPU re-fetches fresh instruction bytes from memory (or the point of unification) instead of stale cached ones. Required after writing new/patched code (JIT output, a relocated kernel, self-modifying code) before jumping into it - otherwise the core may still execute the old cached instructions.
 
 $\checkmark$ 명령어 캐시 유지보수 명령. 명령어 캐시 항목을 무효화하여, CPU가 오래된 캐시된 명령어 대신 메모리(또는 통합 지점)에서 최신 명령어 바이트를 다시 가져오게 합니다. 새로 쓴/패치한 코드(JIT 출력, 재배치된 커널, 자기수정 코드)로 점프하기 전에 반드시 필요합니다 - 안 그러면 코어가 여전히 예전 캐시된 명령어를 실행할 수 있습니다.
@@ -2267,7 +2269,12 @@ ISB               // 파이프라인 플러시 - 새 코드가 보이도록
 
 ---
 
-## `INS`
+```mermaid
+flowchart LR
+   INS@{ shape: braces}
+   INS --> desc["Instruction Cache operation<br>명령어 캐시 유지보수"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Insert vector element. Writes a value - from a general-purpose register or from another vector's lane - into exactly one lane of the destination vector, leaving the other lanes untouched.
 
@@ -2284,6 +2291,8 @@ INS <Vd>.<Ts>[<index>], <Rn>  or  INS <Vd>.<Ts>[<index>], <Vn>.<Ts>[<index2>]
 ```arm
 INS V0.S[1], W0   // V0의 두 번째 32비트 레인에 W0 값을 삽입
 ```
+
+**[Open Example](examples/ins.md)**
 
 ---
 
@@ -2307,7 +2316,12 @@ ISB
 
 ---
 
-## `LD1`
+```mermaid
+flowchart LR
+   LD1@{ shape: braces}
+   LD1 --> desc["Load single 1-element structures (or a plain vector)<br>단일(비인터리브) 구조체 적재"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load single 1-element structures (or a plain vector). Loads contiguous memory straight into one (or more) vector register(s), lane by lane, with no interleaving. This is the basic "load a chunk of pixels/samples into a vector" instruction.
 
@@ -2325,9 +2339,16 @@ LD1 { <Vt>.<T> }, [<Xn|SP>]
 LD1 { V0.16B }, [X0]   // 16바이트를 그대로 V0에 적재
 ```
 
+**[Open Summary](examples/ld1_ld4.md#summary)**
+
 ---
 
-## `LD2`
+```mermaid
+flowchart LR
+   LD2@{ shape: braces}
+   LD2 --> desc["Load 2-element interleaved structures<br>2개 원소 인터리브 구조체 적재"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load 2-element interleaved structures. Reads memory containing interleaved pairs (e.g. stereo L/R audio samples, or R/G of a 2-channel image) and de-interleaves them into two separate vector registers in one instruction.
 
@@ -2345,9 +2366,16 @@ LD2 { <Vt>.<T>, <Vt2>.<T> }, [<Xn|SP>]
 LD2 { V0.8H, V1.8H }, [X0]   // 스테레오 오디오를 좌/우 채널로 분리 적재
 ```
 
+**[Open Summary](examples/ld1_ld4.md#summary)**
+
 ---
 
-## `LD3`
+```mermaid
+flowchart LR
+   LD3@{ shape: braces}
+   LD3 --> desc["Load 3-element interleaved structures<br>3개 원소 인터리브 구조체 적재"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load 3-element interleaved structures. De-interleaves memory holding triplets - classically RGB pixel data - into three separate vector registers (R, G, B) in a single instruction.
 
@@ -2365,9 +2393,16 @@ LD3 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T> }, [<Xn|SP>]
 LD3 { V0.16B, V1.16B, V2.16B }, [X0]   // RGB 픽셀을 R/G/B 채널로 분리 적재
 ```
 
+**[Open Summary](examples/ld1_ld4.md#summary)**
+
 ---
 
-## `LD4`
+```mermaid
+flowchart LR
+   LD4@{ shape: braces}
+   LD4 --> desc["Load 4-element interleaved structures<br>4개 원소 인터리브 구조체 적재"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load 4-element interleaved structures. De-interleaves memory holding quadruplets - classically RGBA pixel data - into four separate vector registers (R, G, B, A) in a single instruction.
 
@@ -2385,9 +2420,16 @@ LD4 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T>, <Vt4>.<T> }, [<Xn|SP>]
 LD4 { V0.16B, V1.16B, V2.16B, V3.16B }, [X0]   // RGBA 픽셀을 채널별로 분리 적재
 ```
 
+**[Open Summary](examples/ld1_ld4.md#summary)**
+
 ---
 
-## `LDADD`
+```mermaid
+flowchart LR
+   LDADD@{ shape: braces}
+   LDADD --> desc["Atomic Load and Add<br>원자적 로드 후 덧셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load and Add. Atomically adds Ws to the value at a memory address, and returns the OLD value into Wt, in a single instruction. When the old value isn't needed, the STADD alias (Wt = XZR) is commonly used for a pure atomic increment.
 
@@ -2408,7 +2450,12 @@ STADD W0, [X19]        // *X19 += W0, 이전 값 필요 없을 때
 
 ---
 
-## `LDAXR`
+```mermaid
+flowchart LR
+   LDAXR@{ shape: braces}
+   LDAXR --> desc["Atomic Load and Add<br>원자적 로드 후 덧셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load-Acquire Exclusive Register. Same as LDXR, but additionally acts as a memory barrier: no later memory access by this core can be reordered before this load (acquire semantics). Used together with STLXR when the atomic operation must also be visible in the correct order to other cores.
 
@@ -2428,7 +2475,12 @@ LDAXR X0, [X1]       // 스핀락 획득 루틴 등에서 사용
 
 ---
 
-## `LDCLR`
+```mermaid
+flowchart LR
+   LDCLR@{ shape: braces}
+   LDCLR --> desc["Atomic Load and Clear<br>원자적 로드 후 비트 클리어"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load and Clear (bit clear). Atomically computes (memory AND NOT Ws) and stores it back, returning the OLD value into Wt.
 
@@ -2448,7 +2500,12 @@ LDCLR W0, W1, [X19]   // *X19 &= ~W0
 
 ---
 
-## `LDEOR`
+```mermaid
+flowchart LR
+   LDEOR@{ shape: braces}
+   LDERO --> desc["Atomic Load and Exclusive-OR<br>원자적 로드 후 XOR"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load and Exclusive-OR. Atomically XORs Ws into the value at a memory address, returning the OLD value into Wt.
 
@@ -2591,8 +2648,6 @@ flowchart LR
    style desc fill:none,stroke:none
 ```
 
-## `LDRSB`
-
 $\checkmark$ Load Register Signed Byte. Loads a single byte from memory and sign-extends it to fill the destination register (32-bit or 64-bit). Use this instead of LDRB when the byte represents a signed value (e.g. a signed char).
 
 $\checkmark$ 레지스터로 부호 있는 바이트를 적재합니다. 메모리에서 1바이트를 읽어 대상 레지스터(32비트 또는 64비트) 전체에 부호 확장하여 채웁니다. 그 바이트가 부호 있는 값(예: signed char)일 때는 LDRB 대신 이 명령어를 사용해야 합니다.
@@ -2620,8 +2675,6 @@ flowchart LR
    LDRSH --> desc["Load Register Signed Halfword<br>레지스터로 부호 있는 하프워드를 적재합니다."]
    style desc fill:none,stroke:none
 ```
-
-## `LDRSH`
 
 $\checkmark$ Load Register Signed Halfword. Loads a 16-bit halfword from memory and sign-extends it to fill the destination register (32-bit or 64-bit). Use this instead of LDRH when the halfword represents a signed value (e.g. a signed short).
 
@@ -2672,7 +2725,12 @@ LDRSW X0, [X1]       // int -> long 부호 확장하며 읽기
 
 ---
 
-## `LDSET`
+```mermaid
+flowchart LR
+   LDSET@{ shape: braces}
+   LDSET --> desc["Load Pari of Set (bit set)<br>원자적 로드 후 비트 셋"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load and Set (bit set). Atomically ORs Ws into the value at a memory address, returning the OLD value into Wt.
 
@@ -2692,7 +2750,12 @@ LDSET W0, W1, [X19]   // *X19 |= W0
 
 ---
 
-## `LDSMAX`
+```mermaid
+flowchart LR
+   LDSMAX@{ shape: braces}
+   LDSMAX --> desc["Atomic Load Signed Maximum<br>원자적 로드 후 부호 있는 최댓값"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load Signed Maximum. Atomically compares (as signed values) Ws with the memory value and stores whichever is larger, returning the OLD value into Wt.
 
@@ -2711,6 +2774,13 @@ LDSMAX W0, W1, [X19]
 ```
 
 ---
+
+```mermaid
+flowchart LR
+   LDSMIN@{ shape: braces}
+   LDSMIN --> desc["Atomic Load Signed Minimum<br>원자적 로드 후 부호 있는 최솟값"]
+   style desc fill:none,stroke:none
+```
 
 ## `LDSMIN`
 
@@ -2732,7 +2802,12 @@ LDSMIN W0, W1, [X19]
 
 ---
 
-## `LDUMAX`
+```mermaid
+flowchart LR
+   LDUMAX@{ shape: braces}
+   LDUMAX --> desc["Atomic Load Unsigned Maximum<br>원자적 로드 후 부호 없는 최댓값"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load Unsigned Maximum. Same as LDSMAX but compares the values as unsigned.
 
@@ -2752,7 +2827,12 @@ LDUMAX W0, W1, [X19]
 
 ---
 
-## `LDUMIN`
+```mermaid
+flowchart LR
+   LDUMIN@{ shape: braces}
+   LDUMIN --> desc["Atomic Load Unsigned Minimum<br>원자적 로드 후 부호 없는 최솟값"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Atomic Load Unsigned Minimum. Same as LDSMIN but compares the values as unsigned.
 
@@ -3159,6 +3239,8 @@ ORN <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 ORN X0, X1, X2
 ```
+
+**[Open Example](examples/orn.md#summary)**
 
 ---
 
