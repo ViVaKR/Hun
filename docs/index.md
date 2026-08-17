@@ -28,7 +28,8 @@ ADDS X0, X2, X4   // 하위 64비트 더하기 (캐리 플래그 갱신)
 ADC  X1, X3, X5   // 상위 64비트 + 캐리 -> 128비트 덧셈 완성
 ```
 
-🔗 [_Open Summary_](examples/adc_adcs.md)
+🔗 [_Open Summary_](examples/adc_adcs.md#summary)
+
 🔗 [_adc.S 샘플_](https://github.com/ViVaKR/Hun/blob/main/Yana/libs/mnemonics/adc.S)
 
 ---
@@ -234,7 +235,7 @@ AESD <Vd>.16B, <Vn>.16B
 AESD V0.16B, V1.16B
 ```
 
-🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md#summary)
 
 ---
 
@@ -261,7 +262,7 @@ AESE <Vd>.16B, <Vn>.16B
 AESE V0.16B, V1.16B
 ```
 
-🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md#summary)
 
 ---
 
@@ -288,7 +289,7 @@ AESIMC <Vd>.16B, <Vn>.16B
 AESIMC V0.16B, V0.16B
 ```
 
-🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md#summary)
 
 ---
 
@@ -315,7 +316,7 @@ AESMC <Vd>.16B, <Vn>.16B
 AESMC V0.16B, V0.16B
 ```
 
-🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md#summary)
 
 ---
 
@@ -343,7 +344,7 @@ AND X0, X1, X2
 AND W0, W1, #0xF
 ```
 
-🔗 [_Open Summary_](examples/and_ands.md)
+🔗 [_Open Summary_](examples/and_ands.md#summary)
 
 ---
 
@@ -371,13 +372,15 @@ ASR <Wd|Xd>, <Wn|Xn>, #<shift>  or  ASR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ASR X0, X1, #1     // X0 = X1 / 2 (signed)
 ```
 
-[_Open Summary_](examples/asr.md)
+🔗 [_Open Summary_](examples/asr.md#summary)
 
 ---
 
 ```mermaid
 flowchart LR
    AT@{ shape: braces}
+   AT --> desc["Address Translate operation<br>주소 변환 명령"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Address Translate operation`. Runs a virtual address through the MMU's translation tables (as configured for a given exception level/stage) without actually performing a memory access, and deposits the resulting physical address (or fault info) into PAR_EL1. Useful for debugging page-table setup or implementing a software page-table walker.
@@ -396,6 +399,10 @@ AT <op>, <Xt>   // op: S1E1R, S1E1W, S1E0R, S1E0W ...
 AT S1E1R, X0      // X0의 가상주소를 EL1 stage 1 기준으로 변환 시도
 MRS X1, PAR_EL1   // 결과 확인
 ```
+
+[_Open Summary_](examples/at.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -685,6 +692,8 @@ BFI <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 BFI X0, X1, #8, #4    // X1의 하위 4비트를 X0의 8번 비트 위치에 삽입
 ```
 
+🔗 [_Open Summary_](examples/bfi_bfxil_bic_bit_bif.md#summary)
+
 ---
 
 ```mermaid
@@ -710,6 +719,10 @@ BFXIL <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 BFXIL X0, X1, #8, #4   // X1의 비트[11:8]을 뽑아 X0의 비트[3:0]에 삽입 (나머지 X0는 그대로)
 ```
 
+🔗 [_Open Summary_](examples/bfi_bfxil_bic_bit_bif.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    BIC@{ shape: braces}
@@ -733,7 +746,7 @@ BIC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 BIC X0, X1, X2    // X1의 비트 중 X2에서 1인 자리를 0으로 지움
 ```
 
-**[Open Example](examples/bic.md#example)**
+🔗 [_Open Example_](examples/bic.md#example)**
 
 ---
 
@@ -760,6 +773,10 @@ BIF <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 BIF V0.16B, V1.16B, V2.16B
 ```
 
+🔗 [_Open Summary_](examples/bfi_bfxil_bic_bit_bif.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    BIT@{ shape: braces}
@@ -782,6 +799,9 @@ BIT <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 BIT V0.16B, V1.16B, V2.16B
 ```
+🔗 [_Open Summary_](examples/bfi_bfxil_bic_bit_bif.md#summary)
+---
+
 
 ```mermaid
 flowchart LR
@@ -805,6 +825,10 @@ BL <label>
 ```arm
 BL my_function
 ```
+
+🔗 [_Open Summary_](examples/bl_blr.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -830,6 +854,10 @@ BLR <Xn>
 ```arm
 BLR X8
 ```
+
+🔗 [_Open Summary_](examples/bl_blr.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -879,7 +907,7 @@ BRK #<imm>
 BRK #0x1
 ```
 
-**[Open Example](examples/brk.md#summary)**
+🔗 [_Open Example_](examples/brk.md#summary)
 
 ---
 
@@ -907,6 +935,8 @@ CMGT V3.4S, V1.4S, V2.4S   // 마스크 생성
 BSL  V3.16B, V1.16B, V2.16B  // 마스크에 따라 V1/V2 중 선택
 ```
 
+---
+
 ```mermaid
 flowchart LR
    CAS@{ shape: braces}
@@ -929,6 +959,8 @@ CAS <Ws>, <Wt>, [<Xn|SP>]
 ```arm
 CAS W0, W1, [X19]   // *X19 == W0 이면 *X19 = W1, 항상 원래값을 W0에 반환
 ```
+
+---
 
 ```mermaid
 flowchart LR
@@ -953,6 +985,8 @@ CBNZ <Wt|Xt>, <label>
 CBNZ X0, loop
 ```
 
+---
+
 ```mermaid
 flowchart LR
    CBZ@{ shape: braces}
@@ -976,6 +1010,8 @@ CBZ <Wt|Xt>, <label>
 CBZ X0, done
 ```
 
+---
+
 ```mermaid
 flowchart LR
    CCMN@{ shape: braces}
@@ -998,6 +1034,8 @@ CCMN <Wn|Xn>, <Wm|Xm>, #<nzcv>, <cond>
 ```arm
 CCMN X0, X1, #0b0100, EQ
 ```
+
+---
 
 ```mermaid
 flowchart LR
@@ -1024,6 +1062,8 @@ CCMP X1, #10, #0b0000, GT   // X0>0 이면서 X1<10 인지 검사
 B.LT both_conditions_true
 ```
 
+---
+
 ```mermaid
 flowchart LR
    CINC@{ shape: braces}
@@ -1048,6 +1088,8 @@ CMP X0, X1
 CINC X2, X3, GT   // X0 > X1 이면 X2 = X3 + 1, 아니면 X2 = X3
 ```
 
+---
+
 ```mermaid
 flowchart LR
    CINV@{ shape: braces}
@@ -1071,6 +1113,7 @@ CINV <Wd|Xd>, <Wn|Xn>, <cond>
 CMP X0, X1
 CINV X2, X3, EQ
 ```
+---
 
 ```mermaid
 flowchart LR
@@ -1094,6 +1137,7 @@ CLREX
 ```arm
 CLREX                // LDXR 이후 STXR 없이 루틴을 빠져나갈 때
 ```
+---
 
 ```mermaid
 flowchart LR
@@ -1189,6 +1233,7 @@ CLZ <Wd|Xd>, <Wn|Xn>
 ```arm
 CLZ X0, X1        // X1=0x0F... 이면 앞쪽 0의 개수 반환
 ```
+---
 
 ```mermaid
 flowchart LR
@@ -1213,7 +1258,7 @@ CMEQ <Vd>.<T>, <Vn>.<T>, <Vm>.<T>  or  CMEQ <Vd>.<T>, <Vn>.<T>, #0
 CMEQ V0.4S, V1.4S, V2.4S   // 레인별로 같으면 0xFFFFFFFF, 다르면 0
 ```
 
-**[Open Example](examples/cmeq.md#top)**
+🔗 [_Open Example_](examples/cmeq.md#top)
 
 ---
 
@@ -1240,7 +1285,7 @@ CMGE <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 CMGE V0.4S, V1.4S, V2.4S
 ```
 
-**[Open Example](examples/cmge.md#explain)**
+🔗 [Open Summary](examples/cmge.md#explain)
 
 ---
 
@@ -1267,7 +1312,7 @@ CMGT <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 CMGT V0.4S, V1.4S, V2.4S
 ```
 
-**[Open Example](examples/cmgt.md#explain)**
+🔗 [_Open Summary_](examples/cmgt.md#explain)
 
 ---
 
@@ -1294,7 +1339,7 @@ CMHI <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 CMHI V0.16B, V1.16B, V2.16B
 ```
 
-**[Open Example](examples/cmhi.md#explain)**
+🔗 [_Open Summary_](examples/cmhi.md#explain)
 
 ---
 
@@ -1321,7 +1366,7 @@ CMHS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 CMHS V0.16B, V1.16B, V2.16B
 ```
 
-**[Open Example](examples/cmhs.md#explain)**
+🔗 [_Open Example_](examples/cmhs.md#explain)
 
 ---
 
@@ -1348,7 +1393,7 @@ CMN <Wn|Xn>, <Wm|Xm>  or  CMN <Wn|Xn>, #<imm>
 CMN X0, #1        // X0 == -1 인지 검사하는 것과 동일
 ```
 
-**[Open Example](examples/cmn.md#explain)**
+🔗 [_Open Summary_](examples/cmn.md#explain)
 
 ---
 
@@ -1376,7 +1421,7 @@ CMP X0, X1
 CMP W2, #0
 ```
 
-**[Open Example](examples/cmp.md#explain)**
+🔗 [Open Summary](examples/cmp.md#explain)
 
 ---
 
@@ -1404,7 +1449,7 @@ CMP X0, #0
 CNEG X0, X0, MI   // X0가 음수(MI)면 부호를 뒤집어 절댓값처럼 만듦
 ```
 
-**[Open Example](examples/cneg.md#explain)**
+🔗 [_Open Summary_](examples/cneg.md#explain)
 
 ---
 
@@ -1431,7 +1476,7 @@ CSEL <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSEL X0, X1, X2, GT   // X0 = (X1 > X2) ? X1 : X2 (after a prior CMP)
 ```
 
-**[Open Example](examples/csel.md#explain)**
+🔗 [_Open Example_](examples/csel.md#explain)
 
 ---
 
@@ -1460,7 +1505,7 @@ CSET <Wd|Xd>, <cond>
 CSET X0, EQ
 ```
 
-**[Open Example](examples/cset.md#explain)**
+🔗 [_Open Example_](examples/cset.md#explain)
 
 ---
 
@@ -1488,7 +1533,7 @@ CMP X0, X1
 CSETM X2, EQ   // 같으면 X2 = 0xFFFFFFFFFFFFFFFF, 다르면 X2 = 0
 ```
 
-**[Open Example](examples/csetm.md#explain)**
+🔗 [_Open Summary_](examples/csetm.md#explain)
 
 ---
 
@@ -1515,7 +1560,7 @@ CSINC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSINC X0, X1, X2, EQ   // X0 = (조건참) ? X1 : X2+1
 ```
 
-**[Open Example](examples/csinc_csinv_csneg.md#csinc)**
+🔗 [_Open Summary_](examples/csinc_csinv_csneg.md#csinc)
 
 ---
 
@@ -1542,7 +1587,7 @@ CSINV <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSINV X0, X1, X2, EQ   // X0 = (조건참) ? X1 : ~X2
 ```
 
-**[Open Example](examples/csinc_csinv_csneg.md#csinv)**
+🔗 [_Open Summary_](examples/csinc_csinv_csneg.md#csinv)
 
 ---
 
@@ -1569,7 +1614,7 @@ CSNEG <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <cond>
 CSNEG X0, X1, X2, EQ   // X0 = (조건참) ? X1 : -X2  (예: abs() 구현에 사용)
 ```
 
-**[Open Example](examples/csinc_csinv_csneg.md#csneg)**
+🔗 [_Open Summary_](examples/csinc_csinv_csneg.md#csneg)
 
 ---
 
@@ -1597,7 +1642,7 @@ DC CVAC, X0      // X0 주소의 캐시 라인을 메모리로 clean
 DSB SY           // clean이 실제로 끝날 때까지 대기
 ```
 
-**[Open Example](examples/dc_dmb_dsb.md#dc)**
+🔗 [_Open Example_](examples/dc_dmb_dsb.md#dc)
 
 ---
 
@@ -1624,7 +1669,7 @@ DMB <option>   // 예: ISH, SY, OSH 등
 DMB ISH   // 같은 이너 공유 도메인 내 순서 보장
 ```
 
-**[Open Example](examples/dc_dmb_dsb.md#dmb)**
+🔗 [_Open Example_](examples/dc_dmb_dsb.md#dmb)
 
 ---
 
@@ -1651,7 +1696,7 @@ DSB <option>
 DSB SY   // 전체 시스템 범위로 완료를 기다림
 ```
 
-**[Open Example](examples/dc_dmb_dsb.md#dsb)**
+🔗 [_Open Summary_](examples/dc_dmb_dsb.md#dsb)
 
 ---
 
@@ -1678,7 +1723,7 @@ DUP <Vd>.<T>, <Rn>  or  DUP <Vd>.<T>, <Vn>.<Ts>[<index>]
 DUP V0.4S, W0        // W0 값을 4개 레인 전부에 복제
 ```
 
-**[Open Example](examples/dup.md#example)**
+🔗 [_Open Summary_](examples/dup.md#example)
 
 ---
 
@@ -1705,7 +1750,7 @@ EON <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 EON X0, X1, X2
 ```
 
-**[Open Example](examples/eon.md#example)**
+🔗 [_Open Summary_](examples/eon.md#example)
 
 ---
 
@@ -1732,7 +1777,7 @@ EOR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  EOR <Wd|Xd>, <Wn|Xn>, #<imm>
 EOR X0, X0, X0   // X0 = 0
 ```
 
-**[Open Example](examples/eor.md#example)**
+🔗 [_Open Summary_](examples/eor.md#example)
 
 ---
 
@@ -1762,7 +1807,7 @@ MSR SPSR_EL1, X1   // 복귀할 프로세서 상태 설정
 ERET
 ```
 
-**[Open Example](examples/ret_eret.md#example)**
+🔗 [_Open Summary_](examples/ret_eret.md#example)
 
 ---
 
@@ -1789,7 +1834,7 @@ EXT <Vd>.16B, <Vn>.16B, <Vm>.16B, #<index>
 EXT V0.16B, V1.16B, V2.16B, #4   // V1V2를 이어붙인 뒤 4바이트 밀어서 추출
 ```
 
-**[Open Example](examples/ext.md#example)**
+🔗 [_Open Summary_](examples/ext.md#example)
 
 ---
 
@@ -1816,7 +1861,7 @@ EXTR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, #<lsb>
 EXTR X0, X1, X2, #16   // {X1:X2}를 이어붙인 뒤 16비트 위치부터 64비트 추출
 ```
 
-**[Open Example](examples/extr.md#summary)**
+🔗 [_Open Summary_](examples/extr.md#summary)
 
 ---
 
@@ -1843,7 +1888,7 @@ FABS <Sd|Dd>, <Sn|Dn>
 FABS D0, D1
 ```
 
-**[Open Example](examples/fabs_fadd_fcmp.md#fabs)**
+🔗 [_Open Summary_](examples/fabs_fadd_fcmp.md#fabs)
 
 ---
 
@@ -1870,7 +1915,7 @@ FADD <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FADD D0, D1, D2
 ```
 
-**[Open Example](examples/fabs_fadd_fcmp.md#fadd)**
+🔗 [_Open Summary_](examples/fabs_fadd_fcmp.md#fadd)
 
 ---
 
@@ -1898,7 +1943,7 @@ FCMP D0, D1
 B.GT greater_label
 ```
 
-**[Open Example](examples/fabs_fadd_fcmp.md#fcmp)**
+🔗 [_Open Summary_](examples/fabs_fadd_fcmp.md#fcmp)
 
 ---
 
@@ -1926,7 +1971,7 @@ FCVT D0, S0   // float -> double
 FCVT S0, D0   // double -> float
 ```
 
-**[Open Example](examples/fcvt_fcvtzs_fcvtzu.md#fcvt)**
+🔗 [_Open Summary_](examples/fcvt_fcvtzs_fcvtzu.md#fcvt)
 
 ---
 
@@ -1953,7 +1998,7 @@ FCVTZS <Wd|Xd>, <Sn|Dn>
 FCVTZS X0, D0
 ```
 
-**[Open Example](examples/fcvt_fcvtzs_fcvtzu.md#fcvtzs)**
+🔗 [Open Summary](examples/fcvt_fcvtzs_fcvtzu.md#fcvtzs)
 
 ---
 
@@ -1980,7 +2025,7 @@ FCVTZU <Wd|Xd>, <Sn|Dn>
 FCVTZU X0, D0
 ```
 
-**[Open Example](examples/fcvt_fcvtzs_fcvtzu.md#fcvtzu)**
+🔗 [_Open Summary_](examples/fcvt_fcvtzs_fcvtzu.md#fcvtzu)
 
 ---
 
@@ -2007,7 +2052,7 @@ FDIV <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FDIV D0, D1, D2
 ```
 
-**[Open Example](examples/fdiv_fmadd_fmax_fmin.md#fdiv)**
+🔗 [_Open Summary_](examples/fdiv_fmadd_fmax_fmin.md#fdiv)
 
 ---
 
@@ -2034,7 +2079,7 @@ FMADD <Sd|Dd>, <Sn|Dn>, <Sm|Dm>, <Sa|Da>
 FMADD D0, D1, D2, D3   // D0 = D3 + (D1 * D2)
 ```
 
-**[Open Example](examples/fdiv_fmadd_fmax_fmin.md#fmadd)**
+🔗 [_Open Summary_](examples/fdiv_fmadd_fmax_fmin.md#fmadd)
 
 ---
 
@@ -2061,7 +2106,7 @@ FMAX <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FMAX D0, D1, D2
 ```
 
-**[Open Example](examples/fdiv_fmadd_fmax_fmin.md#fmax_fmin)**
+🔗 [_Open Summary_](examples/fdiv_fmadd_fmax_fmin.md#fmax_fmin)
 
 ---
 
@@ -2389,7 +2434,7 @@ DSB ISH
 ISB               // 파이프라인 플러시 - 새 코드가 보이도록
 ```
 
-**[Open Example](examples/ic.md#summary)**
+[_Open Summary_](examples/ic.md#summary)
 
 ---
 
@@ -2544,7 +2589,7 @@ LD4 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T>, <Vt4>.<T> }, [<Xn|SP>]
 LD4 { V0.16B, V1.16B, V2.16B, V3.16B }, [X0]   // RGBA 픽셀을 채널별로 분리 적재
 ```
 
-**[Open Summary](examples/ld1_ld4.md#summary)**
+[Open Summary](examples/ld1_ld4.md#summary)
 
 ---
 
@@ -2572,12 +2617,14 @@ LDADD W0, W1, [X19]   // *X19 += W0, 이전 값은 W1에 반환
 STADD W0, [X19]        // *X19 += W0, 이전 값 필요 없을 때
 ```
 
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
+
 ---
 
 ```mermaid
 flowchart LR
    LDAXR@{ shape: braces}
-   LDAXR --> desc["Atomic Load and Add<br>원자적 로드 후 덧셈"]
+   LDAXR --> desc["Load-Acquire Exclusive Register<br>배타적 레지스터 적재"]
    style desc fill:none,stroke:none
 ```
 
@@ -2622,6 +2669,8 @@ LDCLR <Ws>, <Wt>, [<Xn|SP>]
 LDCLR W0, W1, [X19]   // *X19 &= ~W0
 ```
 
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
+
 ---
 
 ```mermaid
@@ -2646,6 +2695,8 @@ LDEOR <Ws>, <Wt>, [<Xn|SP>]
 ```arm
 LDEOR W0, W1, [X19]   // *X19 ^= W0
 ```
+
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
 
 ---
 
@@ -2872,6 +2923,8 @@ LDSET <Ws>, <Wt>, [<Xn|SP>]
 LDSET W0, W1, [X19]   // *X19 |= W0
 ```
 
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
+
 ---
 
 ```mermaid
@@ -2896,6 +2949,8 @@ LDSMAX <Ws>, <Wt>, [<Xn|SP>]
 ```arm
 LDSMAX W0, W1, [X19]
 ```
+
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
 
 ---
 
@@ -2924,6 +2979,8 @@ LDSMIN <Ws>, <Wt>, [<Xn|SP>]
 LDSMIN W0, W1, [X19]
 ```
 
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
+
 ---
 
 ```mermaid
@@ -2948,6 +3005,8 @@ LDUMAX <Ws>, <Wt>, [<Xn|SP>]
 ```arm
 LDUMAX W0, W1, [X19]
 ```
+
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
 
 ---
 
@@ -2974,6 +3033,8 @@ LDUMIN <Ws>, <Wt>, [<Xn|SP>]
 LDUMIN W0, W1, [X19]
 ```
 
+🔗 [_Open Summary_](examples/ldadd_clr_eor_set_smax_smin_umax_umin.md#summary)
+
 ---
 
 ## `LDUR`
@@ -2993,6 +3054,8 @@ LDUR <Wt|Xt>, [<Xn|SP>, #<simm>]
 ```arm
 LDUR X0, [X1, #3]    // 오프셋 3처럼 8의 배수가 아니어도 OK (LDR은 불가)
 ```
+
+🔗 [_Open Summary_](examples/ldur_ldxr.md#ldur)
 
 ---
 
@@ -3014,6 +3077,8 @@ LDXR <Wt|Xt>, [<Xn|SP>]
 LDXR X0, [X1]        // X1이 가리키는 값을 배타적으로 읽기
 ```
 
+🔗 [_Open Summary_](examples/ldur_ldxr.md#ldxr)
+
 ---
 
 ## `LSL` (왼쉬프트)
@@ -3033,6 +3098,8 @@ LSL <Wd|Xd>, <Wn|Xn>, #<shift>  or  LSL <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 LSL x10, x22, #2   // x10 = j * 4
 ```
+
+🔗 [_Open Summary_](examples/lsl_lsr.md#summary)
 
 ---
 
@@ -3054,6 +3121,10 @@ LSR <Wd|Xd>, <Wn|Xn>, #<shift>  or  LSR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 LSR X0, X1, #1     // X0 = X1 / 2 (unsigned)
 ```
 
+🔗 [_Open Summary_](examples/lsl_lsr.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    MADD@{ shape: braces}
@@ -3073,11 +3144,13 @@ MADD <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <Wa|Xa>
 
 **Example**
 
-**Example** 🔗 [_madd.S 소스 보기_](https://github.com/ViVaKR/Hun/blob/main/Yana/libs/mnemonics/madd.S)
-
 ```arm
 MADD X0, X1, X2, X3   // X0 = X3 + (X1 * X2)
 ```
+
+🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#madd)
+
+🔗 [_madd.S 소스 보기_](https://github.com/ViVaKR/Hun/blob/main/Yana/libs/mnemonics/madd.S)
 
 ---
 
@@ -3121,7 +3194,7 @@ MLS V0.4S, V1.4S, V2.4S
 
 ---
 
-## `MOV` (할당)
+## `MOV`
 
 $\checkmark$ Move register or immediate value. Copies the value of the source operand to the destination register.
 
@@ -3139,6 +3212,8 @@ MOV <Wd|Xd>, <Wn|Xn>  or  MOV <Wd|Xd>, #<imm>
 MOV X0, X1
 MOV W2, #10
 ```
+
+[_Open Summary_](examples/mov_z_k_n_mvn.md#mov)
 
 ---
 
@@ -3161,6 +3236,8 @@ MOVZ X0, #0x0004, LSL #0    // X0 = 0x0000000000000004
 MOVK X0, #0x1234, LSL #16   // X0 = 0x0000000012340004 (하위 16비트는 유지)
 ```
 
+[_Open Summary_](examples/mov_z_k_n_mvn.md#movk)
+
 ---
 
 ## `MOVN`
@@ -3181,6 +3258,8 @@ MOVN <Wd|Xd>, #<imm16>{, LSL #<shift>}
 MOVN X0, #0        // X0 = NOT(0) = 0xFFFFFFFFFFFFFFFF (-1)
 ```
 
+[_Open Summary_](examples/mov_z_k_n_mvn.md#movn)
+
 ---
 
 ## `MOVZ`
@@ -3200,6 +3279,8 @@ MOVZ <Wd|Xd>, #<imm16>{, LSL #<shift>}
 ```arm
 MOVZ X0, #0x1234, LSL #16   // X0 = 0x0000000012340000
 ```
+
+[_Open Summary_](examples/mov_z_k_n_mvn.md#movz)
 
 ---
 
@@ -3240,6 +3321,7 @@ MSR <system_reg>, <Xt>
 ```arm
 MSR NZCV, X0
 ```
+---
 
 ```mermaid
 flowchart LR
@@ -3264,13 +3346,15 @@ MSUB <Wd|Xd>, <Wn|Xn>, <Wm|Xm>, <Wa|Xa>
 MSUB X0, X1, X2, X3   // X0 = X3 - (X1 * X2)
 ```
 
+🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#msub)
+
 ---
 
 ## `MUL`
 
 $\checkmark$ Multiply. Multiplies two registers and writes the (truncated) result to the destination register. Alias for MADD with a zero addend.
 
-$\checkmark$ **곱셈**. 두 레지스터를 곱한 결과(잘림 처리됨)를 대상 레지스터에 저장합니다. 덧셈 항이 0인 MADD의 별칭입니다.)
+$\checkmark$ **곱셈**. 두 레지스터를 곱한 결과(잘림 처리됨)를 대상 레지스터에 저장합니다. 덧셈 항이 0인 MADD의 별칭입니다.
 
 **Syntax**
 
@@ -3284,9 +3368,11 @@ MUL <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 MUL X0, X1, X2
 ```
 
+🔗 [_Open Summary_](mul_madd_msub_mneg.md#mul)
+
 ---
 
-## `MVN` (부정)
+## `MVN`
 
 $\checkmark$ Bitwise NOT (Move Not). Inverts every bit of the source operand and writes the result to the destination register.
 
@@ -3304,13 +3390,15 @@ MVN <Wd|Xd>, <Wn|Xn>
 MVN X0, X1
 ```
 
+[_Open Summary_](examples/mov_z_k_n_mvn.md#mvn)
+
 ---
 
 ## `NEG`
 
 $\checkmark$ Negate. Computes the two's-complement negation of a register (equivalent to SUB Xd, XZR, Xn) and writes it to the destination.
 
-$\checkmark$ 부호를 반전합니다. 레지스터 값의 2의 보수를 계산합니다(SUB Xd, XZR, Xn과 동일)하여 대상 레지스터에 저장합니다.)
+$\checkmark$ 부호를 반전합니다. 레지스터 값의 2의 보수를 계산합니다(SUB Xd, XZR, Xn과 동일)하여 대상 레지스터에 저장합니다.
 
 **Syntax**
 
@@ -4013,6 +4101,8 @@ MUL   X0, X1, X2   // 128비트 곱셈 결과의 하위 64비트
 SMULH X3, X1, X2   // 128비트 곱셈 결과의 상위 64비트
 ```
 
+🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#smulh)
+
 ---
 
 ## `SMULL`
@@ -4032,6 +4122,8 @@ SMULL <Xd>, <Wn>, <Wm>
 ```arm
 SMULL X0, W1, W2   // 32비트 x 32비트 -> 64비트 (오버플로 없음)
 ```
+
+🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#smull--umull)
 
 ---
 
@@ -4631,7 +4723,7 @@ TRN2 V0.4S, V1.4S, V2.4S
 $\checkmark$ Test bits. Performs a bitwise AND between two operands and updates the condition flags without storing the result
 
 $\checkmark$ alias for A
-🔗 [_Open Summary_](examples/and_ands.md)
+
 
 ---
 
@@ -4997,6 +5089,9 @@ WFE
 ```arm
 WFE   // 락이 풀릴 때까지 저전력으로 대기
 ```
+
+
+🔗 [_Open Summary_](examples/wfe.md#summary)
 
 ---
 
