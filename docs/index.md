@@ -21,12 +21,17 @@ $\checkmark$ `캐리를 포함한 덧셈` 두 피연산자와 현재 캐리 플�
 ADC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```
 
-**Example** 🔗 [_adc.S 소스 보기_](https://github.com/ViVaKR/Hun/blob/main/Yana/libs/mnemonics/adc.S)
+**Example** 
 
 ```arm
 ADDS X0, X2, X4   // 하위 64비트 더하기 (캐리 플래그 갱신)
 ADC  X1, X3, X5   // 상위 64비트 + 캐리 -> 128비트 덧셈 완성
 ```
+
+🔗 [_Open Summary_](examples/adc_adcs.md)
+🔗 [_adc.S 샘플_](https://github.com/ViVaKR/Hun/blob/main/Yana/libs/mnemonics/adc.S)
+
+---
 
 ```mermaid
 flowchart LR
@@ -64,9 +69,15 @@ ADCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ADCS X1, X3, X5
 ```
 
+🔗 [_Open Summary_](examples/adc_adcs.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    ADD@{ shape: braces}
+   ADD --> desc["Add (register or immediate)<br>덧셈 (레지스터 또는 즉시값)"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Add (register or immediate)` Adds two operands and stores the result in the destination register.
@@ -86,9 +97,15 @@ ADD X0, X1, X2
 ADD W0, W1, #5
 ```
 
+🔗 [Open Summary](examples/add_adds_addv.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    ADDS@{ shape: braces}
+   ADDS --> desc["Add, setting flags<br>덧셈 후 플래그 설정"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Add, setting flags`. Same as ADD but also updates the NZCV condition flags based on the result. XZR as destination makes this the CMN alias (compare negative, result discarded).
@@ -108,11 +125,15 @@ ADDS X0, X1, X2
 B.VS overflow_label   // 오버플로 발생시 분기
 ```
 
+🔗 [Open Summary](examples/add_adds_addv.md#summary)
+
 ---
 
 ```mermaid
 flowchart LR
    ADDV@{ shape: braces}
+   ADDV --> desc["Add across Vector<br>벡터 전체 합산"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Add across Vector`. Sums every lane of a vector together into a single scalar result written to one lane of the destination. The classic horizontal-reduction step after a vectorized dot product.
@@ -131,9 +152,15 @@ ADDV <V><d>, <Vn>.<T>
 ADDV S0, V1.4S   // V1의 4개 레인 합계를 S0에
 ```
 
+🔗 [Open Summary](examples/add_adds_addv.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    ADR@{ shape: braces}
+   ADR --> desc["Form PC-relative address<br>PC 상대 주소를 계산합니다."]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Form PC-relative address`. Computes the exact byte address of a nearby label (within ±1MB) and writes it to the destination register. Unlike ADRP, no page offset is needed.
@@ -152,14 +179,20 @@ ADR <Xd>, <label>
 ADR x0, local_data
 ```
 
+🔗 [_Open Summary_](examples/adr.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    ADRP@{ shape: braces}
+   ADRP --> desc["Form PC-relative address to a 4KB page<br>4KB 페이지 단위의 PC 상대 주소를 계산합니다."]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Form PC-relative address to a 4KB page`. Computes the address of the 4KB page containing a label and writes it to the destination register; usually paired with ADD ...@PAGEOFF or LDR to reach the exact byte.
 
-$\checkmark$ `4KB 페이지 단위의 PC 상대 주소를 계산합니다`. 라벨이 속한 4KB 페이지의 시작 주소를 구해 대상 레지스터에 저장하며, 보통 정확한 바이트 주소를 얻기 위해 ADD ...@PAGEOFF 또는 LDR과 함께 사용됩니다.)
+$\checkmark$ `4KB 페이지 단위의 PC 상대 주소를 계산합니다`. 라벨이 속한 4KB 페이지의 시작 주소를 구해 대상 레지스터에 저장하며, 보통 정확한 바이트 주소를 얻기 위해 ADD ...@PAGEOFF 또는 LDR과 함께 사용됩니다.
 
 **Syntax**
 
@@ -174,9 +207,15 @@ ADRP x2, msg_bubble@PAGE
 ADD x2, x2, msg_bubble@PAGEOFF
 ```
 
+🔗 [_Open Summary_](examples/adrp.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
-   AESC@{ shape: braces}
+   AESD@{ shape: braces}
+   AESD --> desc["AES Single Round Decryption<br>AES 단일 라운드 복호화"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `AES Single Round Decryption`. Performs one round of AES decryption (the inverse operations of AESE) on a 128-bit block held in a vector register.
@@ -195,9 +234,15 @@ AESD <Vd>.16B, <Vn>.16B
 AESD V0.16B, V1.16B
 ```
 
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+
+---
+
 ```mermaid
 flowchart LR
    AESE@{ shape: braces}
+   AESE --> desc["AES Single Round Encryption<br>AES 단일 라운드 암호화"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `AES Single Round Encryption`. Performs one round of AES encryption on a 128-bit block held in a vector register, combining the AddRoundKey, SubBytes, and ShiftRows steps. Chained across multiple rounds (with AESMC between them) to implement full AES encryption without a software S-box lookup table.
@@ -216,9 +261,15 @@ AESE <Vd>.16B, <Vn>.16B
 AESE V0.16B, V1.16B
 ```
 
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+
+---
+
 ```mermaid
 flowchart LR
    AESIMC@{ shape: braces}
+   AESIMC --> desc["AES Inverse Mix Columns<br>AES 역 열 혼합"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `AES Inverse Mix Columns`. Applies the inverse MixColumns transformation, used within AES decryption rounds alongside AESD.
@@ -237,9 +288,15 @@ AESIMC <Vd>.16B, <Vn>.16B
 AESIMC V0.16B, V0.16B
 ```
 
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+
+---
+
 ```mermaid
 flowchart LR
    AESMC@{ shape: braces}
+   AESMC --> desc["AES Mix Columns<br>AES 열 혼합"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `AES Mix Columns`. Applies the MixColumns transformation of the AES encryption algorithm to a 128-bit block, typically applied after AESE within each encryption round.
@@ -258,9 +315,15 @@ AESMC <Vd>.16B, <Vn>.16B
 AESMC V0.16B, V0.16B
 ```
 
+🔗 [_Open Summary_](examples/aesc_aesd_aesmc_aesimc.md)
+
+---
+
 ```mermaid
 flowchart LR
    AND@{ shape: braces}
+   AND --> desc["Bitwise AND (register or immediate)<br>비트 단위 AND(레지스터 또는 즉시값)"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Bitwise AND (register or immediate)`. ANDs two operands bit by bit and writes the result to the destination register.
@@ -280,9 +343,16 @@ AND X0, X1, X2
 AND W0, W1, #0xF
 ```
 
+🔗 [_Open Summary_](examples/and_ands.md)
+
+---
+
+
 ```mermaid
 flowchart LR
    ASR@{ shape: braces}
+   ASR --> desc["Arithmetic Shift Right<br>산술 오른쪽 시프트"]
+   style desc fill:none,stroke:none
 ```
 
 $\checkmark$ `Arithmetic Shift Right`. Shifts the bits of a register right by a given amount, filling with the sign bit (preserves the sign for signed division-like operations).
@@ -300,6 +370,10 @@ ASR <Wd|Xd>, <Wn|Xn>, #<shift>  or  ASR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 ASR X0, X1, #1     // X0 = X1 / 2 (signed)
 ```
+
+[_Open Summary_](examples/asr.md)
+
+---
 
 ```mermaid
 flowchart LR
@@ -367,6 +441,9 @@ AUTIBSP
 RET
 ```
 
+--
+
+
 ```mermaid
 flowchart LR
    B@{ shape: braces}
@@ -390,6 +467,11 @@ B loop
 B.EQ exit_label
 ```
 
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
+
+
 ```mermaid
 flowchart LR
    B.EQ@{ shape: braces}
@@ -404,6 +486,10 @@ $\checkmark$ `같음(Equal)`. 직전 비교의 두 피연산자가 같았을 때
 ```arm
 B.EQ label
 ```
+
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -420,6 +506,10 @@ $\checkmark$ `부호 있는 크거나 같음`. 부호 있는 '>=' 비교일 때 
 B.GE label
 ```
 
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    B.GT@{ shape: braces}
@@ -434,6 +524,10 @@ $\checkmark$ `부호 있는 큼`. 부호 있는 '>' 비교일 때 참입니다. 
 ```arm
 B.GT label
 ```
+
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -450,6 +544,10 @@ $\checkmark$ `부호 없는 큼`. 부호 없는 '>' 비교일 때 참입니다.
 B.HI label
 ```
 
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    B.HS@{ shape: braces}
@@ -464,6 +562,10 @@ $\checkmark$ `캐리 설정 / 부호 없는 크거나 같음`. 부호 없는 '>=
 ```arm
 B.HS label
 ```
+
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -480,6 +582,10 @@ $\checkmark$ `부호 있는 작거나 같음`. 부호 있는 '<=' 비교일 때 
 B.LE label
 ```
 
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    B.LO@{ shape: braces}
@@ -494,6 +600,10 @@ $\checkmark$ `캐리 해제 / 부호 없는 작음`. 부호 없는 '<' 비교일
 ```arm
 B.LO label
 ```
+
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -510,6 +620,10 @@ $\checkmark$ `부호 없는 작거나 같음`. 부호 없는 '<=' 비교일 때 
 B.LS label
 ```
 
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    B.LT@{ shape: braces}
@@ -525,6 +639,10 @@ $\checkmark$ `부호 있는 작음(Less Than)`. 부호 있는 '<' 비교일 때 
 B.LT label
 ```
 
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
+
 ```mermaid
 flowchart LR
    B.NE@{ shape: braces}
@@ -539,6 +657,10 @@ $\checkmark$ `같지 않음`. 직전 비교의 두 피연산자가 달랐을 때
 ```arm
 B.NE label
 ```
+
+🔗 [_Open Summary_](examples/b.md#summary)
+
+---
 
 ```mermaid
 flowchart LR
@@ -562,6 +684,8 @@ BFI <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 ```arm
 BFI X0, X1, #8, #4    // X1의 하위 4비트를 X0의 8번 비트 위치에 삽입
 ```
+
+---
 
 ```mermaid
 flowchart LR
@@ -4506,7 +4630,12 @@ TRN2 V0.4S, V1.4S, V2.4S
 
 $\checkmark$ Test bits. Performs a bitwise AND between two operands and updates the condition flags without storing the result
 
-$\checkmark$ alias for ANDS with a discarded destination). (비트를 검사합니다. 두 피연산자를 비트 단위로 AND 연산하여 조건 플래그만 갱신하고 결과값은 저장하지 않습니다(결과를 버리는 ANDS의 별칭).
+$\checkmark$ alias for A
+🔗 [_Open Summary_](examples/and_ands.md)
+
+---
+
+NDS with a discarded destination). (비트를 검사합니다. 두 피연산자를 비트 단위로 AND 연산하여 조건 플래그만 갱신하고 결과값은 저장하지 않습니다(결과를 버리는 ANDS의 별칭).
 
 **Syntax**
 
@@ -4529,7 +4658,7 @@ $\checkmark$ 설명 준비 중인 Hun-ASM 니모닉입니다.
 
 ---
 
-## `UBFX` (비트추출)
+## `UBFX`
 
 $\checkmark$ Unsigned Bitfield Extract. Extracts a bitfield of a given width starting at a given bit position, and zero-extends it to fill the destination register.
 
@@ -4546,6 +4675,8 @@ UBFX <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 ```arm
 UBFX X0, X1, #4, #8   // X1의 4~11번 비트(8비트)를 뽑아 제로확장
 ```
+
+**[Open Example](examples/ubfx.md)**
 
 ---
 
