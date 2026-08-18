@@ -2133,7 +2133,7 @@ FMIN <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FMIN D0, D1, D2
 ```
 
-**[Open Example](examples/fdiv_fmadd_fmax_fmin.md#fmax_fmin)**
+🔗 [_Open Summary_](examples/fdiv_fmadd_fmax_fmin.md#fmax_fmin)
 
 ---
 
@@ -2160,7 +2160,7 @@ FMLA <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 FMLA V0.4S, V1.4S, V2.4S   // 오디오 4채널 믹싱 등에 활용
 ```
 
-**[Open Example](examples/fmla_fmls.md#fmla)**
+🔗 [_Open Summary_](examples/fmla_fmls.md#fmla)
 
 ---
 
@@ -2187,7 +2187,7 @@ FMLS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 FMLS V0.4S, V1.4S, V2.4S
 ```
 
-**[Open Example](examples/fmla_fmls.md#fmls)**
+🔗 [_Open Summary_](examples/fmla_fmls.md#fmls)
 
 ---
 
@@ -2216,7 +2216,7 @@ FMOV X0, D0
 FMOV D0, #1.0
 ```
 
-**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fmov)**
+🔗 [_Open Summary_](examples/fmov_fmul_fneg_fsqrt_fsub.md#fmov)
 
 ---
 
@@ -2243,7 +2243,7 @@ FMSUB <Sd|Dd>, <Sn|Dn>, <Sm|Dm>, <Sa|Da>
 FMSUB D0, D1, D2, D3   // D0 = D3 - (D1 * D2)
 ```
 
-**[Open Example](examples/fmsub.md)**
+🔗 [_Open Summary_](examples/fmsub.md)
 
 ---
 
@@ -2270,7 +2270,7 @@ FMUL <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FMUL S0, S1, S2
 ```
 
-**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fmul)**
+🔗 [_Open Summary_](examples/fmov_fmul_fneg_fsqrt_fsub.md#fmul)
 
 ---
 
@@ -2297,7 +2297,7 @@ FNEG <Sd|Dd>, <Sn|Dn>
 FNEG D0, D1
 ```
 
-**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fneg)**
+🔗 [_Open Summary_](examples/fmov_fmul_fneg_fsqrt_fsub.md#fneg)
 
 ---
 
@@ -2324,7 +2324,7 @@ FSQRT <Sd|Dd>, <Sn|Dn>
 FSQRT D0, D1
 ```
 
-**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fsqrt)**
+🔗 [_Open Summary_](examples/fmov_fmul_fneg_fsqrt_fsub.md#fsqrt)
 
 ---
 
@@ -2351,7 +2351,7 @@ FSUB <Sd|Dd>, <Sn|Dn>, <Sm|Dm>
 FSUB D0, D1, D2
 ```
 
-**[Open Example](examples/fmov_fmul_fneg_fsqrt_fsub.md#fsub)**
+🔗 [_Open Summary_](examples/fmov_fmul_fneg_fsqrt_fsub.md#fsub)
 
 ---
 
@@ -2378,7 +2378,7 @@ HLT #<imm16>
 HLT #0      // 외부 디버거가 붙어있을 때만 의미가 있음
 ```
 
-**[Open Example](examples/hlt.md#summary)**
+🔗 [_Open Summary_](examples/hlt.md#summary)
 
 ---
 
@@ -2405,7 +2405,7 @@ HVC #<imm16>
 HVC #0      // EL2 하이퍼바이저에 서비스 요청
 ```
 
-**[Open Summary](examples/hvc.md#summary)**
+🔗 [_Open Summary_](examples/hvc.md#summary)**
 
 ---
 
@@ -2434,7 +2434,7 @@ DSB ISH
 ISB               // 파이프라인 플러시 - 새 코드가 보이도록
 ```
 
-[_Open Summary_](examples/ic.md#summary)
+🔗 [_Open Summary_](examples/ic.md#summary)
 
 ---
 
@@ -2461,11 +2461,16 @@ INS <Vd>.<Ts>[<index>], <Rn>  or  INS <Vd>.<Ts>[<index>], <Vn>.<Ts>[<index2>]
 INS V0.S[1], W0   // V0의 두 번째 32비트 레인에 W0 값을 삽입
 ```
 
-**[Open Example](examples/ins.md)**
+🔗 [_Open Summary_](examples/ins.md)
 
 ---
 
-## `ISB`
+```mermaid
+flowchart LR
+   ISB@{ shape: braces}
+   ISB --> desc["Instruction Synchronization Barrier<br>명령어 동기화 배리어"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Instruction Synchronization Barrier. Flushes the instruction pipeline so that all instructions after the barrier are fetched fresh; used after modifying code or system control registers that affect instruction execution.
 
@@ -2482,6 +2487,8 @@ ISB {<option>}
 ```arm
 ISB
 ```
+
+🔗 [_Open Summary_](examples/isb.md#summary)
 
 ---
 
@@ -2508,7 +2515,7 @@ LD1 { <Vt>.<T> }, [<Xn|SP>]
 LD1 { V0.16B }, [X0]   // 16바이트를 그대로 V0에 적재
 ```
 
-**[Open Summary](examples/ld1_ld4.md#summary)**
+🔗 [_Open Summary_](examples/ld1_ld4.md#summary)
 
 ---
 
@@ -2535,7 +2542,7 @@ LD2 { <Vt>.<T>, <Vt2>.<T> }, [<Xn|SP>]
 LD2 { V0.8H, V1.8H }, [X0]   // 스테레오 오디오를 좌/우 채널로 분리 적재
 ```
 
-**[Open Summary](examples/ld1_ld4.md#summary)**
+🔗 [_Open Summary_](examples/ld1_ld4.md#summary)
 
 ---
 
@@ -2562,7 +2569,7 @@ LD3 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T> }, [<Xn|SP>]
 LD3 { V0.16B, V1.16B, V2.16B }, [X0]   // RGB 픽셀을 R/G/B 채널로 분리 적재
 ```
 
-**[Open Summary](examples/ld1_ld4.md#summary)**
+🔗 [_Open Summary_](examples/ld1_ld4.md#summary)
 
 ---
 
@@ -2589,7 +2596,7 @@ LD4 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T>, <Vt4>.<T> }, [<Xn|SP>]
 LD4 { V0.16B, V1.16B, V2.16B, V3.16B }, [X0]   // RGBA 픽셀을 채널별로 분리 적재
 ```
 
-[Open Summary](examples/ld1_ld4.md#summary)
+🔗 [_Open Summary_](examples/ld1_ld4.md#summary)
 
 ---
 
@@ -2725,7 +2732,7 @@ LDP X19, X20, [SP, #16]
 LDP X29, X30, [SP], #48
 ```
 
-**[Open Example](examples/stp_ldp.md#summary)**
+🔗 [_Open Summary_](examples/stp_ldp.md#summary)
 
 ---
 
@@ -2754,7 +2761,7 @@ LDR X0, [X1]
 LDR W2, [SP, #8]
 ```
 
-**[Open Example](examples/ldr_str.md#ldr)**
+🔗 [_Open Summary_](examples/ldr_str.md#ldr)
 
 ---
 
@@ -2783,7 +2790,7 @@ LDRB W0, [X1]        // 문자열의 문자 한 글자 읽기
 LDRB W2, [X19, #3]
 ```
 
-**[Open Example](examples/ldr_str.md#ldr)**
+🔗 [_Open Summary_](examples/ldr_str.md#ldr)
 
 ---
 
@@ -2812,7 +2819,7 @@ LDRH W0, [X1]        // unsigned short 값 읽기
 LDRH W2, [X19, #2]
 ```
 
-**[Open Example](examples/ldr_str.md#ldr)**
+🔗 [_Open Summary_](examples/ldr_str.md#ldr)
 
 ---
 
@@ -2840,7 +2847,7 @@ LDRSB <Wt|Xt>, [<Xn|SP>, #<pimm>]
 LDRSB X0, [X1]       // signed char -> 64비트로 부호 확장하며 읽기
 ```
 
-**[Open Example](examples/ldr_str.md#ldr)**
+🔗 [_Open Summary_](examples/ldr_str.md#ldr)
 
 ---
 
@@ -2868,7 +2875,7 @@ LDRSH <Wt|Xt>, [<Xn|SP>, #<pimm>]
 LDRSH X0, [X1]       // signed short -> 64비트로 부호 확장하며 읽기
 ```
 
-**[Open Example](examples/ldr_str.md#ldr)**
+🔗 [_Open Summary_](examples/ldr_str.md#ldr)
 
 ---
 
@@ -2896,7 +2903,7 @@ LDRSW <Xt>, [<Xn|SP>, #<pimm>]
 LDRSW X0, [X1]       // int -> long 부호 확장하며 읽기
 ```
 
-**[Open Example](examples/ldr_str.md#ldr)**
+🔗 [_Open Summary_](examples/ldr_str.md#ldr)
 
 ---
 
@@ -3213,7 +3220,7 @@ MOV X0, X1
 MOV W2, #10
 ```
 
-[_Open Summary_](examples/mov_z_k_n_mvn.md#mov)
+🔗 [_Open Summary_](examples/mov_z_k_n_mvn.md#mov)
 
 ---
 
@@ -3236,7 +3243,7 @@ MOVZ X0, #0x0004, LSL #0    // X0 = 0x0000000000000004
 MOVK X0, #0x1234, LSL #16   // X0 = 0x0000000012340004 (하위 16비트는 유지)
 ```
 
-[_Open Summary_](examples/mov_z_k_n_mvn.md#movk)
+🔗 [_Open Summary_](examples/mov_z_k_n_mvn.md#movk)
 
 ---
 
@@ -3258,7 +3265,7 @@ MOVN <Wd|Xd>, #<imm16>{, LSL #<shift>}
 MOVN X0, #0        // X0 = NOT(0) = 0xFFFFFFFFFFFFFFFF (-1)
 ```
 
-[_Open Summary_](examples/mov_z_k_n_mvn.md#movn)
+🔗 [_Open Summary_](examples/mov_z_k_n_mvn.md#movn)
 
 ---
 
@@ -3280,7 +3287,7 @@ MOVZ <Wd|Xd>, #<imm16>{, LSL #<shift>}
 MOVZ X0, #0x1234, LSL #16   // X0 = 0x0000000012340000
 ```
 
-[_Open Summary_](examples/mov_z_k_n_mvn.md#movz)
+🔗 [_Open Summary_](examples/mov_z_k_n_mvn.md#movz)
 
 ---
 
@@ -3390,7 +3397,7 @@ MVN <Wd|Xd>, <Wn|Xn>
 MVN X0, X1
 ```
 
-[_Open Summary_](examples/mov_z_k_n_mvn.md#mvn)
+🔗 [_Open Summary_](examples/mov_z_k_n_mvn.md#mvn)
 
 ---
 
@@ -3452,7 +3459,7 @@ ORN <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ORN X0, X1, X2
 ```
 
-**[Open Example](examples/orn.md#summary)**
+🔗 [_Open Summary_](examples/orn.md#summary)
 
 ---
 
@@ -3474,6 +3481,8 @@ ORR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ORR <Wd|Xd>, <Wn|Xn>, #<imm>
 ORR X0, X1, X2
 ```
 
+🔗 
+
 ---
 
 ## `PACIASP`
@@ -3493,6 +3502,8 @@ PACIASP
 ```arm
 PACIASP              // 함수 프롤로그 맨 앞, STP x29,x30 저장 전에 흔히 삽입됨
 ```
+
+🔗 
 
 ---
 
@@ -3514,6 +3525,8 @@ PACIBSP
 PACIBSP
 ```
 
+🔗 
+
 ---
 
 ## `PRFM`
@@ -3533,6 +3546,8 @@ PRFM <prfop>, [<Xn|SP>{, #<imm>}]
 ```arm
 PRFM PLDL1KEEP, [X0, #64]   // 앞으로 쓸 데이터를 L1 캐시로 미리 당겨오기
 ```
+
+🔗 
 
 ---
 
@@ -3574,7 +3589,7 @@ RET {<Xn>}
 RET
 ```
 
-**[Open Example](examples/ret_eret.md#ret)**
+🔗 [_Open Summary_](examples/ret_eret.md#ret)**
 
 ---
 
@@ -3596,6 +3611,8 @@ RETAA
 RETAA   // AUTIASP + RET 을 한 번에
 ```
 
+🔗 
+
 ---
 
 ## `RETAB`
@@ -3615,6 +3632,8 @@ RETAB
 ```arm
 RETAB
 ```
+
+🔗 
 
 ---
 
@@ -3636,6 +3655,8 @@ REV <Wd|Xd>, <Wn|Xn>
 REV W0, W1        // 리틀엔디안 <-> 빅엔디안 변환
 ```
 
+🔗 
+
 ---
 
 ## `REV16`
@@ -3655,6 +3676,8 @@ REV16 <Wd|Xd>, <Wn|Xn>
 ```arm
 REV16 W0, W1
 ```
+
+🔗 
 
 ---
 
@@ -3676,9 +3699,11 @@ REV32 <Xd>, <Xn>
 REV32 X0, X1
 ```
 
+🔗 
+
 ---
 
-## `ROR` (돌림)
+## `ROR`
 
 $\checkmark$ Rotate Right. Rotates the bits of a register right by an immediate or register-specified amount, with bits shifted off the low end wrapping around to the high end (unlike LSR, no bits are lost).
 
@@ -3695,6 +3720,8 @@ ROR <Wd|Xd>, <Wn|Xn>, #<shift>  or  ROR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 ROR X0, X1, #8   // X1을 오른쪽으로 8비트 회전
 ```
+
+🔗 
 
 ---
 
@@ -3719,6 +3746,8 @@ SB              // 잘못된 분기 예측으로 인한 추측 실행 차단
 safe_path:
 ```
 
+🔗 
+
 ---
 
 ## `SBC`
@@ -3739,7 +3768,7 @@ SBC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 SUBS X0, X2, X4   // 하위 64비트 빼기 (캐리 플래그 갱신)
 SBC  X1, X3, X5   // 상위 64비트 - 빌림 -> 128비트 뺄셈 완성
 ```
-
+🔗 
 ---
 
 ## `SBCS`
@@ -3759,7 +3788,7 @@ SBCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 SBCS X1, X3, X5
 ```
-
+🔗 
 ---
 
 ## `SBFX`
@@ -3779,7 +3808,7 @@ SBFX <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 ```arm
 SBFX X0, X1, #4, #8   // X1의 4~11번 비트(8비트)를 뽑아 부호확장
 ```
-
+🔗 
 ---
 
 ## `SCVTF`
@@ -3799,7 +3828,7 @@ SCVTF <Sd|Dd>, <Wn|Xn>
 ```arm
 SCVTF D0, X0
 ```
-
+🔗 
 ---
 
 ## `SDIV` (나눔)
@@ -3819,7 +3848,7 @@ SDIV <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 SDIV X0, X1, X2
 ```
-
+🔗 
 ---
 
 ## `SEV`
@@ -3839,7 +3868,7 @@ SEV
 ```arm
 SEV   // 락 해제 후 대기 중인 다른 코어를 깨움
 ```
-
+🔗 
 ---
 
 ## `SHA1C`
@@ -3859,7 +3888,7 @@ SHA1C <Qd>, <Sn>, <Vm>.4S
 ```arm
 SHA1C Q0, S1, V2.4S
 ```
-
+🔗 
 ---
 
 ## `SHA1H`
@@ -3879,7 +3908,7 @@ SHA1H <Sd>, <Sn>
 ```arm
 SHA1H S0, S1
 ```
-
+🔗 
 ---
 
 ## `SHA1SU0`
@@ -3899,7 +3928,7 @@ SHA1SU0 <Vd>.4S, <Vn>.4S, <Vm>.4S
 ```arm
 SHA1SU0 V0.4S, V1.4S, V2.4S
 ```
-
+🔗 
 ---
 
 ## `SHA1SU1`
@@ -3919,7 +3948,7 @@ SHA1SU1 <Vd>.4S, <Vn>.4S
 ```arm
 SHA1SU1 V0.4S, V1.4S
 ```
-
+🔗 
 ---
 
 ## `SHA256H`
@@ -3939,7 +3968,7 @@ SHA256H <Qd>, <Qn>, <Vm>.4S
 ```arm
 SHA256H Q0, Q1, V2.4S
 ```
-
+🔗 
 ---
 
 ## `SHA256H2`
@@ -3959,7 +3988,7 @@ SHA256H2 <Qd>, <Qn>, <Vm>.4S
 ```arm
 SHA256H2 Q0, Q1, V2.4S
 ```
-
+🔗 
 ---
 
 ## `SHA256SU0`
@@ -3979,7 +4008,7 @@ SHA256SU0 <Vd>.4S, <Vn>.4S
 ```arm
 SHA256SU0 V0.4S, V1.4S
 ```
-
+🔗 
 ---
 
 ## `SHA256SU1`
@@ -3999,7 +4028,7 @@ SHA256SU1 <Vd>.4S, <Vn>.4S, <Vm>.4S
 ```arm
 SHA256SU1 V0.4S, V1.4S, V2.4S
 ```
-
+🔗 
 ---
 
 ## `SMAXV`
@@ -4019,7 +4048,7 @@ SMAXV <V><d>, <Vn>.<T>
 ```arm
 SMAXV S0, V1.4S
 ```
-
+🔗 
 ---
 
 ## `SMC`
@@ -4039,7 +4068,7 @@ SMC #<imm16>
 ```arm
 SMC #0      // 펌웨어(PSCI 등)에 서비스 요청, 인자는 X0-X3 관례 사용
 ```
-
+🔗 
 ---
 
 ## `SMINV`
@@ -4059,7 +4088,7 @@ SMINV <V><d>, <Vn>.<T>
 ```arm
 SMINV S0, V1.4S
 ```
-
+🔗 
 ---
 
 ## `SMOV`
@@ -4079,7 +4108,7 @@ SMOV <Rd>, <Vn>.<Ts>[<index>]
 ```arm
 SMOV X0, V0.B[3]   // signed byte 레인을 64비트로 부호 확장하며 꺼냄
 ```
-
+🔗 
 ---
 
 ## `SMULH`
@@ -4123,7 +4152,7 @@ SMULL <Xd>, <Wn>, <Wm>
 SMULL X0, W1, W2   // 32비트 x 32비트 -> 64비트 (오버플로 없음)
 ```
 
-🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#smull--umull)
+🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#smull)
 
 ---
 
@@ -4144,7 +4173,7 @@ SQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 SQADD V0.8H, V1.8H, V2.8H   // 오디오 샘플 합성 시 클리핑 방지
 ```
-
+🔗 
 ---
 
 ## `SQSUB`
@@ -4164,7 +4193,7 @@ SQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 SQSUB V0.8H, V1.8H, V2.8H
 ```
-
+🔗 
 ---
 
 ## `ST1`
@@ -4184,7 +4213,7 @@ ST1 { <Vt>.<T> }, [<Xn|SP>]
 ```arm
 ST1 { V0.16B }, [X1]
 ```
-
+🔗 
 ---
 
 ## `ST2`
@@ -4204,7 +4233,7 @@ ST2 { <Vt>.<T>, <Vt2>.<T> }, [<Xn|SP>]
 ```arm
 ST2 { V0.8H, V1.8H }, [X1]
 ```
-
+🔗 
 ---
 
 ## `ST3`
@@ -4224,7 +4253,7 @@ ST3 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T> }, [<Xn|SP>]
 ```arm
 ST3 { V0.16B, V1.16B, V2.16B }, [X1]
 ```
-
+🔗 
 ---
 
 ## `ST4`
@@ -4244,7 +4273,7 @@ ST4 { <Vt>.<T>, <Vt2>.<T>, <Vt3>.<T>, <Vt4>.<T> }, [<Xn|SP>]
 ```arm
 ST4 { V0.16B, V1.16B, V2.16B, V3.16B }, [X1]
 ```
-
+🔗 
 ---
 
 ## `STLXR`
@@ -4264,7 +4293,7 @@ STLXR <Ws>, <Wt|Xt>, [<Xn|SP>]
 ```arm
 STLXR W1, X0, [X19]  // 스핀락 해제 루틴 등에서 사용, W1 = 상태(0=성공)
 ```
-
+🔗 
 ---
 
 ```mermaid
@@ -4294,11 +4323,11 @@ STP x29, x30, [sp, #-48]!
 STP X19, X20, [SP, #16]
 ```
 
-**[Open Example](examples/stp_ldp.md#summary)**
+🔗 [_Open Summary_](examples/stp_ldp.md#summary)
 
 ---
 
-## `STR` (저장)
+## `STR`
 
 $\checkmark$ Store Register. Stores a word or doubleword from a register into memory.
 
@@ -4318,7 +4347,7 @@ STR X0, [X1]
 STR W2, [SP, #8]
 ```
 
-**[Open Example](examples/ldr_str.md#str)**
+🔗 [_Open Summary_](examples/ldr_str.md#str)
 
 ---
 
@@ -4342,7 +4371,7 @@ STRB W0, [X1]        // char 하나 저장
 STRB WZR, [X19]      // 문자열 끝에 NUL('\0') 쓰기
 ```
 
-**[Open Example](examples/ldr_str.md#str)**
+🔗 [_Open Summary_](examples/ldr_str.md#str)
 
 ---
 
@@ -4365,7 +4394,7 @@ STRH <Wt>, [<Xn|SP>, #<pimm>]
 STRH W0, [X1]        // short 값 저장
 ```
 
-**[Open Example](examples/ldr_str.md#str)**
+🔗 [_Open Summary_](examples/ldr_str.md#str)
 
 ---
 
@@ -4386,6 +4415,8 @@ STUR <Wt|Xt>, [<Xn|SP>, #<simm>]
 ```arm
 STUR X0, [X1, #-8]   // 음수 오프셋도 자유롭게 사용 가능
 ```
+
+🔗 
 
 ---
 
@@ -4412,6 +4443,8 @@ STXR <Ws>, <Wt|Xt>, [<Xn|SP>]
     CBNZ W1, .L_retry       // 실패했으면(다른 코어가 끼어들었으면) 재시도
 ```
 
+🔗 
+
 ---
 
 ## `SUB` (뺌)
@@ -4432,6 +4465,8 @@ SUB <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  SUB <Wd|Xd>, <Wn|Xn>, #<imm>
 SUB X0, X1, X2
 SUB W0, W1, #4
 ```
+
+🔗 
 
 ---
 
@@ -4454,6 +4489,8 @@ SUBS X0, X1, #1
 B.LT underflow_label
 ```
 
+🔗 
+
 ---
 
 ## `SVC` (명령호출)
@@ -4473,6 +4510,8 @@ SVC #<imm>
 ```arm
 SVC #0x80   // 커널에 시스템 콜 요청 (플랫폼별 규약 상이)
 ```
+
+🔗 [_Open Summary_](examples/svc.md#summary)
 
 ---
 
@@ -4494,6 +4533,8 @@ SWP <Ws>, <Wt>, [<Xn|SP>]
 SWP W0, W1, [X19]   // 이전 값 -> W0, 새 값 W1 저장
 ```
 
+🔗 [_Open Summary_](examples/swp.md#summary)
+
 ---
 
 ## `SXTB`
@@ -4513,6 +4554,8 @@ SXTB <Xd>, <Wn>
 ```arm
 SXTB X20, W19
 ```
+
+🔗 [_Open Summary_](examples/sxtb_sxth_sxtl_sxtw.md#sxtb_sxth)
 
 ---
 
@@ -4534,6 +4577,8 @@ SXTH <Xd>, <Wn>
 SXTH X0, W1
 ```
 
+🔗 [_Open Summary_](examples/sxtb_sxth_sxtl_sxtw.md#sxtb_sxth)
+
 ---
 
 ## `SXTL`
@@ -4554,9 +4599,11 @@ SXTL <Vd>.<Ta>, <Vn>.<Tb>
 SXTL V0.8H, V1.8B   // signed 8비트 8개 -> signed 16비트 8개로 확장
 ```
 
+🔗 [_Open Summary_](examples/sxtb_sxth_sxtl_sxtw.md#sxtl)
+
 ---
 
-## `SXTW` (부호확장)
+## `SXTW`
 
 $\checkmark$ Sign-Extend Word. Sign-extends the low 32 bits of the source register to 64 bits and writes the result to the destination register.
 
@@ -4573,6 +4620,8 @@ SXTW <Xd>, <Wn>
 ```arm
 SXTW X0, W1
 ```
+
+🔗 [_Open Summary_](examples/sxtb_sxth_sxtl_sxtw.md#sxtw)
 
 ---
 
@@ -4594,6 +4643,8 @@ TBL <Vd>.<Ta>, { <Vn>.16B }, <Vm>.<Ta>
 TBL V0.16B, { V1.16B }, V2.16B   // V2를 인덱스 삼아 V1에서 바이트 조회
 ```
 
+🔗 
+
 ---
 
 ## `TBNZ`
@@ -4613,6 +4664,8 @@ TBNZ <Wt|Xt>, #<bit_num>, <label>
 ```arm
 TBNZ W0, #0, is_odd
 ```
+
+🔗 
 
 ---
 
@@ -4634,6 +4687,8 @@ TBX <Vd>.<Ta>, { <Vn>.16B }, <Vm>.<Ta>
 TBX V0.16B, { V1.16B }, V2.16B
 ```
 
+🔗 
+
 ---
 
 ## `TBZ`
@@ -4653,6 +4708,8 @@ TBZ <Wt|Xt>, #<bit_num>, <label>
 ```arm
 TBZ W0, #0, is_even
 ```
+
+🔗 
 
 ---
 
@@ -4676,6 +4733,8 @@ DSB ISH
 ISB
 ```
 
+🔗 
+
 ---
 
 ## `TRN1`
@@ -4695,6 +4754,8 @@ TRN1 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 TRN1 V0.4S, V1.4S, V2.4S
 ```
+
+🔗 
 
 ---
 
@@ -4716,6 +4777,8 @@ TRN2 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 TRN2 V0.4S, V1.4S, V2.4S
 ```
 
+🔗 
+
 ---
 
 ## `TST`
@@ -4724,10 +4787,9 @@ $\checkmark$ Test bits. Performs a bitwise AND between two operands and updates 
 
 $\checkmark$ alias for A
 
-
 ---
 
-NDS with a discarded destination). (비트를 검사합니다. 두 피연산자를 비트 단위로 AND 연산하여 조건 플래그만 갱신하고 결과값은 저장하지 않습니다(결과를 버리는 ANDS의 별칭).
+NDS with a discarded destination. (비트를 검사합니다. 두 피연산자를 비트 단위로 AND 연산하여 조건 플래그만 갱신하고 결과값은 저장하지 않습니다(결과를 버리는 ANDS의 별칭).
 
 **Syntax**
 
@@ -4742,11 +4804,7 @@ TST X0, #1
 B.NE is_odd
 ```
 
----
-
-## `UBFIZ`
-
-$\checkmark$ 설명 준비 중인 Hun-ASM 니모닉입니다.
+🔗 
 
 ---
 
@@ -4768,7 +4826,7 @@ UBFX <Wd|Xd>, <Wn|Xn>, #<lsb>, #<width>
 UBFX X0, X1, #4, #8   // X1의 4~11번 비트(8비트)를 뽑아 제로확장
 ```
 
-**[Open Example](examples/ubfx.md)**
+🔗 [_Open Summary_](examples/ubfx.md)
 
 ---
 
@@ -4790,6 +4848,8 @@ UCVTF <Sd|Dd>, <Wn|Xn>
 UCVTF D0, X0
 ```
 
+🔗 
+
 ---
 
 ## `UDIV`
@@ -4809,6 +4869,8 @@ UDIV <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 ```arm
 UDIV X0, X1, X2
 ```
+
+🔗 
 
 ---
 
@@ -4830,6 +4892,8 @@ UMAXV <V><d>, <Vn>.<T>
 UMAXV B0, V1.16B
 ```
 
+🔗 
+
 ---
 
 ## `UMINV`
@@ -4849,6 +4913,8 @@ UMINV <V><d>, <Vn>.<T>
 ```arm
 UMINV B0, V1.16B
 ```
+
+🔗 
 
 ---
 
@@ -4870,6 +4936,8 @@ UMOV <Rd>, <Vn>.<Ts>[<index>]
 UMOV W0, V0.S[0]   // V0의 첫 32비트 레인을 W0로 꺼냄
 ```
 
+🔗 
+
 ---
 
 ## `UMULH`
@@ -4889,6 +4957,8 @@ UMULH <Xd>, <Xn>, <Xm>
 ```arm
 UMULH X0, X1, X2
 ```
+
+🔗 
 
 ---
 
@@ -4910,6 +4980,8 @@ UMULL <Xd>, <Wn>, <Wm>
 UMULL X0, W1, W2
 ```
 
+🔗 
+
 ---
 
 ## `UQADD`
@@ -4929,6 +5001,8 @@ UQADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 UQADD V0.16B, V1.16B, V2.16B   // 밝기 보정 시 255를 넘지 않도록
 ```
+
+🔗 
 
 ---
 
@@ -4950,6 +5024,8 @@ UQSUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 UQSUB V0.16B, V1.16B, V2.16B   // 밝기를 낮추되 0 밑으로 안 내려가게
 ```
 
+🔗 
+
 ---
 
 ## `UXTB`
@@ -4969,6 +5045,8 @@ UXTB <Wd>, <Wn>
 ```arm
 UXTB W0, W1   // W1의 하위 1바이트만 남기고 나머지는 0으로
 ```
+
+🔗 
 
 ---
 
@@ -4990,6 +5068,8 @@ UXTH <Wd>, <Wn>
 UXTH W0, W1   // W1의 하위 2바이트만 남기고 나머지는 0으로
 ```
 
+🔗 
+
 ---
 
 ## `UXTL`
@@ -5009,6 +5089,8 @@ UXTL <Vd>.<Ta>, <Vn>.<Tb>
 ```arm
 UXTL V0.8H, V1.8B   // unsigned 8비트 8개 -> unsigned 16비트 8개로 확장
 ```
+
+🔗 
 
 ---
 
@@ -5030,6 +5112,8 @@ UXTW <Xd>, <Wn>
 UXTW X0, W1
 ```
 
+🔗 
+
 ---
 
 ## `UZP1`
@@ -5050,6 +5134,8 @@ UZP1 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 UZP1 V0.4S, V1.4S, V2.4S
 ```
 
+🔗 
+
 ---
 
 ## `UZP2`
@@ -5069,6 +5155,8 @@ UZP2 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 UZP2 V0.4S, V1.4S, V2.4S
 ```
+
+🔗 
 
 ---
 
@@ -5113,6 +5201,8 @@ WFI
 WFI
 ```
 
+🔗 
+
 ---
 
 ## `XPACLRI`
@@ -5132,6 +5222,8 @@ XPACLRI   // 암묵적으로 X30(LR)에 대해 동작
 ```arm
 XPACLRI   // 이후 X30에는 순수 주소만 남음 (백트레이스용)
 ```
+
+🔗 
 
 ---
 
@@ -5153,6 +5245,8 @@ XTN <Vd>.<Tb>, <Vn>.<Ta>
 XTN V0.8B, V1.8H   // 16비트 8개를 8비트 8개로 잘라 담음
 ```
 
+🔗 
+
 ---
 
 ## `YIELD`
@@ -5172,6 +5266,8 @@ YIELD
 ```arm
 YIELD   // 스핀락 재시도 루프 안에서 사용
 ```
+
+🔗 
 
 ---
 
@@ -5193,6 +5289,8 @@ ZIP1 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ZIP1 V0.4S, V1.4S, V2.4S
 ```
 
+🔗 
+
 ---
 
 ## `ZIP2`
@@ -5212,6 +5310,8 @@ ZIP2 <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 ```arm
 ZIP2 V0.4S, V1.4S, V2.4S
 ```
+
+🔗 
 
 ---
 
