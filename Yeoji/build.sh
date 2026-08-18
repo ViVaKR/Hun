@@ -10,10 +10,12 @@ clang --target=aarch64-none-elf -ffreestanding -nostdlib -c gic.c -o gic.o
 # kernel.c 컴파일
 clang --target=aarch64-none-elf -ffreestanding -nostdlib -c kernel.c -o kernel.o
 
+# MMU
+clang --target=aarch64-none-elf -ffreestanding -nostdlib -c mmu.c -o mmu.o
 # 세 개의 목적 파일을 하나로 우아하게 합체(링크)!
 # ld.lld -T link.ld boot.o func_table.o kernel.o -o kernel.elf
 # ld.lld -T link.ld boot.o func_table.o vectors.o kernel.o -o kernel.elf
-ld.lld -T link.ld boot.o func_table.o vectors.o gic.o kernel.o -o kernel.elf
-
+# ld.lld -T link.ld boot.o func_table.o vectors.o gic.o kernel.o -o kernel.elf
+ld.lld -T link.ld boot.o func_table.o vectors.o gic.o mmu.o kernel.o -o kernel.elf
 # QEMU 가동
 qemu-system-aarch64 -M virt -cpu cortex-a72 -nographic -kernel kernel.elf

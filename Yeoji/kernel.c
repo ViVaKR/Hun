@@ -1,3 +1,5 @@
+#include "mmu.h"
+
 #define UART0_BASE 0x09000000
 volatile unsigned int *const UART0_DR = (unsigned int *)(UART0_BASE + 0x00);
 volatile unsigned int *const UART0_FR = (unsigned int *)(UART0_BASE + 0x18);
@@ -11,6 +13,7 @@ extern void asm_enable_timer(unsigned int ticks);
 extern unsigned int asm_get_timer_freq(void);
 extern void uart_puts(const char *s);
 extern void _install_vectors(void);
+extern void mmu_init(void);
 extern void gic_init(void);
 
 void uart_putc(char c); // ★ 정의는 뒤에 있어도, 미리 이렇게 원형만 알려주면 됨
@@ -265,7 +268,9 @@ void kernel_main(void)
   _install_vectors();
   uart_puts("[벡터] ✅ VBAR_EL1 등록 완료 — 예외 처리 준비 끝!\n\n");
 
-  gic_init();
+  mmu_init(); // GIC/UART 를 Device로 매핑해두고 나서
+
+  gic_init();                             // 그 다음에 GIC 를 건드려야 함
   asm_enable_timer(asm_get_timer_freq()); // 첫 타이머 장전
 
   // __asm__ volatile("svc #0"); // ★ 일부러 예외를 터뜨려서 진짜 잡히는지 확인
