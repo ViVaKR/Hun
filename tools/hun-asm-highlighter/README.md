@@ -17,6 +17,7 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 - **Document formatting**: aligns operands into clean columns, with an optional mode for vertically aligning data-section directives (`.asciz`, etc.)
 - **Diagnostics** that catch real AArch64 encoding rules, not just typos — see below
 - **Go to Definition & Outline** for jumping straight to label definitions and browsing all labels in a file
+- **Workspace-wide symbol index**: functions and labels defined in any file in your project are visible everywhere — in autocomplete, Go to Definition, and the new Ctrl+T (Go to Symbol in Workspace) search. Built once on activation and kept live via a file watcher, so it stays fast even as the project grows
 - **Snippets** for common boilerplate (function prologues, printf/scanf variadic calls, loops, etc.)
 - Built-in directive highlighting (`.section`, `.global`, `.macro`, ...), hex/binary/decimal constants, comments, and strings
 - Support for custom section macros (`CODE_SECTION`, `DATA_SECTION`, `BSS_SECTION`, ...) used by the Hun build system
@@ -40,12 +41,13 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 - Hovering over any mnemonic — standard or Korean-aliased — shows its canonical name and description
 - Full instruction-set autocomplete, in both English and (optionally) Korean
 
-### Go to Definition & Outline
+### Go to Definition, Outline & Workspace Symbols
 
-- **Go to Definition (F12 / Cmd+Click)**: jump straight from a label reference to its definition.
+- **Go to Definition (F12 / Cmd+Click)**: jump straight from a label reference to its definition, resolved instantly from a live workspace-wide symbol index — no per-click rescanning, even in larger projects.
   - `.L_`-prefixed local labels are searched for within the current file only (by definition, they can't exist elsewhere).
-  - Other (global) labels are searched across the whole workspace if not found in the current file. External libc symbols like `_printf` won't resolve, which is expected.
-- **Outline panel / Ctrl+Shift+O**: shows every label in the file as a tree, with global (function) labels and `.L_` local (control-flow) labels marked with distinct icons.
+  - Other (global) labels resolve from anywhere in the workspace. External libc symbols like `_printf` won't resolve, which is expected.
+- **Ctrl+T / Cmd+T — Go to Symbol in Workspace**: search every function/label across the entire project by name.
+- **Outline panel / Ctrl+Shift+O**: shows every label in the current file as a tree, with global (function) labels and `.L_` local (control-flow) labels marked with distinct icons.
 
 ### Snippets
 
@@ -91,6 +93,24 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 Just open a `.S`, `.s`, `.inc`, or `.asm` file — the extension activates automatically. No configuration needed.
 
 ## Changelog
+
+### 🚀 v2.5.0 — Workspace-wide IntelliSense
+Autocomplete and Go to Definition used to only really know about the current file — a function defined elsewhere wouldn't show up while typing, and F12 had to reopen and rescan up to 300 files from scratch on every jump. This release replaces that with a proper in-memory symbol index, built once when the extension activates and kept live afterward via a file watcher.
+
+* **Cross-file autocomplete**: functions and labels defined anywhere in the workspace now appear in autocomplete, with their source file shown in the detail line
+* **Instant Go to Definition**: F12 now resolves from the in-memory index instead of re-scanning the workspace on every click
+* **New: Ctrl+T / Cmd+T — Go to Symbol in Workspace**: search every function/label in the project by name, using VS Code's standard workspace-symbol picker
+* Index updates incrementally on file save/create/delete, so it never goes stale without needing a reload
+
+### 🚀 v2.5.0 — 워크스페이스 전역 인텔리센스
+지금까지 자동완성과 Go to Definition은 사실상 현재 파일만 알고 있었습니다 — 다른 파일에 정의한 함수는 타이핑 중 자동완성에 안 뜨고, F12를 누를 때마다 워크스페이스 파일을 최대 300개까지 매번 새로 열어 처음부터 다시 훑었습니다. 이번 릴리스는 이걸 제대로 된 인메모리 심볼 인덱스로 교체했습니다 — 확장이 켜질 때 한 번 구축하고, 이후로는 파일 변경 감시(watcher)로 계속 최신 상태를 유지합니다.
+
+* **파일 간 자동완성**: 워크스페이스 어디에 정의한 함수/라벨이든 자동완성에 뜨고, detail 줄에 어느 파일 출처인지 표시
+* **즉시 반응하는 Go to Definition**: F12가 매번 재스캔하는 대신 인메모리 인덱스에서 바로 조회
+* **신규: Ctrl+T / Cmd+T — 워크스페이스 심볼 검색**: 프로젝트 전체 함수/라벨을 이름으로 검색 (VS Code 표준 워크스페이스 심볼 피커)
+* 파일 저장/생성/삭제 시 인덱스가 증분 갱신되어, 리로드 없이도 항상 최신 상태 유지
+
+---
 
 ### 🚀 v2.4.1 — NEON/SIMD, Kernel-Level, and Scalar Completeness
 This release closes three of the biggest remaining gaps in instruction coverage, adding 63 new mnemonics — all sourced from the same `arm64-data.js` file that already powers hover documentation, autocomplete, syntax highlighting, and the "unknown mnemonic" diagnostic hint, so every one of those four surfaces now agrees on the exact same 224-instruction set.
@@ -172,6 +192,7 @@ MIT License
 - 문서 자동 포맷: 오퍼랜드를 깔끔하게 정렬하며, 데이터 섹션 지시어(`.asciz` 등) 세로 정렬 옵션 제공
 - 단순 오타 검출을 넘어 실제 AArch64 인코딩 규칙을 검사하는 진단 기능 (아래 참고)
 - 라벨 정의로 바로 이동하는 Go to Definition 및 아웃라인
+- **워크스페이스 전역 심볼 인덱스**: 프로젝트 안 어떤 파일에 정의한 함수/라벨이든 자동완성, Go to Definition, 새로 추가된 Ctrl+T(워크스페이스 심볼 검색) 어디서나 보입니다. 확장 켜질 때 한 번 구축한 뒤 파일 변경 감시로 계속 최신 상태를 유지하므로, 프로젝트가 커져도 속도가 유지됩니다
 - 흔히 쓰는 상용구를 위한 스니펫 (함수 프롤로그, printf/scanf variadic 호출, 반복문 등)
 - `.section`, `.global`, `.macro` 등 내장 지시어 강조, 16진수/2진수/10진수 상수, 주석, 문자열 강조
 - Hun 빌드 시스템이 쓰는 커스텀 섹션 매크로 지원 (`CODE_SECTION`, `DATA_SECTION`, `BSS_SECTION` 등)
@@ -195,12 +216,13 @@ MIT License
 - `적재`/`저장`/`쌍적재`/`쌍저장`에 마우스를 올리면 대응하는 영문 니모닉과 설명 표시
 - 한글/영문 니모닉 전체 목록에 대한 자동완성 후보 제공
 
-### 정의로 이동 & 아웃라인
+### 정의로 이동, 아웃라인 & 워크스페이스 심볼 검색
 
-- **Go to Definition (F12 / Cmd+클릭)**: 라벨 참조 위에서 실행하면 정의로 바로 이동합니다.
+- **Go to Definition (F12 / Cmd+클릭)**: 라벨 참조 위에서 실행하면 실시간 워크스페이스 전역 심볼 인덱스에서 즉시 정의로 이동합니다 — 클릭할 때마다 재스캔하지 않으므로 프로젝트가 커져도 빠릅니다.
   - `.L_`로 시작하는 로컬 라벨은 현재 파일 안에서만 찾습니다 (정의상 파일을 못 벗어나므로).
-  - 그 외 전역 라벨(`_menu_forloop` 등)은 현재 파일에 없으면 워크스페이스의 다른 `.s`/`.S`/`.asm` 파일까지 훑어서 찾습니다. `_printf`처럼 외부 libc 함수는 워크스페이스에 정의가 없을 테니 자연스럽게 이동하지 않습니다 (정상 동작입니다).
-- **아웃라인 패널 / Ctrl+Shift+O**: 파일 안의 모든 라벨을 트리로 보여줍니다. 전역 라벨(함수)과 `.L_` 로컬 라벨(흐름 제어)을 서로 다른 아이콘으로 구분해서, "이건 기능 단위, 이건 흐름 제어"라는 구분이 한눈에 보입니다.
+  - 그 외 전역 라벨은 워크스페이스 어디에 정의되어 있든 인덱스에서 바로 찾습니다. `_printf`처럼 외부 libc 함수는 자연스럽게 이동하지 않습니다 (정상 동작입니다).
+- **Ctrl+T / Cmd+T — 워크스페이스 심볼 검색**: 프로젝트 전체 함수/라벨을 이름으로 검색합니다.
+- **아웃라인 패널 / Ctrl+Shift+O**: 파일 안의 모든 라벨을 트리로 보여줍니다. 전역 라벨(함수)과 `.L_` 로컬 라벨(흐름 제어)을 서로 다른 아이콘으로 구분합니다.
 
 ### 스니펫
 

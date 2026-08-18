@@ -18,6 +18,9 @@ const { getMnemonicInfo, getAllCompletionEntries } = require('./mnemonic-info');
 //  있어도 실제 hover/자동완성에는 전혀 연결이 안 되고 있었음.)
 const { arm64Registers, arm64FpSimdRegisters } = require('./data/arm64-data');
 
+// 자동완성
+const { createSymbolIndex } = require('./symbol-index');
+
 // 🩹 [스칼라 뷰 파생] arm64-data.js 에는 V0~V31(128비트 벡터) 항목만 있고,
 // 그 하위 비트 폭 스칼라 뷰인 D0(64b)/S0(32b)/H0(16b)/B0(8b)/Q0(128b)는
 // 각 Vn 설명문 "안에 텍스트로만" 언급될 뿐, 실제로 조회 가능한 엔트리가 아니었음.
@@ -413,6 +416,13 @@ function collectInstructionEdits(document) {
 // =========================================================================
 function activate(context) {
 
+  // [ 자동완성 ]
+  const symbolIndex = createSymbolIndex();
+  // 켜지자마자 백그라운드에서 전체 스캔 시작 (await 안 해도 됨 — 끝나기 전엔 그냥 지금까지 스캔된 만큼만 조회됨)
+  symbolIndex.scanWorkspace();
+  // 이후 파일 변경/생성/삭제를 실시간 반영
+  symbolIndex.watch(context);
+
   // -----------------------------------------------------------------------
   // 🩺 [1구역: 실시간 코드 검진기] 문법 에러 및 경고(Diagnostics) 배포
   // -----------------------------------------------------------------------
@@ -538,24 +548,48 @@ function activate(context) {
             });
           }
 
-          // 3) 사용자 정의 라벨 자동완성 (같은 문서의 .L_ 로컬 라벨 + 전역 라벨)
-          for (let i = 0; i < document.lineCount; i++) {
-            if (i === position.line) continue;
+          // 3) 사용자 정의 라벨 자동완성 (현재 파일 + 워크스페이스 전체, 인덱스 기반)
+          const seenLabelNames = new Set();
+          for (const { name, locations } of symbolIndex.getAllSymbols()) {
+            if (seenLabelNames.has(name)) continue;
+            seenLabelNames.add(name);
 
-            const text = document.lineAt(i).text;
-            const m = LABEL_DEF_RE.exec(text);
-            if (!m) continue;
-            const name = m[1];
             const isLocal = name.startsWith('.L');
+            const inCurrentFile = locations.some((l) => l.uri.toString() === document.uri.toString());
+            // .L_ 로컬 라벨은 다른 파일에서 온 거면 의미 없으니(파일 못 넘나듦) 제외
+            if (isLocal && !inCurrentFile) continue;
 
             const item = new vscode.CompletionItem(
               name,
               isLocal ? vscode.CompletionItemKind.Field : vscode.CompletionItemKind.Function);
-            item.sortText = `0_${name}`
-            item.detail = isLocal ? '로컬 라벨 (현재 파일)' : '전역 라벨 / 함수';
+            item.sortText = `0_${name}`;
+            item.detail = isLocal
+              ? '로컬 라벨 (현재 파일)'
+              : inCurrentFile
+                ? '전역 라벨 / 함수 (현재 파일)'
+                : `전역 라벨 / 함수 — ${vscode.workspace.asRelativePath(locations[0].uri)}`;
             if (range) item.range = range;
             completionItems.push(item);
           }
+
+          // 3) 사용자 정의 라벨 자동완성 (같은 문서의 .L_ 로컬 라벨 + 전역 라벨)
+          // for (let i = 0; i < document.lineCount; i++) {
+          //   if (i === position.line) continue;
+
+          //   const text = document.lineAt(i).text;
+          //   const m = LABEL_DEF_RE.exec(text);
+          //   if (!m) continue;
+          //   const name = m[1];
+          //   const isLocal = name.startsWith('.L');
+
+          //   const item = new vscode.CompletionItem(
+          //     name,
+          //     isLocal ? vscode.CompletionItemKind.Field : vscode.CompletionItemKind.Function);
+          //   item.sortText = `0_${name}`
+          //   item.detail = isLocal ? '로컬 라벨 (현재 파일)' : '전역 라벨 / 함수';
+          //   if (range) item.range = range;
+          //   completionItems.push(item);
+          // }
 
           return completionItems;
 
