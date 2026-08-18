@@ -131,6 +131,8 @@ FUNC_START_FULL main, 128
 	adrp x10, _user_input@PAGE
 	add  x10, x10, _user_input@PAGEOFF
 	ldr  x22, [x10]                     // x22 = 사용자가 선택한 번호 (1, 2, 3 ...)
+	
+	
 
 	// 동적 범위 검사 (Boundary Check)
 	mov  x10, x22

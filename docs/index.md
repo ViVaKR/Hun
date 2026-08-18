@@ -98,7 +98,7 @@ ADD X0, X1, X2
 ADD W0, W1, #5
 ```
 
-🔗 [Open Summary](examples/add_adds_addv.md#summary)
+🔗 [_Open Summary_](examples/add_adds_addv.md#summary)
 
 ---
 
@@ -126,7 +126,7 @@ ADDS X0, X1, X2
 B.VS overflow_label   // 오버플로 발생시 분기
 ```
 
-🔗 [Open Summary](examples/add_adds_addv.md#summary)
+🔗 [_Open Summary_](examples/add_adds_addv.md#summary)
 
 ---
 
@@ -153,7 +153,7 @@ ADDV <V><d>, <Vn>.<T>
 ADDV S0, V1.4S   // V1의 4개 레인 합계를 S0에
 ```
 
-🔗 [Open Summary](examples/add_adds_addv.md#summary)
+🔗 [_Open Summary_](examples/add_adds_addv.md#summary)
 
 ---
 
@@ -882,6 +882,8 @@ BR <Xn>
 BR X16
 ```
 
+🔗 [_Open Summary_](examples/br.md#summary)
+
 ---
 
 ```mermaid
@@ -934,6 +936,8 @@ BSL <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 CMGT V3.4S, V1.4S, V2.4S   // 마스크 생성
 BSL  V3.16B, V1.16B, V2.16B  // 마스크에 따라 V1/V2 중 선택
 ```
+
+🔗 [_Open Summary_]
 
 ---
 
@@ -3044,7 +3048,12 @@ LDUMIN W0, W1, [X19]
 
 ---
 
-## `LDUR`
+```mermaid
+flowchart LR
+   LDUR@{ shape: braces}
+   LDUR --> desc["Load Register<br>레지스터를 적재"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Register (Unscaled offset). Loads a word/doubleword from memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by LDR. Useful for reading unaligned struct fields or arbitrary byte positions.
 
@@ -3066,7 +3075,12 @@ LDUR X0, [X1, #3]    // 오프셋 3처럼 8의 배수가 아니어도 OK (LDR은
 
 ---
 
-## `LDXR`
+```mermaid
+flowchart LR
+   LDXR@{ shape: braces}
+   LDXR --> desc["Load Exclusive Register<br>배타적 레지스터를 적재"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Load Exclusive Register. Loads a value from memory and marks that memory location as being 'exclusively' monitored by this core. Must be paired with a later STXR to the same address to attempt an atomic update; commonly used to build lock-free counters, spinlocks, and compare-and-swap loops.
 
@@ -3088,7 +3102,12 @@ LDXR X0, [X1]        // X1이 가리키는 값을 배타적으로 읽기
 
 ---
 
-## `LSL` (왼쉬프트)
+```mermaid
+flowchart LR
+   LSL@{ shape: braces}
+   LSL --> desc["Logical Shift Left<br>논리 왼쪽 시프트"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Logical Shift Left. Shifts the bits of a register left by a given amount, filling with zeros from the right.
 
@@ -3110,7 +3129,12 @@ LSL x10, x22, #2   // x10 = j * 4
 
 ---
 
-## `LSR` (오른쉬프트)
+```mermaid
+flowchart LR
+   LSR@{ shape: braces}
+   LSR --> desc["Logical Shift Right<br>논리 오른쪽 시프트"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Logical Shift Right. Shifts the bits of a register right by a given amount, filling with zeros from the left.
 
@@ -3161,7 +3185,12 @@ MADD X0, X1, X2, X3   // X0 = X3 + (X1 * X2)
 
 ---
 
-## `MLA`
+```mermaid
+flowchart LR
+   MLA@{ shape: braces}
+   MLA --> desc["Multiply-Add vector<br>벡터 곱셈-덧셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Multiply-Add (vector). Per-lane: Vd = Vd + (Vn \* Vm). Used to accumulate a running sum of products, e.g. in FIR filters or dot products, without a separate add step.
 
@@ -3179,9 +3208,16 @@ MLA <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 MLA V0.4S, V1.4S, V2.4S   // V0 += V1 * V2 (4개 32비트 레인 동시에)
 ```
 
+🔗 [_Open Summary_](examples/mla_mls.md#mla)
+
 ---
 
-## `MLS`
+```mermaid
+flowchart LR
+   MLS@{ shape: braces}
+   MLS --> desc["Multiply-Subtract vector<br>벡터 곱셈-뺄셈"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Multiply-Subtract (vector). Per-lane: Vd = Vd - (Vn \* Vm).
 
@@ -3199,9 +3235,17 @@ MLS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>
 MLS V0.4S, V1.4S, V2.4S
 ```
 
+🔗 [_Open Summary_](examples/mla_mls.md#mls)
+
 ---
 
-## `MOV`
+```mermaid
+flowchart LR
+   MOV@{ shape: braces}
+   MOV --> desc["Move register or immediate value<br>레지스터 또는 즉시값을 이동"]
+   style desc fill:none,stroke:none
+```
+
 
 $\checkmark$ Move register or immediate value. Copies the value of the source operand to the destination register.
 
@@ -3224,11 +3268,16 @@ MOV W2, #10
 
 ---
 
-## `MOVK`
+```mermaid
+flowchart LR
+   MOVK@{ shape: braces}
+   MOVK --> desc["Move keep others<br>상수이동 나머지는 유지"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Move (Keep others). Writes a 16-bit immediate into a specified 16-bit slot of the destination register WITHOUT touching the other bits. Used after MOVZ to fill in the remaining 16-bit chunks of a full 64-bit constant.
 
-$\checkmark$ 상수 이동(나머지는 유지). 16비트 즉치값을 대상 레지스터의 지정한 16비트 구간에만 쓰고, 나머지 비트는 그대로 유지합니다. MOVZ 이후에 이어서 써서 64비트 상수의 나머지 조각들을 채울 때 사용합니다.
+$\checkmark$ 상수 이동 (나머지는 유지). 16비트 즉치값을 대상 레지스터의 지정한 16비트 구간에만 쓰고, 나머지 비트는 그대로 유지합니다. MOVZ 이후에 이어서 써서 64비트 상수의 나머지 조각들을 채울 때 사용합니다.
 
 **Syntax**
 
@@ -3247,7 +3296,12 @@ MOVK X0, #0x1234, LSL #16   // X0 = 0x0000000012340004 (하위 16비트는 유�
 
 ---
 
-## `MOVN`
+```mermaid
+flowchart LR
+   MOVN@{ shape: braces}
+   MOVN --> desc["Move Not<br>상수이동 반전"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Move (Not). Writes the bitwise complement of a shifted 16-bit immediate into the destination register. Useful for efficiently loading constants that consist mostly of 1 bits (e.g. small negative numbers).
 
@@ -3269,7 +3323,12 @@ MOVN X0, #0        // X0 = NOT(0) = 0xFFFFFFFFFFFFFFFF (-1)
 
 ---
 
-## `MOVZ`
+```mermaid
+flowchart LR
+   MOVZ@{ shape: braces}
+   MOVZ --> desc["Move zero others<br>상수이동 나머지는 0"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Move (Zero others). Writes a 16-bit immediate into a specified 16-bit slot of the destination register, and clears all other bits to zero. Typically the FIRST instruction when building a large 64-bit constant piece by piece.
 
@@ -3291,7 +3350,12 @@ MOVZ X0, #0x1234, LSL #16   // X0 = 0x0000000012340000
 
 ---
 
-## `MRS`
+```mermaid
+flowchart LR
+   MRS@{ shape: braces}
+   MRS --> desc["Move from System Register<br>시스템 레지스터에서 이동"]
+   style desc fill:none,stroke:none
+```
 
 $\checkmark$ Move from System Register. Reads a special/system register's value into a general-purpose register (e.g. reading NZCV or a hardware counter).
 
@@ -3309,7 +3373,16 @@ MRS <Xt>, <system_reg>
 MRS X0, NZCV
 ```
 
+🔗 [_Open Summary_]
+
 ---
+
+```mermaid
+flowchart LR
+   MSR@{ shape: braces}
+   MSR --> desc["Move to System Register<br>시스템 레지스터로 이동"]
+   style desc fill:none,stroke:none
+```
 
 ## `MSR`
 
@@ -3328,6 +3401,9 @@ MSR <system_reg>, <Xt>
 ```arm
 MSR NZCV, X0
 ```
+
+🔗 [_Open Summary_]
+
 ---
 
 ```mermaid
