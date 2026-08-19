@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # BR 명령어 (Branch to Register)
 
 ## Summary

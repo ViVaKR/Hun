@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # FDIV, FMADD, FMAX, FMIN
 
 # Example

@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # MOV / MOVN / MOVZ / MOVK 명령어 (Move 계열)
 
 ## Summary

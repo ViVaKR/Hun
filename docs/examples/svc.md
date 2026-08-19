@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # SVC 명령어 (Supervisor Call)
 
 ## Summary

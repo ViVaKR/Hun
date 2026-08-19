@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # LDR, STR
 
 ## Summary

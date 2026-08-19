@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # LD1 ~ LD4
 
 ## Summary

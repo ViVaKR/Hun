@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # B 명령어 (Conditional Branch)
 
 ## Summary

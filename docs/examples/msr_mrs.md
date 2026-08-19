@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # MSR / MRS 명령어 — 시스템 레지스터 접근
 
 ## Summary

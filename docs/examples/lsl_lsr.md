@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # LSL / LSR 명령어 (Logical Shift Left / Right)
 
 ## Summary

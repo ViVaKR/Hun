@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # DC, DMB, DSB
 
 ## example

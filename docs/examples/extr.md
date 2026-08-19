@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # EXTR
 
 ## Summary

@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # MADD / MSUB 계열 — 곱셈-덧셈 결합 명령어군
 
 ## Summary

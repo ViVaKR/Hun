@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # FABS, FADD, FCMP
 
 # Example

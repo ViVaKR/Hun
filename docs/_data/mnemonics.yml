@@ -2814,7 +2814,7 @@
     MUL X0, X1, X2
     ```
 
-    🔗 [_Open Summary_](mul_madd_msub_mneg.md#mul)
+    🔗 [_Open Summary_](examples/mul_madd_msub_mneg.md#mul)
 - name: MVN
   slug: mvn
   letter: M

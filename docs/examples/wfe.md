@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # WFE 명령어 (Wait For Event)
 
 ## Summary

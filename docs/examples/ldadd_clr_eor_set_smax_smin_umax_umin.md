@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # LDADD, LDCLR, LDEOR, LDSET
 # LDSMAX, LDSMIN, LDUMAX, LDUMIN
 

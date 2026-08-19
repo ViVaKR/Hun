@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 안녕! ARM64 Architecture(AArch64)에서 아주 핵심적인 역할을 하는 벡터 레지스터(Vector Registers)에 대해 친근하고 상세하게 설명해 줄게.
 
 ---

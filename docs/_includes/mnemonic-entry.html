@@ -1,6 +1,6 @@
 {% comment %}
-사용법: {% include mnemonic-entry.html m=entry %}
-entry는 site.data.mnemonics 배열의 원소 하나 (name, slug, letter, summary_link, body)
+  사용법: {% include mnemonic-entry.html m=entry %}
+  entry는 site.data.mnemonics 배열의 원소 하나 (name, slug, letter, summary_link, body)
 {% endcomment %}
 <section class="mnemonic-entry" id="{{ include.m.slug }}">
   <div class="mnemonic-badge">
@@ -10,6 +10,8 @@ entry는 site.data.mnemonics 배열의 원소 하나 (name, slug, letter, summar
   {% assign examples_root = "/examples/" | relative_url %}
   {% assign examples_prefix = "(" | append: examples_root %}
   {% assign fixed_body = include.m.body | replace: "(examples/", examples_prefix %}
+  {% assign fixed_body = fixed_body | replace: ".md#", ".html#" %}
+  {% assign fixed_body = fixed_body | replace: ".md)", ".html)" %}
 
   <div class="mnemonic-body">
     {{ fixed_body | markdownify }}

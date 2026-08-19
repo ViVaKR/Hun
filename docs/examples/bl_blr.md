@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # BL / BLR 명령어 (Branch with Link)
 
 ## Summary

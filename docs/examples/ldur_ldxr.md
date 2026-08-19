@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # LDUR / LDXR 계열 명령어 — Load 명령어군 정리
 
 ## Summary

@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # AND 명령어 (Bitwise AND), ANDS
 
 ## Summary

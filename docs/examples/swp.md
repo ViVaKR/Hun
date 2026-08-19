@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # SWP 명령어 (Swap) — 원자적 교환
 
 ## Summary

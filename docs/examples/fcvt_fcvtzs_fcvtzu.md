@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # FCVT, FCVTZS, FCVTZU
 
 ## Example

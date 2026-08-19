@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # MLA, MLS
 
 ## MLA

@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # ASR 명령어 (Arithmetic Shift Right)
 
 ## Summary

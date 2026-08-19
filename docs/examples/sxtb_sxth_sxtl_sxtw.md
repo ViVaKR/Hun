@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # SXTW / SXTL 명령어 — 부호 확장(Sign Extend) 계열
 
 **분류 안내**: 두 명령어는 서로 다른 그룹임. 

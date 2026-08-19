@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # ISB 명령어 (Instruction Synchronization Barrier)
 
 ## Summary
