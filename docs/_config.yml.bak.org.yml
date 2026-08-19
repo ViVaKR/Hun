@@ -1,0 +1,18 @@
+theme: jekyll-theme-cayman
+title: Hun ARM64 Mnemonic Dictionary
+description: 'AArch64 어셈블리 니모닉을 정리한 Hun 프로젝트 사전'
+url: 'https://vivakr.github.io'
+baseurl: '/Hun'
+lang: ko_KR
+mermaid: true
+use_math: true
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-github-metadata
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge

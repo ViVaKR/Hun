@@ -1,0 +1,13 @@
+---
+layout: none
+---
+[
+{% assign items = site.data.mnemonics %}
+{% for m in items %}
+  {
+    "name": {{ m.name | jsonify }},
+    "letter": {{ m.letter | jsonify }},
+    "url": {{ '/mnemonics/' | append: m.letter | downcase | append: '/#' | append: m.slug | relative_url | jsonify }}
+  }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+]

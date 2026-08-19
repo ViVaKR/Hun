@@ -1,0 +1,13 @@
+{% comment %}
+  사용법: {% include mnemonic-entry.html m=entry %}
+  entry는 site.data.mnemonics 배열의 원소 하나 (name, slug, letter, summary_link, body)
+{% endcomment %}
+<section class="mnemonic-entry" id="{{ include.m.slug }}">
+  <div class="mnemonic-badge">
+    <span class="mnemonic-name">{{ include.m.name }}</span>
+  </div>
+
+  <div class="mnemonic-body">
+    {{ include.m.body | markdownify }}
+  </div>
+</section>

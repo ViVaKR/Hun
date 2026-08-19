@@ -1,0 +1,6 @@
+{% assign all_letters = site.data.mnemonics | map: "letter" | uniq | sort %}
+<nav class="letter-nav">
+  {% for letter in all_letters %}
+    <a href="{{ '/mnemonics/' | append: letter | downcase | append: '/' | relative_url }}">{{ letter }}</a>
+  {% endfor %}
+</nav>

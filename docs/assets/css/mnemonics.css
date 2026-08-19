@@ -1,0 +1,111 @@
+/* ==========================================================
+   Hun ARM64 Mnemonic Dictionary - 커스텀 스타일
+   목적: 니모닉마다 반복되던 Mermaid 다이어그램(JS 렌더링)을
+   순수 CSS 뱃지로 대체하여 페이지 로딩 속도를 개선합니다.
+   ========================================================== */
+
+.mnemonic-entry {
+  margin: 2.5rem 0;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e8e8e8;
+  scroll-margin-top: 80px; /* #앵커 이동 시 헤더에 가리지 않도록 */
+}
+
+.mnemonic-entry:last-child {
+  border-bottom: none;
+}
+
+.mnemonic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mnemonic-name {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.9rem;
+  border: 1.5px solid #159957;
+  border-radius: 6px;
+  color: #0b6b3a;
+  background: #f0faf5;
+}
+
+.mnemonic-body p:first-of-type {
+  margin-top: 0;
+}
+
+.mnemonic-body pre {
+  border-radius: 6px;
+}
+
+/* 알파벳 인덱스 네비게이션 (검색/목차 페이지 상단) */
+.letter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.5rem 0;
+}
+
+.letter-nav a {
+  display: inline-block;
+  min-width: 2rem;
+  text-align: center;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-decoration: none;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.letter-nav a:hover {
+  background: #159957;
+  color: #fff;
+  border-color: #159957;
+}
+
+/* 검색 입력창 */
+#mnemonic-search {
+  width: 100%;
+  max-width: 480px;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+#mnemonic-search:focus {
+  outline: none;
+  border-color: #159957;
+}
+
+#search-results {
+  margin-top: 1rem;
+}
+
+#search-results .result-item {
+  display: block;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+#search-results .result-item:hover {
+  background: #f0faf5;
+  border-color: #159957;
+}
+
+#search-results .result-item .rn {
+  font-family: monospace;
+  font-weight: bold;
+  color: #0b6b3a;
+  margin-right: 0.5rem;
+}

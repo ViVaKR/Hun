@@ -4,8 +4,11 @@ description: 'AArch64 어셈블리 니모닉을 정리한 Hun 프로젝트 사�
 url: 'https://vivakr.github.io'
 baseurl: '/Hun'
 lang: ko_KR
-mermaid: true
-use_math: true
+
+# mermaid: true  # 실제 흐름도가 필요한 페이지가 리포 어딘가에 남아있지 않다면 제거해도 됩니다.
+#                 # (index.md의 장식용 다이어그램은 전부 CSS 뱃지로 대체되어 더 이상 필요 없음)
+# use_math: true  # 제거함: 파일 전체에서 $...$ 는 $\checkmark$ 용도로만 쓰였고,
+#                  # 이번 리팩토링으로 전부 ✅ 이모지로 치환되어 MathJax/KaTeX가 필요 없어짐
 
 plugins:
   - jekyll-seo-tag
