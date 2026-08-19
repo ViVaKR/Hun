@@ -115,8 +115,12 @@
     .if    \stack_size < 96
         .error "FUNC_START_FULL: 모든 독서실을 쓰려면 stack_size는 최소 96 이상이어야 합니다!"
     .endif
+    .if    (\stack_size % 16) != 0
+        .error "FUNC_START_FULL: stack_size는 16의 배수여야 합니다. ARM64 SP 정렬 규칙"
+    .endif
     
 .global _\name
+.align 2
 _\name:
 	// 1. 기본 독서실 총무(x29)와 다음갈곳(x30) 방 배정 및 스택 거대 확보
 	stp x29, x30, [sp, #-\stack_size]!
@@ -152,7 +156,12 @@ _\name:
     .if    \stack_size < 32
         .error "FUNC_START: stack_size는 최소 32 이상이어야 합니다 (x19/x20 저장 공간 필요)"
     .endif
-    .global _\name
+
+    .if    (\stack_size % 16) != 0
+        .error "FUNC_START: stack_size는 16의 배수여야 합니다. ARM64 SP 정렬 규칙"
+    .endif
+
+.global _\name
 .align 2                        // 명령어 시작점 4바이트 정렬 강제
     _\name:
 	stp x29, x30, [sp, #-\stack_size]!
@@ -172,7 +181,10 @@ _\name:
     .if    \stack_size < 16
         .error "FUNC_START_LIGHT: stack_size는 최소 16 이상이어야 합니다!"
     .endif
-    .global _\name
+    .if    (\stack_size % 16) != 0
+        .error "FUNC_START_LIGHT: stack_size는 16의 배수여야 합니다. ARM64 SP 정렬 규칙"
+    .endif
+.global _\name
 .align 2
     _\name:
 	stp x29, x30, [sp, #-\stack_size]!

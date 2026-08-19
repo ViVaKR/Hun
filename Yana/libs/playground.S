@@ -150,7 +150,7 @@ _eor_demo:
 
 _or_demo:
 	mov x0, #0xFF
-	mov x1, 43
+	mov x1, #0x43
 	orr x2, x0, x1
 	b   _terminate
 
@@ -165,9 +165,6 @@ _printf_svc:
 
 	// stdout
 	mov x0, #1
-
-    // ❌ 국경을 넘지 못해 에러가 난 흥부가 기가 막힐 코드
-    // adr x1, helloworld      // address of 'hello world' string
 
 	// ⚡ [해결] 애플의 보안 국경을 완벽하게 넘나드는 정석 두 줄 족보!
 	adrp x1, _helloworld@PAGE
