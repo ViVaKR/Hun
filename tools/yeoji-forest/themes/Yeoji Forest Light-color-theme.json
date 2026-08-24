@@ -1,117 +1,350 @@
 {
   "name": "Yeoji Forest Light",
   "colors": {
-    // ---- 1. 기본 에디터 (눈이 편안한 따뜻한 크림/양장지 톤) ----
+    // ---- 1. 기본 에디터 (눈이 편안한 따뜻한 한지/양장지 톤) ----
     "editor.background": "#F4F0E8",
-    "editor.foreground": "#2D3832",
-    "editor.lineHighlightBackground": "#EBE5D8",
-    "editor.selectionBackground": "#D2E3D8",
-    "editor.selectionHighlightBackground": "#D2E3D880",
-    "editor.wordHighlightBackground": "#D2E3D850",
-    "editor.findMatchBackground": "#7AA85055",
-    "editor.findMatchHighlightBackground": "#7AA85025",
-    "editorCursor.foreground": "#4D7A27",
-    "editorWhitespace.foreground": "#C8C0B0",
-    "editorLineNumber.foreground": "#A09888",
-    "editorLineNumber.activeForeground": "#2D3832",
-    "editorIndentGuide.background1": "#E0D8C8",
-    "editorIndentGuide.activeBackground1": "#008A96",
-
+    "editor.foreground": "#2A332E",
+    "editor.lineHighlightBackground": "#EBE4D6",
+    "editor.selectionBackground": "#C2DACE",
+    "editor.selectionHighlightBackground": "#C2DACE80",
+    "editor.wordHighlightBackground": "#C2DACE50",
+    "editor.findMatchBackground": "#4D7A2744",
+    "editor.findMatchHighlightBackground": "#4D7A2722",
+    "editorCursor.foreground": "#2D6112",
+    "editorWhitespace.foreground": "#C2B8A4",
+    "editorLineNumber.foreground": "#948A78",
+    "editorLineNumber.activeForeground": "#2A332E",
+    "editorIndentGuide.background1": "#DCD2C0",
+    "editorIndentGuide.activeBackground1": "#00727D",
     // ---- 2. 사이드바 / 액티비티 바 ----
-    "activityBar.background": "#E8E2D4",
-    "activityBar.foreground": "#2D3832",
-    "activityBar.inactiveForeground": "#8A8070",
-    "activityBarBadge.background": "#4D7A27",
+    "activityBar.background": "#E4DDD0",
+    "activityBar.foreground": "#2A332E",
+    "activityBar.inactiveForeground": "#7A7060",
+    "activityBarBadge.background": "#3D661F",
     "activityBarBadge.foreground": "#FFFFFF",
-    "sideBar.background": "#EFEAD8",
-    "sideBar.foreground": "#3D4842",
-    "sideBarTitle.foreground": "#2D3832",
-    "sideBarSectionHeader.background": "#E8E2D4",
-
+    "sideBar.background": "#EBE5D8",
+    "sideBar.foreground": "#354039",
+    "sideBarTitle.foreground": "#2A332E",
+    "sideBarSectionHeader.background": "#E4DDD0",
     // ---- 3. 상태 바 ----
-    "statusBar.background": "#E8E2D4",
-    "statusBar.foreground": "#3D4842",
-    "statusBar.debuggingBackground": "#C22B75",
+    "statusBar.background": "#E4DDD0",
+    "statusBar.foreground": "#354039",
+    "statusBar.debuggingBackground": "#A81E61",
     "statusBar.debuggingForeground": "#FFFFFF",
-    "statusBar.noFolderBackground": "#E8E2D4",
-
+    "statusBar.noFolderBackground": "#E4DDD0",
     // ---- 4. 탭 / 에디터 그룹 ----
     "tab.activeBackground": "#F4F0E8",
-    "tab.inactiveBackground": "#E8E2D4",
-    "tab.activeForeground": "#2D3832",
-    "tab.inactiveForeground": "#8A8070",
-    "tab.border": "#DFD8C8",
-    "editorGroupHeader.tabsBackground": "#E8E2D4",
-
+    "tab.inactiveBackground": "#E4DDD0",
+    "tab.activeForeground": "#2A332E",
+    "tab.inactiveForeground": "#7A7060",
+    "tab.border": "#D5CEBF",
+    "editorGroupHeader.tabsBackground": "#E4DDD0",
     // ---- 5. 터미널 ----
     "terminal.background": "#F4F0E8",
-    "terminal.foreground": "#2D3832",
-    "terminal.ansiRed": "#C52A30",
-    "terminal.ansiGreen": "#4D7A27",
-    "terminal.ansiYellow": "#B57A00",
-    "terminal.ansiBlue": "#008A96",
-    "terminal.ansiMagenta": "#C22B75",
-    "terminal.ansiCyan": "#008A96",
-
+    "terminal.foreground": "#2A332E",
+    "terminal.ansiRed": "#AD1F24",
+    "terminal.ansiGreen": "#3D661F",
+    "terminal.ansiYellow": "#9E6B00",
+    "terminal.ansiBlue": "#00727D",
+    "terminal.ansiMagenta": "#A81E61",
+    "terminal.ansiCyan": "#00727D",
     // ---- 6. Git 데코레이션 ----
-    "gitDecoration.addedResourceForeground": "#4D7A27",
-    "gitDecoration.modifiedResourceForeground": "#B57A00",
-    "gitDecoration.deletedResourceForeground": "#C52A30",
-
+    "gitDecoration.addedResourceForeground": "#3D661F",
+    "gitDecoration.modifiedResourceForeground": "#9E6B00",
+    "gitDecoration.deletedResourceForeground": "#AD1F24",
     // ---- 7. 기타 UI ----
-    "focusBorder": "#008A96",
-    "breadcrumb.foreground": "#8A8070",
-    "breadcrumb.focusForeground": "#2D3832",
-    "breadcrumb.activeSelectionForeground": "#4D7A27",
-    "breadcrumbPicker.background": "#E8E2D4",
-    "diffEditor.insertedTextBackground": "#4D7A2722",
-    "diffEditor.removedTextBackground": "#C52A3022",
-    "list.hoverBackground": "#EBE5D8",
-    "list.activeSelectionBackground": "#D2E3D8",
-    "list.activeSelectionForeground": "#2D3832",
-    "list.highlightForeground": "#008A96"
+    "focusBorder": "#00727D",
+    "scrollbarSlider.background": "#C2B8A480",
+    "scrollbarSlider.hoverBackground": "#C2B8A4C0",
+    "breadcrumb.foreground": "#7A7060",
+    "breadcrumb.focusForeground": "#2A332E",
+    "breadcrumb.activeSelectionForeground": "#3D661F",
+    "breadcrumbPicker.background": "#E4DDD0",
+    "diffEditor.insertedTextBackground": "#3D661F22",
+    "diffEditor.removedTextBackground": "#AD1F2422",
+    "list.hoverBackground": "#EBE4D6",
+    "list.activeSelectionBackground": "#C2DACE",
+    "list.activeSelectionForeground": "#2A332E",
+    "list.highlightForeground": "#00727D",
+    // ---- 인텔리센스 / 호버 팝업 ----
+    "editorHoverWidget.background": "#E8E2D5FA",
+    "editorHoverWidget.foreground": "#1E2621",
+    "editorHoverWidget.border": "#00727D88",
+    "editorSuggestWidget.background": "#E8E2D5FA",
+    "editorSuggestWidget.foreground": "#1E2621",
+    "editorSuggestWidget.selectedBackground": "#C2DACE",
+    "editorSuggestWidget.selectedForeground": "#004D34",
+    "editorSuggestWidget.border": "#00727D88",
+    "editorSuggestWidget.highlightForeground": "#A81E61"
   },
+  "semanticHighlighting": false,
+  "semanticTokenColors": {},
   "tokenColors": [
+    // ===== 0. ARM64 / Assembly 핵심 구문 (우선순위 최상위) =====
+    {
+      "name": "Assembly Registers (x0~x31, w0~w31 등)",
+      "scope": [
+        "variable.language.register.hun-asm",
+        "variable.other.register",
+        "variable.parameter.register",
+        "variable.language"
+      ],
+      "settings": {
+        "foreground": "#8C3A00",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Assembly Mnemonics (add, sub, adrp 등)",
+      "scope": [
+        "keyword.operator.word",
+        "keyword.control.assembly",
+        "entity.name.function.mnemonic",
+        "keyword.other.mnemonic"
+      ],
+      "settings": {
+        "foreground": "#006E47",
+        "fontStyle": "bold"
+      }
+    },
+    // ===== 1. 주석 & 기본 문맥 =====
     {
       "name": "Comment",
-      "scope": ["comment", "punctuation.definition.comment"],
-      "settings": { "fontStyle": "italic", "foreground": "#7A8B80" }
+      "scope": [
+        "comment",
+        "punctuation.definition.comment"
+      ],
+      "settings": {
+        "fontStyle": "italic",
+        "foreground": "#63756A"
+      }
     },
     {
       "name": "Variables",
-      "scope": ["variable", "string constant.other.placeholder"],
-      "settings": { "foreground": "#2D3832" }
+      "scope": [
+        "string constant.other.placeholder"
+      ],
+      "settings": {
+        "foreground": "#2A332E"
+      }
     },
     {
+      "name": "Colors",
+      "scope": [
+        "constant.other.color"
+      ],
+      "settings": {
+        "foreground": "#B55A00"
+      }
+    },
+    {
+      "name": "Invalid",
+      "scope": [
+        "invalid",
+        "invalid.illegal"
+      ],
+      "settings": {
+        "foreground": "#AD1F24"
+      }
+    },
+    // ===== 2. 키워드 & 연산자 & 태그 =====
+    {
       "name": "Keyword, Storage",
-      "scope": ["keyword", "storage.type", "storage.modifier"],
-      "settings": { "foreground": "#C22B75" }
+      "scope": [
+        "keyword",
+        "storage.type",
+        "storage.modifier"
+      ],
+      "settings": {
+        "foreground": "#006E47",
+        "fontStyle": "bold"
+      }
     },
     {
       "name": "Operator, Misc",
-      "scope": ["keyword.control", "constant.other.color", "punctuation", "meta.tag", "punctuation.definition.tag"],
-      "settings": { "foreground": "#008A96" }
+      "scope": [
+        "keyword.control",
+        "punctuation",
+        "meta.tag",
+        "punctuation.definition.tag",
+        "punctuation.section.embedded"
+      ],
+      "settings": {
+        "foreground": "#506355"
+      }
     },
+    {
+      "name": "Tag",
+      "scope": [
+        "entity.name.tag",
+        "meta.tag.sgml",
+        "markup.deleted.git_gutter"
+      ],
+      "settings": {
+        "foreground": "#B84A00"
+      }
+    },
+    // ===== 3. 수치 / 함수 / 상수 / 라벨 =====
     {
       "name": "Function, Special Method",
-      "scope": ["entity.name.function", "meta.function-call", "variable.function", "support.function"],
-      "settings": { "foreground": "#008556" }
+      "scope": [
+        "entity.name.function",
+        "meta.function-call",
+        "variable.function",
+        "support.function",
+        "keyword.other.special-method"
+      ],
+      "settings": {
+        "foreground": "#006E47"
+      }
     },
     {
-      "name": "Number, Constant",
-      "scope": ["constant.numeric", "constant.language", "support.constant", "constant.character"],
-      "settings": { "foreground": "#D65D0E" }
+      "name": "Number, Constant, Immediate Values (#4, #0 등)",
+      "scope": [
+        "constant.numeric",
+        "constant.language",
+        "support.constant",
+        "constant.character",
+        "constant.escape",
+        "keyword.other.unit"
+      ],
+      "settings": {
+        "foreground": "#A81E61",
+        "fontStyle": "bold"
+      }
     },
     {
       "name": "String, Symbols",
-      "scope": ["string", "constant.other.symbol", "constant.other.key"],
-      "settings": { "foreground": "#4D7A27" }
+      "scope": [
+        "string",
+        "constant.other.symbol",
+        "constant.other.key",
+        "entity.other.inherited-class",
+        "markup.heading"
+      ],
+      "settings": {
+        "foreground": "#3D661F"
+      }
     },
     {
-      "name": "Class, Support",
-      "scope": ["entity.name", "support.type", "support.class"],
-      "settings": { "foreground": "#B57A00" }
+      "name": "Class, Support, Labels (_menu_table 등)",
+      "scope": [
+        "entity.name",
+        "support.type",
+        "support.class",
+        "support.other.namespace.use.php",
+        "meta.use.php",
+        "support.other.namespace.php",
+        "markup.changed.git_gutter",
+        "support.type.sys-types",
+        "entity.name.label"
+      ],
+      "settings": {
+        "foreground": "#00727D"
+      }
     },
+    {
+      "name": "CSS Class and Support",
+      "scope": [
+        "source.css support.type.property-name",
+        "source.sass support.type.property-name",
+        "source.scss support.type.property-name",
+        "source.less support.type.property-name",
+        "source.stylus support.type.property-name"
+      ],
+      "settings": {
+        "foreground": "#006A73"
+      }
+    },
+    // ===== 4. Git / Diff 마크업 =====
+    {
+      "name": "Inserted",
+      "scope": [
+        "markup.inserted"
+      ],
+      "settings": {
+        "foreground": "#3D661F"
+      }
+    },
+    {
+      "name": "Deleted",
+      "scope": [
+        "markup.deleted"
+      ],
+      "settings": {
+        "foreground": "#AD1F24"
+      }
+    },
+    {
+      "name": "Changed",
+      "scope": [
+        "markup.changed"
+      ],
+      "settings": {
+        "foreground": "#A81E61"
+      }
+    },
+    // ===== 5. JSON 중첩 키 =====
+    {
+      "name": "JSON Key - Level 0",
+      "scope": [
+        "source.json meta.structure.dictionary.json support.type.property-name.json"
+      ],
+      "settings": {
+        "foreground": "#A81E61"
+      }
+    },
+    {
+      "name": "JSON Key - Level 1",
+      "scope": [
+        "source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json support.type.property-name.json"
+      ],
+      "settings": {
+        "foreground": "#9E6B00"
+      }
+    },
+    {
+      "name": "JSON Key - Level 2",
+      "scope": [
+        "source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json support.type.property-name.json"
+      ],
+      "settings": {
+        "foreground": "#B54500"
+      }
+    },
+    // ===== 6. Markdown =====
+    {
+      "name": "Markdown - Plain",
+      "scope": [
+        "text.html.markdown",
+        "punctuation.definition.list_item.markdown"
+      ],
+      "settings": {
+        "foreground": "#2A332E"
+      }
+    },
+    {
+      "name": "Markdown - Heading",
+      "scope": [
+        "markdown.heading",
+        "markup.heading | markup.heading entity.name",
+        "markup.heading.markdown punctuation.definition.heading.markdown"
+      ],
+      "settings": {
+        "foreground": "#3D661F",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Markdown - Link",
+      "scope": [
+        "string.other.link.title.markdown"
+      ],
+      "settings": {
+        "foreground": "#006E47"
+      }
+    },
+    // ===== 7. TOML & YAML =====
     {
       "name": "TOML - Table / Section Header",
       "scope": [
@@ -120,22 +353,33 @@
         "support.type.property-name.table.toml",
         "punctuation.definition.table.toml"
       ],
-      "settings": { "foreground": "#C22B75", "fontStyle": "bold" }
+      "settings": {
+        "foreground": "#A81E61",
+        "fontStyle": "bold"
+      }
     },
     {
-      "name": "TOML - Keys",
-      "scope": ["variable.key.toml", "keyword.key.toml", "support.type.property-name.toml"],
-      "settings": { "foreground": "#008A96" }
+      "name": "TOML/YAML - Keys",
+      "scope": [
+        "variable.key.toml",
+        "keyword.key.toml",
+        "support.type.property-name.toml",
+        "entity.name.tag.yaml",
+        "attribute-name.yaml"
+      ],
+      "settings": {
+        "foreground": "#00727D"
+      }
     },
     {
-      "name": "TOML - Strings & Values",
-      "scope": ["string.quoted.single.toml", "string.quoted.double.toml"],
-      "settings": { "foreground": "#4D7A27" }
-    },
-    {
-      "name": "YAML - Key",
-      "scope": ["entity.name.tag.yaml", "attribute-name.yaml"],
-      "settings": { "foreground": "#008A96" }
+      "name": "TOML - Strings",
+      "scope": [
+        "string.quoted.single.toml",
+        "string.quoted.double.toml"
+      ],
+      "settings": {
+        "foreground": "#3D661F"
+      }
     }
   ]
 }
