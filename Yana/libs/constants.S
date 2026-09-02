@@ -155,8 +155,6 @@ _menu_table:
     .quad _pi_print, _str_pi_print
 _menu_table_end:
 
-
-
 // ==================================
 //  [constants.S] 부동소수점 상수 정의
 // ==================================

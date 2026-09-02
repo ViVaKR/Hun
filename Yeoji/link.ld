@@ -5,7 +5,8 @@ SECTIONS
     . = 0x40080000;   
     
     .text : { 
-        KEEP(*(.text.boot)) // 🔑 boot.S의 _start 코드가 무조건 0x40080000 자리에 오도록 락(Lock)을 겁니다!
+        // 🔑 boot.S의 _start 코드가 무조건 0x40080000 자리에 오도록 락(Lock)을 겁니다!
+        KEEP(*(.text.boot)) 
         *(.text*) 
     }
     .rodata : { *(.rodata*) }

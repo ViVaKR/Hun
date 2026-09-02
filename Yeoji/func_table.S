@@ -20,7 +20,7 @@ CODE_SECTION
 
 // -------------------------------------------------------------
 // void asm_vector_branch(long long index, long long arg);
-// 입력: 
+// 입력:
 //   x0 = 명령어 인덱스 (0, 1, 2)
 //   x1 = 쉘에서 발라낸 추가 매개변수 숫자 (예: 피보나치 반복 횟수)
 // -------------------------------------------------------------
@@ -29,10 +29,10 @@ asm_vector_branch:
 	mov x29, sp
 	stp x19, x20, [sp, #16]
 
-	mov x19, x0     // x19 = 인덱스
-	mov x20, x1     // x20 = 매개변수 인자 (진짜 연산용!)
+	mov x19, x0  // x19 = 인덱스
+	mov x20, x1  // x20 = 매개변수 인자 (진짜 연산용!)
 
-    // Boundary Check
+	// Boundary Check
 	adrp x10, command_table
 	add  x10, x10, :lo12:command_table
 	adrp x11, command_table_end
@@ -44,10 +44,10 @@ asm_vector_branch:
 	cmp  x19, x12
 	b.hs _branch_done
 
-    // 🔑 주소 분기 신공!
+	// 🔑 주소 분기 신공!
 	ldr x11, [x10, x19, lsl #3]
     
-    // 타겟 루틴으로 가기 전에, 매개변수(x20)를 첫 번째 인자(x0) 자리에 채워 넘깁니다!
+	// 타겟 루틴으로 가기 전에, 매개변수(x20)를 첫 번째 인자(x0) 자리에 채워 넘깁니다!
 	mov x0, x20
 	blr x11
 
@@ -75,37 +75,37 @@ routine_fib:
 	stp x29, x30, [sp, #-32]!
 	stp x19, x20, [sp, #16]
     
-	mov x19, x0             // x19 = 반복할 카운트 (N)
+	mov x19, x0  // x19 = 반복할 카운트 (N)
 
-    // 타이틀 먼저 출력
+	// 타이틀 먼저 출력
 	adrp x0, fib_msg
 	add  x0, x0, :lo12:fib_msg
 	bl   uart_puts
 
-    // 초기화: F(0) = 0, F(1) = 1
-	mov x0, #0              // x0 = 이전 첫번째 수
-	mov x1, #1              // x1 = 이전 두번째 수
-	mov x2, #0              // x2 = 현재 루프 카운트
+	// 초기화: F(0) = 0, F(1) = 1
+	mov x0, #0  // x0 = 이전 첫번째 수
+	mov x1, #1  // x1 = 이전 두번째 수
+	mov x2, #0  // x2 = 현재 루프 카운트
 
 _fib_loop:
 	cmp  x2, x19
-	b.ge _fib_loop_done      // 카운트 다 채우면 루프 끝!
+	b.ge _fib_loop_done  // 카운트 다 채우면 루프 끝!
 
-    // 🔑 피보나치 더하기 연산: x3 = x0 + x1
+	// 🔑 피보나치 더하기 연산: x3 = x0 + x1
 	add x3, x0, x1
     
-    // 다음 루프를 위해 값 한 칸씩 전진 스위치
+	// 다음 루프를 위해 값 한 칸씩 전진 스위치
 	mov x0, x1
 	mov x1, x3
 
-	add x2, x2, #1          // 카운트 증가
+	add x2, x2, #1  // 카운트 증가
 	b   _fib_loop
 
 _fib_loop_done:
-    // 🔍 계산된 결과 값(x0)을 한 자리 정수(0~9)로 가정하고 문자로 변환하여 화면에 찍기!
-    // 아스키코드 변환: 숫자 + '0'(0x30)
+	// 🔍 계산된 결과 값(x0)을 한 자리 정수(0~9)로 가정하고 문자로 변환하여 화면에 찍기!
+	// 아스키코드 변환: 숫자 + '0'(0x30)
 	add w0, w0, #0x30
-	bl  uart_putc           // 결과 숫자 출력!
+	bl  uart_putc      // 결과 숫자 출력!
 
 	adrp x0, newline_msg
 	add  x0, x0, :lo12:newline_msg

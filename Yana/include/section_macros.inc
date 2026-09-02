@@ -1,16 +1,10 @@
-// ====================================================
-//  제목: 섹션 선언 매크로 모음 (hun.macros.inc 편입용)
-//  목적: 장문의 .section 지시문을 짧고 의미가 분명한 매크로로 대체
-// ====================================================
-// ====================================================
+// =================================================
 //  제목: 섹션 선언 및 함수 제어 매크로 모음 (hun.macros.inc)
 //  목적: 장문의 지시문을 압축하고 ARM64 최적화 규칙을 강제함
-// ====================================================
+// =================================================
 
 .ifndef HUN_SECTION_MACROS_INC
 .set    HUN_SECTION_MACROS_INC, 1
-
-// --- [구역 정의 매크로 뭉치] ---
 
 // ------------------------------------------------------
 // [코드 구역] __TEXT,__text
@@ -18,7 +12,7 @@
 // 실제 기계어 명령어가 위치. pure_instructions = 순수 명령어 구역
 // ------------------------------------------------------
 .macro   CODE_SECTION
-    .section __TEXT, __text, regular, pure_instructions
+.section __TEXT, __text, regular, pure_instructions
 .align 2
 .endmacro
 
@@ -28,7 +22,7 @@
 // 일반 전역 변수 구역 안전하게 8바이트 정렬
 // -----------------------------------------------------
 .macro   DATA_SECTION
-    .section __DATA, __data
+.section __DATA, __data
 .align 3
 .endmacro
 
@@ -39,7 +33,7 @@
 // 정렬 없음 : 바이트 스트림
 // ------------------------------------------------------
 .macro   CSTRING_SECTION
-    .section __TEXT, __cstring, cstring_literals
+.section __TEXT, __cstring, cstring_literals
 .align 3 // Read-Only 문자열 캐시라인 히트율 극대화
 .endmacro
 
@@ -51,7 +45,7 @@
 // 64비트 주소값(.quad)들의 배열이므로 무조건 8바이트(2^3) 정렬
 // -------------------------------------------------------
 .macro   CONST_DATA_SECTION
-    .section __DATA, __const
+.section __DATA, __const
 .align 3
 .endmacro
 
@@ -61,7 +55,7 @@
 // 문자열이 아닌 일반 상수 (룩업 테이블, 상수 배열 등) - 재배치 불필요
 // -----------------------------------------------------
 .macro   CONST_SECTION
-    .section __TEXT, __const
+.section __TEXT, __const
 .align 3
 .endmacro
 
@@ -70,7 +64,7 @@
 // float(32비트) 리터럴 전용 이므로 무조건 4바이트(2^2) 정렬 고정
 // ----------------------------------------------------
 .macro   LITERAL4_SECTION
-    .section __TEXT, __literal4, 4byte_literals
+.section __TEXT, __literal4, 4byte_literals
 .align 2
 .endmacro
 
@@ -79,7 +73,7 @@
 // double(64비트) 리터럴 전용이므로 무조건 8바이트(2^3) 정렬 고정
 // ---------------------------------------------------
 .macro   LITERAL8_SECTION
-    .section __TEXT, __literal8, 8byte_literals
+.section __TEXT, __literal8, 8byte_literals
 .align 3
 .endmacro
 
@@ -89,7 +83,7 @@
 // 안전하게 8바이트 정렬
 // -------------------------------------------------------
 .macro   BSS_SECTION
-    .section __DATA, __bss
+.section __DATA, __bss
 .align 3
 .endmacro
 
@@ -100,7 +94,7 @@
 // .comm _shared_value, 4, 2 ; 4바이트 짜리 임시 공용 예약 공간
 // -------------------------------------------------------------------
 .macro   COMMON_SECTION
-    .section __DATA, __common
+.section __DATA, __common
 .endmacro
 
 
@@ -112,6 +106,7 @@
 // 최소 stack_size는 독서실 10개(80바이트) + 프레임(16바이트) = 96바이트 이상이어야 함!
 // ========================================================================
 .macro FUNC_START_FULL name, stack_size
+
     .if    \stack_size < 96
         .error "FUNC_START_FULL: 모든 독서실을 쓰려면 stack_size는 최소 96 이상이어야 합니다!"
     .endif
@@ -121,6 +116,7 @@
     
 .global _\name
 .align 2
+
 _\name:
 	// 1. 기본 독서실 총무(x29)와 다음갈곳(x30) 방 배정 및 스택 거대 확보
 	stp x29, x30, [sp, #-\stack_size]!
@@ -162,7 +158,7 @@ _\name:
     .endif
 
 .global _\name
-.align 2                        // 명령어 시작점 4바이트 정렬 강제
+.align 2
     _\name:
 	stp x29, x30, [sp, #-\stack_size]!
 	mov x29, sp
