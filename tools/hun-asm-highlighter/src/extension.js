@@ -456,13 +456,64 @@ function activate(context) {
   //     예전엔 MNEMONIC_MAP을 먼저 체크하는 바람에 영문 니모닉은 항상 짧은
   //     설명에서 멈추고, arm64-data.js의 syntax/example까지 못 갔었음.)
   // -----------------------------------------------------------------------
+  // =========================================================================
+  // 🛠️ [v2.5.2 천하통일 패치] 링커 스크립트(link.ld) 전용 핵심 백과사전 사전 구축
+  // =========================================================================
+  const LINKER_KEYWORDS_MAP = {
+    "ENTRY": {
+      name: "ENTRY",
+      description: "✓ 링커 스크립트 진입점 설정 지시어. 프로그램이 메모리에 적재된 후 **가장 먼저 실행될 최초의 함수/라벨 기호**를 지정합니다. 보통 베어메탈 및 커널 개발에서는 부트 코드가 시작되는 `_start`를 지정하여 하드웨어를 깨웁니다.",
+      syntax: "ENTRY(_start)"
+    },
+    "SECTIONS": {
+      name: "SECTIONS",
+      description: "✓ 링커 스크립트의 핵심 심장부 명령어. 출력될 바이너리 실행 파일 내부의 **메모리 구역 지도(코드, 데이터, bss, 스택 공간 등)의 배치 순서와 소스 배치 규칙**을 이 블록 안에서 총지휘합니다.",
+      syntax: "SECTIONS {\n  . = 0x40080000;\n  .text : { *(.text) }\n  ...\n}"
+    },
+    "KEEP": {
+      name: "KEEP",
+      description: "✓ 코드 증발 방지 명령 장갑. 컴파일러나 링커가 '이 코드는 메인 함수에서 직접 호출 안 하니까 삭제해도 되겠지?' 하고 최적화로 지워버리는 것을 강제로 막아냅니다. **부팅 시 최초로 실행되어야 할 베어메탈 부트 코드(`.text.boot`)를 무조건 고정하여 살려둘 때 필수적**입니다.",
+      syntax: "KEEP(*(.text.boot))"
+    },
+    "ALIGN": {
+      name: "ALIGN",
+      description: "✓ 메모리 경계 정렬 지시어. 뒤따라오는 메모리 주소를 지정된 바이트(예: 16바이트)의 배수 위치로 올림하여 정렬해 줍니다. **AArch64 아키텍처 규격상 스택 포인터나 변수 공간을 16바이트 배수로 정렬하는 원칙**을 지키기 위해 필수적입니다.",
+      syntax: ". = ALIGN(16);"
+    },
+    "MEMORY": {
+      name: "MEMORY",
+      description: "✓ 물리 하드웨어 타겟 주소 영역 명시 지시어. 파운드리 칩 설계 규격 및 QEMU 가상 머신 사양에 맞추어 실제 물리 RAM, ROM의 시작 주소(ORIGIN)와 총 용량(LENGTH)을 정의하여 링커가 구역을 넘지 못하게 통제합니다.",
+      syntax: "MEMORY {\n  RAM (wxa) : ORIGIN = 0x40080000, LENGTH = 128M\n}"
+    },
+    ".": {
+      name: "Location Counter (현재 위치 카운터)",
+      description: "✓ 링커 스크립트 전용 **현재 메모리 위치 주소 레지스터**. 현재 주소가 메모리 몇 번지까지 채워졌는지 추적하며, 여기에 값을 직접 할당하면(예: `. = 0x40080000;`) 다음 코드 섹션이 적재될 메모리 시작 위치를 강제로 워프(이동)시킵니다.",
+      syntax: ". = 0x40080000;"
+    },
+    "__BSS_START": {
+      name: "__bss_start",
+      description: "✓ 커널 초기화용 커스텀 심볼 라벨. 초기화되지 않은 전역 변수 영역(.bss)이 시작되는 메모리 주소를 담아두는 이정표 역할을 합니다. 부팅 직후 이 주소부터 `__bss_end`까지를 어셈블리 루프로 0으로 청소(Clear)할 때 기준점으로 쓰입니다."
+    },
+    "__BSS_END": {
+      name: "__bss_end",
+      description: "✓ 커널 초기화용 커스텀 심볼 마감 라벨. 초기화되지 않은 전역 변수 영역(.bss)이 끝나는 메모리 주소를 가리킵니다. 어셈블리 청소 루프가 어디까지 작동하고 멈춰야 하는지 마감 시점의 기준점 지표가 됩니다."
+    },
+    "_STACK_TOP": {
+      name: "_stack_top",
+      description: "✓ 스택 메모리 최상단 주소 심볼. 확보된 스택 메모리 공간의 최상위 주소를 획득하여, 부트 코드 단계에서 **CPU의 스택 포인터(`sp`) 레지스터에 가장 먼저 꽂아줄 메모리 번지**로 활용됩니다."
+    }
+  };
+
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(LANGUAGE_ID, {
       provideHover(document, position) {
+        // 점(.)기호와 다국어 식별자가 쪼개지지 않도록 범위 설정 포획
         const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
         if (!range) return;
 
-        const originalWord = document.getText(range); // 백성이 쓴 원본 형태
+        // 백성이 쓴 원본 형태
+        const originalWord = document.getText(range);
+        const wordUpper = originalWord.trim().toUpperCase(); // 대소문자 무력화 방어 장갑
 
         // 1) 니모닉(한글 별칭 + 영문 + FP + 조건부 분기) 통합 조회
         const info = getMnemonicInfo(originalWord);
@@ -470,8 +521,8 @@ function activate(context) {
           return new vscode.Hover(buildMnemonicMarkdown(originalWord, info), range);
         }
 
-        // 2) ARM64 레지스터 검사 (정수 + FP/SIMD + 파생 스칼라 뷰 통합 인덱스)
-        const wordUpper = originalWord.trim().toUpperCase();
+        // [2순위 수색] ARM64 레지스터 검사 (정수 + FP/SIMD + 파생 스칼라 뷰 통합 인덱스)
+        // const wordUpper = originalWord.trim().toUpperCase();
         const armReg = REGISTER_INDEX.get(wordUpper);
         if (armReg) {
           const md = new vscode.MarkdownString();
@@ -481,6 +532,21 @@ function activate(context) {
           md.appendMarkdown(`### ARM64 Register: \`${armReg.name.toLowerCase()}\`\n\n`);
           md.appendMarkdown(`**Type:** ${armReg.type}\n\n`);
           md.appendMarkdown(`**Description:** ${armReg.description}`);
+          return new vscode.Hover(md, range);
+        }
+
+        // 🎯 [3순위 수색 - v2.5.2 신설 요새] 링커 스크립트 핵심 지시어 및 기호 포획!
+        const linkerInfo = LINKER_KEYWORDS_MAP[wordUpper] || LINKER_KEYWORDS_MAP[originalWord.trim()];
+        if (linkerInfo) {
+          const md = new vscode.MarkdownString();
+          md.isTrusted = true;
+          md.supportHtml = true;
+          md.appendMarkdown(`### Linker Directive: \`${linkerInfo.name}\`\n\n`);
+          md.appendMarkdown(`${linkerInfo.description}\n\n`);
+          if (linkerInfo.syntax) {
+            md.appendMarkdown('**Syntax:**\n');
+            md.appendCodeblock(linkerInfo.syntax, 'linker');
+          }
           return new vscode.Hover(md, range);
         }
 
