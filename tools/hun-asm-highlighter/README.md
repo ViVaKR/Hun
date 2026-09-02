@@ -94,6 +94,13 @@ Just open a `.S`, `.s`, `.inc`, or `.asm` file — the extension activates autom
 
 ## Changelog
 
+### 🚀 v2.5.1 — Linker Script Support & Refinements
+This release extends the extension's territory to include compiler infrastructure engineering, adding first-class support for linker scripts (`linker.ld`).
+
+* **Linker Script Syntax Highlighting**: Automatically detects and colors core linker directives (`ENTRY`, `SECTIONS`, `MEMORY`, `KEEP`, etc.) and memory properties (`ORIGIN`, `LENGTH`) inside `.ld` and `linker.ld` files
+* **Enhanced Code Folding**: Structural folding rules (`#region` / `#endregion`) now seamlessly recognize both assembly line comments (`//`) and linker block comments (`/* ... */`)
+* **Targeted Intelligence**: Smarter `wordPattern` configuration preserves dots (`.`) and letters unified, ensuring single-click text block selection works beautifully across both syntax environments
+
 ### 🚀 v2.5.0 — Workspace-wide IntelliSense
 Autocomplete and Go to Definition used to only really know about the current file — a function defined elsewhere wouldn't show up while typing, and F12 had to reopen and rescan up to 300 files from scratch on every jump. This release replaces that with a proper in-memory symbol index, built once when the extension activates and kept live afterward via a file watcher.
 
@@ -268,6 +275,13 @@ MIT License
 `.S`, `.s`, `.inc`, `.asm` 확장자 파일을 열면 자동으로 적용됩니다. 별도 설정 불필요.
 
 ## 변경 이력
+
+### 🚀 v2.5.1 — 링커 스크립트 지원 및 코드 접기 보강
+이번 릴리스는 컴파일러 인프라 엔지니어링 영역까지 확장하여, 시스템 빌드의 뼈대인 링커 스크립트(`linker.ld`)를 공식 지원합니다.
+
+* **링커 스크립트 문법 강조**: `.ld` 확장자 및 `linker.ld` 파일 포획 활성화. `ENTRY`, `SECTIONS`, `MEMORY`, `KEEP` 등의 핵심 지시어와 메모리 주소 속성들이 칼같이 화려한 색상으로 강조됩니다.
+* **링커/어셈블리 통합 코드 접기**: 대형 구조화 접기 기능(`#region`)이 어셈블리용 한 줄 주석(`//`)뿐만 아니라 링커용 블록 주석(`/* ... */`)도 완벽하게 감지하도록 방어 장갑을 보강했습니다.
+* **단어 인식 최적화**: 링커 스크립트 환경과 조화를 이루도록 단어 판정 정규식을 조율하여, 더블 클릭 한 번에 식별자와 라벨이 쪼개지지 않고 깔끔하게 한 덩어리로 선택됩니다.
 
 ### 🚀 v2.3.36 (Current Release) - 신규 니모닉 176종 인텔리센스 한/영 추가
 * 니모닉 인텔리센스 176종 추가

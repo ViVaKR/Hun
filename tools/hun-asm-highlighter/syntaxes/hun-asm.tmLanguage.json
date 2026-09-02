@@ -3,31 +3,73 @@
   "name": "Hun ARM64 Assembly",
   "scopeName": "source.hun-asm",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#char-literals" },
-    { "include": "#directives" },
-    { "include": "#macro-definition" },
-    { "include": "#section-macros" },
-    { "include": "#func-macros" },
-    { "include": "#hangul-mnemonics" },
-    { "include": "#standard-mnemonics" },
-    { "include": "#registers" },
-    { "include": "#numbers" },
-    { "include": "#labels" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#char-literals"
+    },
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "#macro-definition"
+    },
+    {
+      "include": "#section-macros"
+    },
+    {
+      "include": "#func-macros"
+    },
+    {
+      "include": "#hangul-mnemonics"
+    },
+    {
+      "include": "#standard-mnemonics"
+    },
+    {
+      "include": "#registers"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#labels"
+    },
+    {
+      "include": "#linker-keywords"
+    },
+    {
+      "include": "#linker-operators"
+    }
   ],
   "repository": {
     "comments": {
       "patterns": [
-        { "name": "comment.line.double-slash.hun-asm", "match": "//.*$" },
-        { "name": "comment.block.hun-asm", "begin": "/\\*", "end": "\\*/" }
+        {
+          "name": "comment.line.double-slash.hun-asm",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.hun-asm",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
       ]
     },
     "strings": {
       "name": "string.quoted.double.hun-asm",
       "begin": "\"",
       "end": "\"",
-      "patterns": [{ "name": "constant.character.escape.hun-asm", "match": "\\\\." }]
+      "patterns": [
+        {
+          "name": "constant.character.escape.hun-asm",
+          "match": "\\\\."
+        }
+      ]
     },
     "char-literals": {
       "name": "string.quoted.single.hun-asm",
@@ -38,27 +80,34 @@
       "name": "keyword.control.directive.hun-asm",
       "match": "\\.(glob(?:al|l)|section|align|include|macro|endmacro|endm|equ|asciz|ascii|octa|quad|long|int|double|float|hword|short|2byte|word|byte|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
     },
-
     "macro-definition": {
       "comment": "매크로 '정의' 자리 (.macro 앞에 오는 이름). entity.name = 선언/정의",
       "match": "^\\s*([\\p{L}_.$][\\p{L}0-9_.$]*)\\s+(?=\\.macro\\b)",
       "captures": {
-        "1": { "name": "entity.name.function.macro.definition.hun-asm" }
+        "1": {
+          "name": "entity.name.function.macro.definition.hun-asm"
+        }
       }
     },
-
+    "linker-keywords": {
+      "comment": "링커 스크립트 핵심 지시어 및 메모리 구역 설정 키워드",
+      "name": "keyword.control.linker.hun-asm",
+      "match": "\\b(ENTRY|SECTIONS|MEMORY|PHDRS|VERSION|ALIGN|KEEP|PROVIDE|EXTERN|INCLUDE|ORIGIN|LENGTH|org|len)\\b"
+    },
+    "linker-operators": {
+      "comment": "링커에서 자주 쓰이는 할당 및 특수 기호",
+      "match": "(=|\\+|\\-|\\*|\\/|&|\\||<<|>>|\\.)"
+    },
     "section-macros": {
       "comment": "섹션 지정용 매크로 호출 (CODE_SECTION, CSTRING_SECTION 등). support.function = 미리 만들어둔 걸 '갖다 쓰는' 자리",
       "name": "support.function.macro.section.hun-asm",
       "match": "\\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_SECTION\\b"
     },
-
     "func-macros": {
       "comment": "함수 프롤로그/에필로그 매크로 호출 (FUNC_START, FUNC_EXIT, FUNC_EXIT_LIGHT 등)",
       "name": "support.function.macro.func.hun-asm",
       "match": "\\bFUNC_[A-Z0-9_]*\\b"
     },
-
     "hangul-mnemonics": {
       "comment": "AArch64HangulAliases.td 에 정의된 한글 니모닉 전체. (?<![\\p{L}0-9_.$]) 왼쪽 경계 추가: '임시저장' 같은 더 긴 단어의 일부로 '저장'만 잘못 매칭되는 것을 방지",
       "name": "keyword.control.mnemonic.hangul.hun-asm",
@@ -76,9 +125,18 @@
     },
     "numbers": {
       "patterns": [
-        { "name": "constant.numeric.hex.hun-asm", "match": "#?0[xX][0-9a-fA-F]+" },
-        { "name": "constant.numeric.binary.hun-asm", "match": "#?0[bB][01]+" },
-        { "name": "constant.numeric.decimal.hun-asm", "match": "#-?[0-9]+" }
+        {
+          "name": "constant.numeric.hex.hun-asm",
+          "match": "#?0[xX][0-9a-fA-F]+"
+        },
+        {
+          "name": "constant.numeric.binary.hun-asm",
+          "match": "#?0[bB][01]+"
+        },
+        {
+          "name": "constant.numeric.decimal.hun-asm",
+          "match": "#-?[0-9]+"
+        }
       ]
     },
     "labels": {
