@@ -770,12 +770,8 @@ function activate(context) {
   // -----------------------------------------------------------------------
   // [7구역: 디버거 (외부의존성)]
   // -----------------------------------------------------------------------
-  // ▼▼▼ 여기 새로 추가 ▼▼▼
-  // const ZIG_EXE_NAME_RE = /\.name\s*=\s*"([^"]+)"/; // (참조용)
-  // build.zig 안에서 addExecutable 블록 안의 name 필드를 찾음
-  // → "RealManApp"
   const HUN_ASM_LLDB_INIT_COMMANDS = [
-    'breakpoint set --name main',
+    'breakpoint set --name main --name _main',
     'settings set target.language c',
   ];
 
@@ -788,9 +784,7 @@ function activate(context) {
       const bytes = await fs.readFile(zigPath);
       const text = Buffer.from(bytes).toString('utf8');
       const m = /\.name\s*=\s*"([^"]+)"/.exec(text);
-      if (m) {
-        return `\${workspaceFolder}/zig-out/bin/${m[1]}`;
-      }
+      if (m) return `\${workspaceFolder}/zig-out/bin/${m[1]}`;
     } catch { /* build.zig 없음, 다음으로 */ }
 
     // 2) CMakeLists.txt가 있으면 CMake 프로젝트로 간주
@@ -817,55 +811,36 @@ function activate(context) {
 
     return null; // 둘 다 못 찾으면 기존 기본값(bin/워크스페이스이름)으로 폴백
   }
-  const debugConfigProvider = vscode.debug.registerDebugConfigurationProvider('lldb', {
-    provideDebugConfigurations(folder) {
-      return [
-        {
-          type: 'lldb',
-          request: 'launch',
-          name: 'Hun-ASM: 현재 바이너리 디버그',
-          program: '${workspaceFolder}/bin/${workspaceFolderBasename}',
-          args: [],
-          cwd: '${workspaceFolder}',
-          initCommands: HUN_ASM_LLDB_INIT_COMMANDS,
-        },
 
-      ];
+  async function buildLldbConfig(folder, name) {
+    const detected = folder ? await detectExecutable(folder.uri) : null;
+    return {
+      type: 'lldb',
+      request: 'launch',
+      name,
+      program: detected || '${workspaceFolder}/bin/${workspaceFolderBasename}',
+      args: [],
+      cwd: '${workspaceFolder}',
+      internalConsoleOptions: 'openOnSessionStart', // DEBUG CONSOLE 자동 포커스
+      initCommands: HUN_ASM_LLDB_INIT_COMMANDS,
+    };
+  }
+
+  const debugConfigProvider = vscode.debug.registerDebugConfigurationProvider('lldb', {
+    // "Add Configuration..." 버튼 — 이제 detectExecutable을 똑같이 거침
+    async provideDebugConfigurations(folder) {
+      return [await buildLldbConfig(folder, 'Hun-ASM: 현재 바이너리 디버그')];
     },
+    // launch.json 없이 F5만 눌렀을 때 — 기존 로직 그대로, 헬퍼만 재사용
     async resolveDebugConfiguration(folder, config) {
       if (!config.type) {
-        config.type = 'lldb';
-        config.request = 'launch';
-        config.name = 'Hun-ASM: 자동 디버그';
-        config.initCommands = HUN_ASM_LLDB_INIT_COMMANDS;
-
-        const detected = folder ? await detectExecutable(folder.uri) : null;
-        config.program = detected || '${workspaceFolder}/bin/${workspaceFolderBasename}';
+        const built = await buildLldbConfig(folder, 'Hun-ASM: 자동 디버그');
+        Object.assign(config, built);
       }
       return config;
-    }
-    // resolveDebugConfiguration(folder, config) {
-    //   // launch.json 없이 그냥 F5만 눌렀을 때도 기본값 채워주는 역할
-    //   if (!config.type) {
-    //     config.type = 'lldb';
-    //     config.request = 'launch';
-    //     config.name = 'Hun-ASM: 자동 디버그';
-    //     config.program = '${workspaceFolder}/bin/${workspaceFolderBasename}';
-    //     config.initCommands = ['breakpoint set --name main'];
-    //   }
-    //   return config;
-    // }
-    /* 
-    이렇게까지 하면 launch.json 파일 자체가 없어도 F5 한 번으로 바로 lldb 세션이 시작되게 만들 수 있습니다.
-    
-    breakpoint set --name main 대신, 사용자가 이미 만든 매크로 이름(FUNC_START_FULL main)의 심볼로 걸고 싶다면
-    
-    initCommands는 그냥 lldb 커맨드 문자열 배열이라, 원하시는 어떤 lldb 커맨드든 자유롭게 넣으실 수 있습니다:
-    
-    */
+    },
   });
   context.subscriptions.push(debugConfigProvider);
-  // ▲▲▲ 여기까지 ▲▲▲
 }
 
 // =========================================================================
