@@ -18,6 +18,7 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 - **Diagnostics** that catch real AArch64 encoding rules, not just typos — see below
 - **Go to Definition & Outline** for jumping straight to label definitions and browsing all labels in a file
 - **Workspace-wide symbol index**: functions and labels defined in any file in your project are visible everywhere — in autocomplete, Go to Definition, and the new Ctrl+T (Go to Symbol in Workspace) search. Built once on activation and kept live via a file watcher, so it stays fast even as the project grows
+- **Debugging integration**: registers a `launch.json` configuration provider for the `lldb` debug type, backed by the bundled [CodeLLDB](https://github.com/vadimcn/vscode-lldb) dependency. Press F5 with no `launch.json` in the workspace and it auto-detects your build system and sets a breakpoint at `main` for you — see [Debugging](#debugging-via-codelldb) below
 - **Snippets** for common boilerplate (function prologues, printf/scanf variadic calls, loops, etc.)
 - Built-in directive highlighting (`.section`, `.global`, `.macro`, ...), hex/binary/decimal constants, comments, and strings
 - Support for custom section macros (`CODE_SECTION`, `DATA_SECTION`, `BSS_SECTION`, ...) used by the Hun build system
@@ -48,6 +49,17 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
   - Other (global) labels resolve from anywhere in the workspace. External libc symbols like `_printf` won't resolve, which is expected.
 - **Ctrl+T / Cmd+T — Go to Symbol in Workspace**: search every function/label across the entire project by name.
 - **Outline panel / Ctrl+Shift+O**: shows every label in the current file as a tree, with global (function) labels and `.L_` local (control-flow) labels marked with distinct icons.
+
+### Debugging (via CodeLLDB)
+
+Installing this extension also installs [CodeLLDB](https://github.com/vadimcn/vscode-lldb) — the actual [Debug Adapter Protocol](https://microsoft.github.io/debug-adapter-protocol/) implementation that talks to `lldb` and drives VS Code's breakpoint/step/variable UI. This extension doesn't reimplement a debugger; it registers a `DebugConfigurationProvider` for CodeLLDB's `lldb` type and wires it up automatically for assembly projects.
+
+- **Zero-config F5 debugging**: if you press **Run and Debug (F5)** with no `launch.json` in the workspace, the executable path is auto-detected:
+  1. **Zig** (`build.zig` present) — reads the `.name = "..."` field of your `addExecutable` call and points at `zig-out/bin/<name>`.
+  2. **CMake** (`CMakeLists.txt` present) — reads the target name from `add_executable(...)`; if `build/CMakeCache.txt` exists, also reads `CMAKE_BUILD_TYPE` to account for generators (e.g. Xcode) that nest a `Debug/`/`Release/` subfolder.
+  3. Falls back to `${workspaceFolder}/bin/${workspaceFolderBasename}` if neither is found.
+- A breakpoint at `main` is set automatically, along with `settings set target.language c` — this works around an lldb limitation where hand-written `.S` files with no DWARF language tag otherwise reject `expr` commands (`Could not find type system for language assembly`).
+- If a `launch.json` already exists in the workspace, your own settings are always respected — auto-detection only runs when there's nothing to go on.
 
 ### Snippets
 
@@ -93,6 +105,16 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 Just open a `.S`, `.s`, `.inc`, or `.asm` file — the extension activates automatically. No configuration needed.
 
 ## Changelog
+
+### 🚀 v2.6.0 — Debugging Integration (CodeLLDB)
+This release adds a new capability class to the extension — debugging, not just editing. `hun-asm-highlighter` now declares [CodeLLDB](https://github.com/vadimcn/vscode-lldb) as an `extensionDependencies` entry and registers a `DebugConfigurationProvider` for its `lldb` debug type.
+
+* **Zero-config F5 debugging**: with no `launch.json` present, pressing F5 auto-detects the executable path from `build.zig` (Zig) or `CMakeLists.txt` (+ `CMakeCache.txt` when available for the build-type subfolder), falling back to a sane default otherwise
+* **Auto breakpoint at `main`**, plus an automatic `settings set target.language c` workaround for lldb's "no type system for language assembly" error on hand-written `.S` files
+* User-authored `launch.json` configurations are always respected — auto-detection only fires when nothing is specified
+* Purely additive: no existing highlighting/hover/diagnostics/formatting behavior changes
+
+> Note on the version jump (2.5.2 → 2.6.0): this reflects the new `extensionDependencies` entry and a brand-new feature category (debugging), not a breaking change — hence a MINOR bump rather than a PATCH.
 
 ### 🚀 v2.5.1 — Linker Script Support & Refinements
 This release extends the extension's territory to include compiler infrastructure engineering, adding first-class support for linker scripts (`linker.ld`).
@@ -200,6 +222,7 @@ MIT License
 - 단순 오타 검출을 넘어 실제 AArch64 인코딩 규칙을 검사하는 진단 기능 (아래 참고)
 - 라벨 정의로 바로 이동하는 Go to Definition 및 아웃라인
 - **워크스페이스 전역 심볼 인덱스**: 프로젝트 안 어떤 파일에 정의한 함수/라벨이든 자동완성, Go to Definition, 새로 추가된 Ctrl+T(워크스페이스 심볼 검색) 어디서나 보입니다. 확장 켜질 때 한 번 구축한 뒤 파일 변경 감시로 계속 최신 상태를 유지하므로, 프로젝트가 커져도 속도가 유지됩니다
+- **디버깅 통합**: `lldb` 디버그 타입용 `launch.json` 설정 제공자로 등록되며, 함께 설치되는 [CodeLLDB](https://github.com/vadimcn/vscode-lldb) 확장이 실제 디버거 연동을 담당합니다. 워크스페이스에 `launch.json`이 없는 상태로 F5를 누르면 빌드 시스템을 자동 감지해 실행파일 경로를 채우고 `main`에 자동으로 브레이크포인트를 걸어줍니다 — 아래 [디버깅](#디버깅-codelldb-기반) 항목 참고
 - 흔히 쓰는 상용구를 위한 스니펫 (함수 프롤로그, printf/scanf variadic 호출, 반복문 등)
 - `.section`, `.global`, `.macro` 등 내장 지시어 강조, 16진수/2진수/10진수 상수, 주석, 문자열 강조
 - Hun 빌드 시스템이 쓰는 커스텀 섹션 매크로 지원 (`CODE_SECTION`, `DATA_SECTION`, `BSS_SECTION` 등)
@@ -230,6 +253,17 @@ MIT License
   - 그 외 전역 라벨은 워크스페이스 어디에 정의되어 있든 인덱스에서 바로 찾습니다. `_printf`처럼 외부 libc 함수는 자연스럽게 이동하지 않습니다 (정상 동작입니다).
 - **Ctrl+T / Cmd+T — 워크스페이스 심볼 검색**: 프로젝트 전체 함수/라벨을 이름으로 검색합니다.
 - **아웃라인 패널 / Ctrl+Shift+O**: 파일 안의 모든 라벨을 트리로 보여줍니다. 전역 라벨(함수)과 `.L_` 로컬 라벨(흐름 제어)을 서로 다른 아이콘으로 구분합니다.
+
+### 디버깅 (CodeLLDB 기반)
+
+이 확장을 설치하면 [CodeLLDB](https://github.com/vadimcn/vscode-lldb)도 함께 설치됩니다 — `lldb`와 실제로 통신하면서 VS Code의 브레이크포인트/스텝 실행/변수뷰 UI를 구동하는 진짜 [Debug Adapter Protocol](https://microsoft.github.io/debug-adapter-protocol/) 구현체입니다. 이 확장은 디버거를 직접 재구현하지 않고, CodeLLDB의 `lldb` 타입에 `DebugConfigurationProvider`를 등록해서 어셈블리 프로젝트에 맞게 자동으로 연결해줄 뿐입니다.
+
+- **설정 없이 F5로 바로 디버깅**: 워크스페이스에 `launch.json`이 없는 상태로 **Run and Debug (F5)**를 누르면 실행파일 경로를 자동으로 찾습니다:
+  1. **Zig** (`build.zig`가 있는 경우) — `addExecutable` 호출의 `.name = "..."` 필드를 읽어 `zig-out/bin/<이름>`을 가리킵니다.
+  2. **CMake** (`CMakeLists.txt`가 있는 경우) — `add_executable(...)`에서 타겟 이름을 읽고, `build/CMakeCache.txt`가 있으면 `CMAKE_BUILD_TYPE`까지 읽어서 Xcode 제너레이터처럼 `Debug/`/`Release/` 하위 폴더가 끼는 경우까지 반영합니다.
+  3. 둘 다 없으면 `${workspaceFolder}/bin/${workspaceFolderBasename}`로 폴백합니다.
+- `main`에 자동으로 브레이크포인트를 걸고, `settings set target.language c`도 같이 적용합니다 — DWARF 언어 태그가 없는 순수 `.S` 손코딩 파일에서 `expr` 커맨드가 `Could not find type system for language assembly` 에러로 거부되는 lldb의 한계를 미리 우회하기 위함입니다.
+- 워크스페이스에 이미 `launch.json`이 있다면 그 설정을 항상 우선합니다 — 자동 감지는 아무 설정도 없을 때만 동작합니다.
 
 ### 스니펫
 
@@ -275,6 +309,16 @@ MIT License
 `.S`, `.s`, `.inc`, `.asm` 확장자 파일을 열면 자동으로 적용됩니다. 별도 설정 불필요.
 
 ## 변경 이력
+
+### 🚀 v2.6.0 — 디버깅 통합 (CodeLLDB)
+이번 릴리스는 확장의 영역을 "편집"에서 "디버깅"까지 넓힙니다. `hun-asm-highlighter`가 이제 [CodeLLDB](https://github.com/vadimcn/vscode-lldb)를 `extensionDependencies`로 선언하고, 그 확장의 `lldb` 디버그 타입에 `DebugConfigurationProvider`를 등록합니다.
+
+* **설정 없이 F5로 바로 디버깅**: `launch.json`이 없어도 F5를 누르면 `build.zig`(Zig) 또는 `CMakeLists.txt`(+ 가능하면 `CMakeCache.txt`로 빌드 타입 하위 폴더까지 반영)에서 실행파일 경로를 자동 감지하고, 둘 다 없으면 합리적인 기본값으로 폴백
+* **`main`에 자동 브레이크포인트** 설정, 손코딩 `.S` 파일에서 DWARF 언어 태그 부재로 `expr`이 거부되는 lldb 문제를 미리 우회하는 `settings set target.language c` 자동 적용
+* 워크스페이스에 이미 `launch.json`이 있으면 항상 그 설정을 우선 — 자동 감지는 아무것도 없을 때만 동작
+* 순수 추가 기능: 기존 문법강조/호버/진단/포맷 동작에는 아무 영향 없음
+
+> 버전이 2.5.2 → 2.6.0으로 뛴 이유: 새로운 `extensionDependencies` 등록과 완전히 새로운 기능 범주(디버깅) 추가를 반영한 것으로, 기존 기능을 깨는 변경(breaking change)은 아니라서 PATCH가 아닌 MINOR 증가로 처리했습니다.
 
 ### 🚀 v2.5.1 — 링커 스크립트 지원 및 코드 접기 보강
 이번 릴리스는 컴파일러 인프라 엔지니어링 영역까지 확장하여, 시스템 빌드의 뼈대인 링커 스크립트(`linker.ld`)를 공식 지원합니다.

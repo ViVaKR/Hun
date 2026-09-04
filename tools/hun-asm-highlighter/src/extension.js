@@ -418,8 +418,11 @@ function activate(context) {
 
   // [ 자동완성 ]
   const symbolIndex = createSymbolIndex();
-  // 켜지자마자 백그라운드에서 전체 스캔 시작 (await 안 해도 됨 — 끝나기 전엔 그냥 지금까지 스캔된 만큼만 조회됨)
+
+  // 켜지자마자 백그라운드에서 전체 스캔 시작
+  // await 안 해도 됨 — 끝나기 전엔 그냥 지금까지 스캔된 만큼만 조회됨)
   symbolIndex.scanWorkspace();
+
   // 이후 파일 변경/생성/삭제를 실시간 반영
   symbolIndex.watch(context);
 
@@ -447,7 +450,6 @@ function activate(context) {
     vscode.workspace.onDidChangeTextDocument((e) => refresh(e.document)),
     vscode.workspace.onDidCloseTextDocument((doc) => diagnosticCollection.delete(doc.uri))
   );
-
 
   // -----------------------------------------------------------------------
   // 💡 [2구역: 족집게 사전] 니모닉 마우스 호버(Hover) 설명 제공
@@ -554,7 +556,6 @@ function activate(context) {
       },
     })
   );
-
 
   // -----------------------------------------------------------------------
   // ✍️ [3구역: 서기 대행] 니모닉 자동완성(Completion) 비서실
@@ -712,7 +713,6 @@ function activate(context) {
     })
   );
 
-
   // -----------------------------------------------------------------------
   // 🗺️ [5구역: 작전 지도] 아웃라인 패널(Ctrl+Shift+O) 심볼 트리 빌더
   // -----------------------------------------------------------------------
@@ -741,7 +741,6 @@ function activate(context) {
     })
   );
 
-
   // -----------------------------------------------------------------------
   // ⚔️ [6구역: 종합 예술 조각소] 코드 칼정렬(Formatting) 포맷터 엔진
   //    - 명령어 라인은 탭 기반 정렬 (기존과 동일, 문자열 안 콤마 보호 버그 수정됨)
@@ -767,6 +766,106 @@ function activate(context) {
       },
     })
   );
+
+  // -----------------------------------------------------------------------
+  // [7구역: 디버거 (외부의존성)]
+  // -----------------------------------------------------------------------
+  // ▼▼▼ 여기 새로 추가 ▼▼▼
+  // const ZIG_EXE_NAME_RE = /\.name\s*=\s*"([^"]+)"/; // (참조용)
+  // build.zig 안에서 addExecutable 블록 안의 name 필드를 찾음
+  // → "RealManApp"
+  const HUN_ASM_LLDB_INIT_COMMANDS = [
+    'breakpoint set --name main',
+    'settings set target.language c',
+  ];
+
+  async function detectExecutable(workspaceRoot) {
+    const fs = vscode.workspace.fs;
+
+    // 1) build.zig가 있으면 Zig 프로젝트로 간주
+    const zigPath = vscode.Uri.joinPath(workspaceRoot, 'build.zig');
+    try {
+      const bytes = await fs.readFile(zigPath);
+      const text = Buffer.from(bytes).toString('utf8');
+      const m = /\.name\s*=\s*"([^"]+)"/.exec(text);
+      if (m) {
+        return `\${workspaceFolder}/zig-out/bin/${m[1]}`;
+      }
+    } catch { /* build.zig 없음, 다음으로 */ }
+
+    // 2) CMakeLists.txt가 있으면 CMake 프로젝트로 간주
+    const cmakePath = vscode.Uri.joinPath(workspaceRoot, 'CMakeLists.txt');
+    try {
+      const bytes = await fs.readFile(cmakePath);
+      const text = Buffer.from(bytes).toString('utf8');
+      const m = /add_executable\(\s*([A-Za-z0-9_]+)/.exec(text);
+      if (m) {
+        // CMakeCache.txt가 있으면 실제 빌드 타입까지 반영
+        const cachePath = vscode.Uri.joinPath(workspaceRoot, 'build', 'CMakeCache.txt');
+        let configDir = '';
+        try {
+          const cacheBytes = await fs.readFile(cachePath);
+          const cacheText = Buffer.from(cacheBytes).toString('utf8');
+          const bm = /CMAKE_BUILD_TYPE:STRING=(\w+)/.exec(cacheText);
+          // Xcode 제너레이터 등은 config 하위 폴더가 생길 수 있음
+          if (bm) configDir = `/${bm[1]}`;
+        } catch { /* CMakeCache 없으면 configDir 없이 진행 */ }
+
+        return `\${workspaceFolder}/build${configDir}/${m[1]}`;
+      }
+    } catch { /* CMakeLists.txt도 없음 */ }
+
+    return null; // 둘 다 못 찾으면 기존 기본값(bin/워크스페이스이름)으로 폴백
+  }
+  const debugConfigProvider = vscode.debug.registerDebugConfigurationProvider('lldb', {
+    provideDebugConfigurations(folder) {
+      return [
+        {
+          type: 'lldb',
+          request: 'launch',
+          name: 'Hun-ASM: 현재 바이너리 디버그',
+          program: '${workspaceFolder}/bin/${workspaceFolderBasename}',
+          args: [],
+          cwd: '${workspaceFolder}',
+          initCommands: HUN_ASM_LLDB_INIT_COMMANDS,
+        },
+
+      ];
+    },
+    async resolveDebugConfiguration(folder, config) {
+      if (!config.type) {
+        config.type = 'lldb';
+        config.request = 'launch';
+        config.name = 'Hun-ASM: 자동 디버그';
+        config.initCommands = HUN_ASM_LLDB_INIT_COMMANDS;
+
+        const detected = folder ? await detectExecutable(folder.uri) : null;
+        config.program = detected || '${workspaceFolder}/bin/${workspaceFolderBasename}';
+      }
+      return config;
+    }
+    // resolveDebugConfiguration(folder, config) {
+    //   // launch.json 없이 그냥 F5만 눌렀을 때도 기본값 채워주는 역할
+    //   if (!config.type) {
+    //     config.type = 'lldb';
+    //     config.request = 'launch';
+    //     config.name = 'Hun-ASM: 자동 디버그';
+    //     config.program = '${workspaceFolder}/bin/${workspaceFolderBasename}';
+    //     config.initCommands = ['breakpoint set --name main'];
+    //   }
+    //   return config;
+    // }
+    /* 
+    이렇게까지 하면 launch.json 파일 자체가 없어도 F5 한 번으로 바로 lldb 세션이 시작되게 만들 수 있습니다.
+    
+    breakpoint set --name main 대신, 사용자가 이미 만든 매크로 이름(FUNC_START_FULL main)의 심볼로 걸고 싶다면
+    
+    initCommands는 그냥 lldb 커맨드 문자열 배열이라, 원하시는 어떤 lldb 커맨드든 자유롭게 넣으실 수 있습니다:
+    
+    */
+  });
+  context.subscriptions.push(debugConfigProvider);
+  // ▲▲▲ 여기까지 ▲▲▲
 }
 
 // =========================================================================
