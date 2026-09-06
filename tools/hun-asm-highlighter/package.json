@@ -4,11 +4,12 @@
   "license": "MIT",
   "displayName": "Hun ARM64 한글 어셈블리 강조",
   "description": "훈(Hun) 프로젝트 전용 - 한글 니모닉과 섹션 매크로를 인식하는 문법 강조, Syntax highlighting for Hun ARM64 Assembly with Korean mnemonics, ARM64 registers, directives, labels and section macros.",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "main": "src/extension.js",
   "homepage": "https://vivakr.github.io/Hun",
   "activationEvents": [
-    "onLanguage:hun-asm"
+    "onLanguage:hun-asm",
+    "onLanguage:hun-riscv"
   ],
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   "keywords": [
     "assembly",
     "arm64",
+    "riscv",
     "aarch64",
     "intellisense",
     "llvm",
@@ -44,21 +46,16 @@
     "languages": [
       {
         "id": "hun-asm",
-        "aliases": [
-          "Hun ARM64 Assembly",
-          "hun-asm"
-        ],
-        "extensions": [
-          ".S",
-          ".s",
-          ".inc",
-          ".asm",
-          ".ld"
-        ],
-        "filenames": [
-          "linker.ld"
-        ],
+        "aliases": [ "Hun ARM64 Assembly", "hun-asm" ],
+        "extensions": [ ".S", ".s", ".inc", ".asm", ".ld" ],
+        "filenames": [ "linker.ld" ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "hun-riscv",
+        "aliases": [ "Hun RISC-V Assembly", "hun-riscv" ],
+        "extensions": [ ".v", ".riscv" ],
+        "configuration": "./riscv-configuration.json"
       }
     ],
     "grammars": [
@@ -66,12 +63,21 @@
         "language": "hun-asm",
         "scopeName": "source.hun-asm",
         "path": "./syntaxes/hun-asm.tmLanguage.json"
+      },
+      {
+        "language": "hun-riscv",
+        "scopeName": "source.hun-riscv",
+        "path": "./syntaxes/hun-riscv.tmLanguage.json"
       }
     ],
     "snippets": [
       {
         "language": "hun-asm",
         "path": "./snippets/hun-asm.code-snippets"
+      },
+      {
+        "language": "hun-riscv",
+        "path": "./snippets/hun-riscv.code-snippets"
       }
     ],
     "configuration": {

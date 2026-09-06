@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Hun ARM64 Assembly",
+  "scopeName": "source.hun-asm",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#char-literals"
+    },
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "#macro-definition"
+    },
+    {
+      "include": "#section-macros"
+    },
+    {
+      "include": "#func-macros"
+    },
+    {
+      "include": "#hangul-mnemonics"
+    },
+    {
+      "include": "#standard-mnemonics"
+    },
+    {
+      "include": "#registers"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#labels"
+    },
+    {
+      "include": "#linker-keywords"
+    },
+    {
+      "include": "#linker-operators"
+    }
+  ],
+  "repository": {
+    "registers": {
+      "comment": "RISC-V 정갈한 32개 범용 레지스터 및 고품격 ABI 별명 통합 포획",
+      "name": "variable.language.register.hun-riscv",
+      "match": "\\b(x(0|[1-2][0-9]|3[01])|f(0|[1-2][0-9]|3[01])|zero|ra|sp|gp|tp|t[0-6]|s[0-11]|a[0-7]|fp)\\b"
+    },
+    "hangul-mnemonics": {
+      "comment": "RISC-V 아키텍처에 맞춤 정렬된 한글 니모닉 엔진",
+      "name": "keyword.control.mnemonic.hangul.hun-riscv",
+      "match": "(?<![\\p{L}0-9_.$])(적재|저장|더함|즉시더함|뺌|곱함|나눔|같으면뜀|아니면뜀|크면뜀|작으면뜀|명령호출)(?=\\s)"
+    },
+    "standard-mnemonics": {
+      "comment": "오픈소스 인류 공통 RV64I 핵심 명령어 목록",
+      "name": "keyword.control.mnemonic.hun-riscv",
+      "match": "(?i)\\b(lui|auipc|jal|jalr|beq|bne|blt|bge|bltu|bgeu|lb|lh|lw|lbu|lhu|sb|sh|sw|addi|slti|sltiu|xori|ori|andi|slli|srli|srai|add|sub|sll|slt|sltu|xor|srl|sra|or|and|fence|ecall|ebreak|lwu|ld|sd|mul|div|rem)\\b"
+    }
+  }
+}

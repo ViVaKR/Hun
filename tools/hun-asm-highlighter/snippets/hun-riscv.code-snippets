@@ -1,0 +1,26 @@
+{
+  "RISC-V Pure Loop Matrix": {
+    "scope": "hun-riscv",
+    "prefix": "_vloop",
+    "body": [
+      ".global _start",
+      ".text",
+      "",
+      "_start:",
+      "\tli t0, 1      // 카운터 시작",
+      "\tli t1, 10     // 한계치 설정",
+      "\tli a0, 0      // 결과 누적 방",
+      "",
+      ".L_${1:loop_name}:",
+      "\tbgt t0, t1, .L_${2:exit_label}  // 상남자식 한 줄 조건문 점프!",
+      "\tadd a0, a0, t0",
+      "\taddi t0, t0, 1",
+      "\tj .L_${1:loop_name}",
+      "",
+      ".L_${2:exit_label}:",
+      "\tli a7, 93     // sys_exit 시스템 콜 번호",
+      "\tecall         // 태초의 종료 명령",
+    ],
+    "description": "C의 잔재가 없는 순수 RISC-V 한글/영문 반복문 10초 컷 뼈대",
+  },
+}

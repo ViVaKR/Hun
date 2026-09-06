@@ -23,6 +23,8 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 - Built-in directive highlighting (`.section`, `.global`, `.macro`, ...), hex/binary/decimal constants, comments, and strings
 - Support for custom section macros (`CODE_SECTION`, `DATA_SECTION`, `BSS_SECTION`, ...) used by the Hun build system
 - Optional Korean-mnemonic recognition (`할당`, `더함`, `적재`, ...) and Korean-language labels, for developers working in the Hun ecosystem
+- **Dual-Architecture Sovereignty (ARM64 & RISC-V)**: Fully decouples from the constraints of a single architecture. Open a `.riscv` or `.v` file, and the extension instantly morphs into a pristine RISC-V environment.
+- **RISC-V Language ID (`hun-riscv`)**: Native recognition for `.riscv` and `.v` extensions with isolated syntax maps, duplicate-free IntelliSense, and targeted formatting rules.
 
 ### Diagnostics in detail
 
@@ -58,7 +60,9 @@ Installing this extension also installs [CodeLLDB](https://github.com/vadimcn/vs
   1. **Zig** (`build.zig` present) — reads the `.name = "..."` field of your `addExecutable` call and points at `zig-out/bin/<name>`.
   2. **CMake** (`CMakeLists.txt` present) — reads the target name from `add_executable(...)`; if `build/CMakeCache.txt` exists, also reads `CMAKE_BUILD_TYPE` to account for generators (e.g. Xcode) that nest a `Debug/`/`Release/` subfolder.
   3. Falls back to `${workspaceFolder}/bin/${workspaceFolderBasename}` if neither is found.
-- A breakpoint at `main` is set automatically, along with `settings set target.language c` — this works around an lldb limitation where hand-written `.S` files with no DWARF language tag otherwise reject `expr` commands (`Could not find type system for language assembly`).
+
+- A breakpoint at `main` **and** `_main` is set automatically (covers both Linux/ELF's bare `main` and macOS/Mach-O's underscore-prefixed `_main`), along with `settings set target.language c` — this works around an lldb limitation where hand-written `.S` files with no DWARF language tag otherwise reject `expr` commands (`Could not find type system for language assembly`).
+
 - If a `launch.json` already exists in the workspace, your own settings are always respected — auto-detection only runs when there's nothing to go on.
 
 ### Snippets
@@ -106,6 +110,26 @@ Just open a `.S`, `.s`, `.inc`, or `.asm` file — the extension activates autom
 
 ## Changelog
 
+### 🚀 v2.7.0 — Dual-Architecture Sovereignty: RISC-V Expansion & Hybrid Engine Launch
+Following our established ARM64 territory, we have officially annexed **64-bit RISC-V (RV64I)**—the pure, untainted, and fully open-source architecture of humanity's shared software heritage. This release transforms the extension into a transcendent, All-in-One package capable of ruling two unique CPU universes simultaneously.
+
+* **Declaration of a Sovereign RISC-V Language ID (`hun-riscv`)**: Officially capturing and activating native support for `.riscv` and `.v` file extensions.
+* **Pristine RISC-V Register Highlighting**: Flawless recognition of `x0`–`x31`, `f0`–`f31`, and their high-status ABI aliases (`a0`–`a7`, `t0`–`t6`, `sp`, `zero`, etc.).
+* **Pure, C-Free Loop Snippets**: Summon a clean counting loop (from 1 to 10) instantly via the `_vloop` prefix—engineered with zero reliance on toxic C/C++ scaffolding.
+* **Suppression of Petty Visual Dilemmas**: Deployed tactical configurations to tame VS Code's stubborn JSON formatter, permanently stopping braces and properties from awkwardly warping onto new lines.
+
+> Note on the version jump (2.6.1 → 2.7.0): This substantial leap reflects a massive expansion into a brand-new territory of processor architecture (New Feature Category). Aligned with SemVer rules, the MINOR version is aggressively promoted to v2.7.0 for this historic rollout.
+
+### 🐛 v2.6.1 — Debug Provider Bug Fixes
+Following up on v2.6.0's debugging integration, this patch fixes three real-world bugs discovered while dogfooding the feature on a fresh macOS project.
+
+* **Breakpoint now matches both `main` and `_main`** — hand-assembled `.S` files that declare their own entry symbol following Mach-O's leading-underscore convention (e.g. scaffolded by `armcli init` on macOS) previously never hit the auto breakpoint, since only bare `main` was targeted
+* **Manual "Add Configuration..." and automatic F5 detection now share one code path** (`buildLldbConfig`) — previously the manually-added config used a stale `${workspaceFolder}/bin/...` default that didn't match Zig's actual `zig-out/bin/...` output, while F5's auto-detect got it right; both now call the same `detectExecutable` logic
+* **Debug Console now opens automatically** on session start (`internalConsoleOptions: "openOnSessionStart"`), instead of silently staying behind the integrated terminal
+* **Removed an incorrect `contributes.debuggers` declaration** in `package.json` that could cause VS Code's extension picker to suggest this extension itself instead of CodeLLDB when `lldb` wasn't yet installed
+
+> Why PATCH and not MINOR: no new capability was added, no configuration surface changed — these are pure bug fixes to the v2.6.0 debugging feature, so semver PATCH applies.
+
 ### 🚀 v2.6.0 — Debugging Integration (CodeLLDB)
 This release adds a new capability class to the extension — debugging, not just editing. `hun-asm-highlighter` now declares [CodeLLDB](https://github.com/vadimcn/vscode-lldb) as an `extensionDependencies` entry and registers a `DebugConfigurationProvider` for its `lldb` debug type.
 
@@ -130,14 +154,6 @@ Autocomplete and Go to Definition used to only really know about the current fil
 * **Instant Go to Definition**: F12 now resolves from the in-memory index instead of re-scanning the workspace on every click
 * **New: Ctrl+T / Cmd+T — Go to Symbol in Workspace**: search every function/label in the project by name, using VS Code's standard workspace-symbol picker
 * Index updates incrementally on file save/create/delete, so it never goes stale without needing a reload
-
-### 🚀 v2.5.0 — 워크스페이스 전역 인텔리센스
-지금까지 자동완성과 Go to Definition은 사실상 현재 파일만 알고 있었습니다 — 다른 파일에 정의한 함수는 타이핑 중 자동완성에 안 뜨고, F12를 누를 때마다 워크스페이스 파일을 최대 300개까지 매번 새로 열어 처음부터 다시 훑었습니다. 이번 릴리스는 이걸 제대로 된 인메모리 심볼 인덱스로 교체했습니다 — 확장이 켜질 때 한 번 구축하고, 이후로는 파일 변경 감시(watcher)로 계속 최신 상태를 유지합니다.
-
-* **파일 간 자동완성**: 워크스페이스 어디에 정의한 함수/라벨이든 자동완성에 뜨고, detail 줄에 어느 파일 출처인지 표시
-* **즉시 반응하는 Go to Definition**: F12가 매번 재스캔하는 대신 인메모리 인덱스에서 바로 조회
-* **신규: Ctrl+T / Cmd+T — 워크스페이스 심볼 검색**: 프로젝트 전체 함수/라벨을 이름으로 검색 (VS Code 표준 워크스페이스 심볼 피커)
-* 파일 저장/생성/삭제 시 인덱스가 증분 갱신되어, 리로드 없이도 항상 최신 상태 유지
 
 ---
 
@@ -225,8 +241,14 @@ MIT License
 - **디버깅 통합**: `lldb` 디버그 타입용 `launch.json` 설정 제공자로 등록되며, 함께 설치되는 [CodeLLDB](https://github.com/vadimcn/vscode-lldb) 확장이 실제 디버거 연동을 담당합니다. 워크스페이스에 `launch.json`이 없는 상태로 F5를 누르면 빌드 시스템을 자동 감지해 실행파일 경로를 채우고 `main`에 자동으로 브레이크포인트를 걸어줍니다 — 아래 [디버깅](#디버깅-codelldb-기반) 항목 참고
 - 흔히 쓰는 상용구를 위한 스니펫 (함수 프롤로그, printf/scanf variadic 호출, 반복문 등)
 - `.section`, `.global`, `.macro` 등 내장 지시어 강조, 16진수/2진수/10진수 상수, 주석, 문자열 강조
+
 - Hun 빌드 시스템이 쓰는 커스텀 섹션 매크로 지원 (`CODE_SECTION`, `DATA_SECTION`, `BSS_SECTION` 등)
+
 - 선택적인 한글 니모닉(`할당`, `더함`, `적재` 등) 및 한글 라벨 인식
+
+- **듀얼 아키텍처 독립 선포 (ARM64 & RISC-V)**: 단일 아키텍처의 쇠사슬을 끊어냈습니다. `.riscv` 또는 `.v` 파일을 여는 순간, 오직 RISC-V만을 위한 청정한 한글/영문 문법 렌즈가 즉각 발동합니다.
+
+- **RISC-V 전용 식별자 (`hun-riscv`)**: 독자적인 확장자 지원을 통해 ARM64와의 간섭을 완벽히 차단하고, 가장 정갈한 순수 기계어 조립 환경을 하사합니다.
 
 ### 기본 진단 (Diagnostics)
 
@@ -310,6 +332,26 @@ MIT License
 
 ## 변경 이력
 
+### 🚀 v2.7.0 — RISC-V 아키텍처 영토 확장 및 듀얼 엔진 선포 (Dual-Architecture Sovereignty)
+기존 ARM64 진형에 이어, 인류의 청정 유산이자 완전 자유 오픈소스 아키텍처인 **RISC-V 64비트(RV64I)** 영토를 정식 합병했습니다. 확장팩 하나로 두 개의 우주를 동시에 지배하는 초월적 올인원(All-in-One) 패키지 체제입니다.
+
+* **독자적 RISC-V 언어 식별자 (`hun-riscv`) 선포**: `.riscv` 및 `.v` 확장자 파일 공식 포획 활성화.
+* **정갈한 RISC-V 레지스터 문법 하이라이팅**: `x0~x31`, `f0~f31` 및 고품격 ABI 별명(`a0~a7`, `t0~t6`, `sp`, `zero` 등) 완벽 인식.
+* **C의 잔재가 없는 순수 루프 스니펫 장착**: `_vloop` 입력 시 1부터 10까지 누적 합산하는 청정 반복문 뼈대 즉시 생성.
+* **사소한 비주얼 딜레마 진압**: 중괄호와 속성값들이 멋대로 줄 바꿈되어 늘어지던 VS Code json 포맷터 똥고집 제어 옵션 탑재.
+
+> Note on the version jump (2.6.1 → 2.7.0): RISC-V 아키텍처 지원이라는 거대한 신규 영토 확장(New Feature Category)이 이루어졌으므로, SemVer 규칙에 따라 MINOR 버전을 2.7.0으로 대폭 격상하여 반포합니다.
+
+### 🐛 v2.6.1 — 디버그 프로바이더 버그 수정
+v2.6.0의 디버깅 통합 기능을 실제 macOS 프로젝트에서 써보며 발견된 버그 3건을 수정한 패치입니다.
+
+* **브레이크포인트가 `main`과 `_main` 둘 다 매칭**되도록 수정 — Mach-O 언더스코어 관례를 따르는(예: macOS에서 `armcli init`으로 생성한) `.S` 진입점 심볼이 `_main`인 경우, 기존엔 `main`만 찾아서 브레이크포인트가 전혀 안 걸리던 문제
+* **"Add Configuration..." 수동 설정과 F5 자동 감지가 이제 같은 로직(`buildLldbConfig`)을 공유** — 예전엔 수동 설정만 옛 기본값(`${workspaceFolder}/bin/...`)을 쓰다가 Zig의 실제 출력 경로(`zig-out/bin/...`)와 안 맞던 불일치 제거
+* **디버그 세션 시작 시 DEBUG CONSOLE이 자동으로 포커스**되도록 (`internalConsoleOptions: "openOnSessionStart"`) — 예전엔 통합 터미널 뒤에 조용히 숨어있어 입력이 안 먹히는 것처럼 보이던 문제
+* **`package.json`의 잘못된 `contributes.debuggers` 선언 제거** — CodeLLDB 미설치 상태에서 확장 추천 검색창에 이 확장 자신이 엉뚱하게 뜨던 문제
+
+> PATCH인 이유: 새 기능 추가도, 설정 인터페이스 변경도 없이 v2.6.0 디버깅 기능의 순수 버그 수정이라 SemVer PATCH가 맞습니다.
+
 ### 🚀 v2.6.0 — 디버깅 통합 (CodeLLDB)
 이번 릴리스는 확장의 영역을 "편집"에서 "디버깅"까지 넓힙니다. `hun-asm-highlighter`가 이제 [CodeLLDB](https://github.com/vadimcn/vscode-lldb)를 `extensionDependencies`로 선언하고, 그 확장의 `lldb` 디버그 타입에 `DebugConfigurationProvider`를 등록합니다.
 
@@ -326,6 +368,14 @@ MIT License
 * **링커 스크립트 문법 강조**: `.ld` 확장자 및 `linker.ld` 파일 포획 활성화. `ENTRY`, `SECTIONS`, `MEMORY`, `KEEP` 등의 핵심 지시어와 메모리 주소 속성들이 칼같이 화려한 색상으로 강조됩니다.
 * **링커/어셈블리 통합 코드 접기**: 대형 구조화 접기 기능(`#region`)이 어셈블리용 한 줄 주석(`//`)뿐만 아니라 링커용 블록 주석(`/* ... */`)도 완벽하게 감지하도록 방어 장갑을 보강했습니다.
 * **단어 인식 최적화**: 링커 스크립트 환경과 조화를 이루도록 단어 판정 정규식을 조율하여, 더블 클릭 한 번에 식별자와 라벨이 쪼개지지 않고 깔끔하게 한 덩어리로 선택됩니다.
+
+### 🚀 v2.5.0 — 워크스페이스 전역 인텔리센스
+지금까지 자동완성과 Go to Definition은 사실상 현재 파일만 알고 있었습니다 — 다른 파일에 정의한 함수는 타이핑 중 자동완성에 안 뜨고, F12를 누를 때마다 워크스페이스 파일을 최대 300개까지 매번 새로 열어 처음부터 다시 훑었습니다. 이번 릴리스는 이걸 제대로 된 인메모리 심볼 인덱스로 교체했습니다 — 확장이 켜질 때 한 번 구축하고, 이후로는 파일 변경 감시(watcher)로 계속 최신 상태를 유지합니다.
+
+* **파일 간 자동완성**: 워크스페이스 어디에 정의한 함수/라벨이든 자동완성에 뜨고, detail 줄에 어느 파일 출처인지 표시
+* **즉시 반응하는 Go to Definition**: F12가 매번 재스캔하는 대신 인메모리 인덱스에서 바로 조회
+* **신규: Ctrl+T / Cmd+T — 워크스페이스 심볼 검색**: 프로젝트 전체 함수/라벨을 이름으로 검색 (VS Code 표준 워크스페이스 심볼 피커)
+* 파일 저장/생성/삭제 시 인덱스가 증분 갱신되어, 리로드 없이도 항상 최신 상태 유지
 
 ### 🚀 v2.3.36 (Current Release) - 신규 니모닉 176종 인텔리센스 한/영 추가
 * 니모닉 인텔리센스 176종 추가
