@@ -108,6 +108,39 @@ Installing this extension also installs [CodeLLDB](https://github.com/vadimcn/vs
 
 Just open a `.S`, `.s`, `.inc`, or `.asm` file — the extension activates automatically. No configuration needed.
 
+## Customization
+
+The extension seamlessly high-lights your assembly code even inside Markdown (`.md`) files! To let VS Code know when to apply the `Hun ARM64 Assembly` power within code blocks, you can customize your global `settings.json`.
+
+### ⚙️ Recommended `settings.json` Configuration
+
+Add the following to your VS Code settings to enforce precise file mapping and a custom tailored editing experience for the Hun ecosystem:
+
+```json
+{
+  "files.associations": {
+    "*.S": "hun-asm",
+    "*.s": "hun-asm",
+    "*.asm": "hun-asm",
+    "*.inc": "hun-asm",
+    "*.riscv": "hun-riscv", // Pure RISC-V domain perfect matching
+    "*.v": "hun-riscv"      // Annexes other extensions to reign supreme!
+  },
+
+  "[hun-asm]": {
+    "editor.colorDecorators": false,
+    "editor.defaultFormatter": "buddham-hq.hun-asm-highlighter",
+    "editor.fontSize": 18,
+    "editor.wordSeparators": "`~!@#\$%^&*()-=+[{]}\\|;:'\",.<>/??",
+    "editor.glyphMargin": false,
+    "editor.renderWhitespace": "none"
+  }
+}
+```
+
+> **Note on Markdown Code Blocks:** Inside your `.md` files, use ` ```hun-asm ` or ` ```asm ` to instantly trigger full color syntax highlighting, autocomplete, and alignment mechanics.
+
+---
 ## Changelog
 
 ### 🚀 v2.7.0 — Dual-Architecture Sovereignty: RISC-V Expansion & Hybrid Engine Launch
@@ -329,6 +362,40 @@ MIT License
 ## 사용법
 
 `.S`, `.s`, `.inc`, `.asm` 확장자 파일을 열면 자동으로 적용됩니다. 별도 설정 불필요.
+
+## 사용자 설정 가이드
+
+본 확장은 일반 어셈블리 파일뿐만 아니라, 마크다운(`.md`) 문서 내부의 코드 블록 안에서도 강력한 하이라이팅을 그대로 지원합니다! VS Code가 마크다운 내에서 `Hun ARM64 한글 어셈블리` 엔진을 정확히 호출할 수 있도록 `settings.json` 설정을 최적화해 주세요.
+
+### ⚙️ 추천 `settings.json` 환경 설정
+
+VS Code의 전역 설정 파일(`settings.json`)에 아래 내용을 추가하면, 파일 확장자 자격 서열 정리 및 오직 훈(Hun) 에코시스템만을 위한 명품 편집기 환경이 완성됩니다.
+
+```json
+{
+  "files.associations": {
+    "*.S": "hun-asm",
+    "*.s": "hun-asm",
+    "*.asm": "hun-asm",
+    "*.inc": "hun-asm",
+    "*.riscv": "hun-riscv", // 청정 RISC-V 도메인 완벽 매칭
+    "*.v": "hun-riscv"      // 타사 언어를 제압하고 서열 1위로 군림!
+  },
+
+  "[hun-asm]": {
+    "editor.colorDecorators": false,
+    "editor.defaultFormatter": "buddham-hq.hun-asm-highlighter",
+    "editor.fontSize": 18,
+    "editor.wordSeparators": "`~!@#\$%^&*()-=+[{]}\\|;:'\",.<>/??",
+    "editor.glyphMargin": false,
+    "editor.renderWhitespace": "none"
+  }
+}
+```
+
+> **💡 마크다운 작성 팁:** `.md` 파일 본문에서 코드 블록을 열 때 **` ```hun-asm `** 또는 **` ```asm `** 식별자를 적어주시면 훈 프로젝트 전용 한글 니모닉과 매크로 색상 렌즈가 즉각 발동합니다.
+
+---
 
 ## 변경 이력
 

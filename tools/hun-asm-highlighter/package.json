@@ -4,12 +4,13 @@
   "license": "MIT",
   "displayName": "Hun ARM64 한글 어셈블리 강조",
   "description": "훈(Hun) 프로젝트 전용 - 한글 니모닉과 섹션 매크로를 인식하는 문법 강조, Syntax highlighting for Hun ARM64 Assembly with Korean mnemonics, ARM64 registers, directives, labels and section macros.",
-  "version": "2.7.2",
+  "version": "2.7.8",
   "main": "src/extension.js",
   "homepage": "https://vivakr.github.io/Hun",
   "activationEvents": [
     "onLanguage:hun-asm",
-    "onLanguage:hun-riscv"
+    "onLanguage:hun-riscv",
+    "onLanguage:markdown"
   ],
   "repository": {
     "type": "git",
@@ -68,6 +69,21 @@
         "language": "hun-riscv",
         "scopeName": "source.hun-riscv",
         "path": "./syntaxes/hun-riscv.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.hun-asm.codeblock",
+        "path": "./syntaxes/hun-asm.injection.json",
+        "injectTo": [ "text.html.markdown" ],
+        "embeddedLanguages": {
+          "meta.embedded.block.hun-asm": "hun-asm",
+          "meta.embedded.block.asm": "hun-asm",
+          "meta.embedded.block.assembly": "hun-asm"
+        }
+      },
+      {
+        "scopeName": "markdown.hun-riscv.codeblock",
+        "path": "./syntaxes/hun-riscv.injection.json",
+        "injectTo": [ "text.html.markdown" ]
       }
     ],
     "snippets": [

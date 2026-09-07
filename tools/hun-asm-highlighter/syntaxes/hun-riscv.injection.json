@@ -1,0 +1,15 @@
+{
+  "scopeName": "markdown.hun-riscv.codeblock",
+  "injectionSelector": "L:text.html.markdown",
+  "patterns": [
+    {
+      "begin": "(^|\\G)(\\s*)(```)\\s*(hun-riscv|riscv)\\s*$",
+      "end": "(^|\\G)(\\2)(```)\\s*$",
+      "name": "markup.fenced_code.block.markdown",
+      "contentName": "meta.embedded.block.hun-riscv",
+      "patterns": [
+        { "include": "source.hun-riscv" }
+      ]
+    }
+  ]
+}
