@@ -1,66 +1,121 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Hun ARM64 Assembly",
-  "scopeName": "source.hun-asm",
+  "name": "Hun RISC-V Assembly",
+  "scopeName": "source.hun-riscv",
   "patterns": [
-    {
-      "include": "#comments"
-    },
-    {
-      "include": "#strings"
-    },
-    {
-      "include": "#char-literals"
-    },
-    {
-      "include": "#directives"
-    },
-    {
-      "include": "#macro-definition"
-    },
-    {
-      "include": "#section-macros"
-    },
-    {
-      "include": "#func-macros"
-    },
-    {
-      "include": "#hangul-mnemonics"
-    },
-    {
-      "include": "#standard-mnemonics"
-    },
-    {
-      "include": "#registers"
-    },
-    {
-      "include": "#numbers"
-    },
-    {
-      "include": "#labels"
-    },
-    {
-      "include": "#linker-keywords"
-    },
-    {
-      "include": "#linker-operators"
-    }
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#char-literals" },
+    { "include": "#directives" },
+    { "include": "#macro-definition" },
+    { "include": "#section-macros" },
+    { "include": "#func-macros" },
+    { "include": "#standard-mnemonics" },
+    { "include": "#registers" },
+    { "include": "#numbers" },
+    { "include": "#labels" },
+    { "include": "#linker-keywords" },
+    { "include": "#linker-operators" }
   ],
   "repository": {
-    "registers": {
-      "comment": "RISC-V 정갈한 32개 범용 레지스터 및 고품격 ABI 별명 통합 포획",
-      "name": "variable.language.register.hun-riscv",
-      "match": "\\b(x(0|[1-2][0-9]|3[01])|f(0|[1-2][0-9]|3[01])|zero|ra|sp|gp|tp|t[0-6]|s[0-11]|a[0-7]|fp)\\b"
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hun-riscv",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.number-sign.hun-riscv",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.hun-riscv",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
     },
-    "hangul-mnemonics": {
-      "comment": "RISC-V 아키텍처에 맞춤 정렬된 한글 니모닉 엔진",
-      "name": "keyword.control.mnemonic.hangul.hun-riscv",
-      "match": "(?<![\\p{L}0-9_.$])(적재|저장|더함|즉시더함|뺌|곱함|나눔|같으면뜀|아니면뜀|크면뜀|작으면뜀|명령호출)(?=\\s)"
+    "strings": {
+      "name": "string.quoted.double.hun-riscv",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hun-riscv",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "char-literals": {
+      "name": "string.quoted.single.hun-riscv",
+      "match": "'\\\\?.'"
+    },
+    "directives": {
+      "comment": "GNU as 기준 RISC-V 어셈블러 지시어 (섹션/데이터/매크로/옵션)",
+      "name": "keyword.control.directive.hun-riscv",
+      "match": "\\.(text|data|bss|rodata|section|glob(?:al|l)|align|balign|p2align|word|dword|half|byte|asciz|ascii|string|equ|set|macro|endmacro|endm|option|type|size|extern|zero|skip|incbin|file|ifndef|ifdef|endif)\\b"
+    },
+    "macro-definition": {
+      "comment": "매크로 '정의' 자리 (.macro 앞에 오는 이름)",
+      "match": "^\\s*([\\p{L}_.$][\\p{L}0-9_.$]*)\\s+(?=\\.macro\\b)",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.macro.definition.hun-riscv"
+        }
+      }
+    },
+    "section-macros": {
+      "comment": "섹션 지정용 매크로 호출 관례 (예: CODE_SECTION) — hun-asm과 동일한 명명 규칙",
+      "name": "support.function.macro.section.hun-riscv",
+      "match": "\\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_SECTION\\b"
+    },
+    "func-macros": {
+      "comment": "함수 프롤로그/에필로그 매크로 호출 관례 (예: FUNC_START) — hun-asm과 동일한 명명 규칙",
+      "name": "support.function.macro.func.hun-riscv",
+      "match": "\\bFUNC_[A-Z0-9_]*\\b"
     },
     "standard-mnemonics": {
-      "comment": "오픈소스 인류 공통 RV64I 핵심 명령어 목록",
+      "comment": "현재 목록 그대로 유지 — 니모닉 확장은 별도 작업(2번 항목)에서 진행 예정",
       "name": "keyword.control.mnemonic.hun-riscv",
-      "match": "(?i)\\b(lui|auipc|jal|jalr|beq|bne|blt|bge|bltu|bgeu|lb|lh|lw|lbu|lhu|sb|sh|sw|addi|slti|sltiu|xori|ori|andi|slli|srli|srai|add|sub|sll|slt|sltu|xor|srl|sra|or|and|fence|ecall|ebreak|lwu|ld|sd|mul|div|rem)\\b"
+      "match": "\\b(li|add|addi|beq|bne|bgt|blt|j|ecall|lui|auipc|jal|jalr|bge|lw|sw|ld|sd)\\b"
+    },
+    "registers": {
+      "name": "variable.language.register.hun-riscv",
+      "match": "\\b(x[0-9]|x[1-2][0-9]|x3[0-1]|f[0-9]|f[1-2][0-9]|f3[0-1]|zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s1[0-1]|a[0-7]|fp)\\b"
+    },
+    "numbers": {
+      "comment": "RISC-V는 ARM64와 달리 즉시값 앞에 '#'을 붙이지 않음 (예: li t0, 10 / addi t0, t0, -8)",
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.hun-riscv",
+          "match": "\\b0[xX][0-9a-fA-F]+\\b"
+        },
+        {
+          "name": "constant.numeric.binary.hun-riscv",
+          "match": "\\b0[bB][01]+\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.hun-riscv",
+          "match": "-?\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "labels": {
+      "patterns": [
+        {
+          "name": "entity.name.function.label.hun-riscv",
+          "match": "^\\s*([\\p{L}_.$][\\p{L}0-9_.$]*)\\s*:"
+        }
+      ]
+    },
+    "linker-keywords": {
+      "comment": "링커 스크립트 핵심 지시어 (hun-asm과 동일 — GNU ld는 아키텍처 무관 문법)",
+      "name": "keyword.control.linker.hun-riscv",
+      "match": "\\b(ENTRY|SECTIONS|MEMORY|PHDRS|VERSION|ALIGN|KEEP|PROVIDE|EXTERN|INCLUDE|ORIGIN|LENGTH|org|len)\\b"
+    },
+    "linker-operators": {
+      "comment": "링커에서 자주 쓰이는 할당 및 특수 기호",
+      "match": "(=|\\+|\\-|\\*|\\/|&|\\||<<|>>|\\.)"
     }
   }
 }

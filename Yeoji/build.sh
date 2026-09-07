@@ -19,3 +19,7 @@ clang --target=aarch64-none-elf -ffreestanding -nostdlib -c mmu.c -o mmu.o
 ld.lld -T link.ld boot.o func_table.o vectors.o gic.o mmu.o kernel.o -o kernel.elf
 # QEMU 가동
 qemu-system-aarch64 -M virt -cpu cortex-a72 -nographic -kernel kernel.elf
+
+# 중지 : Ctrl + A, X
+# 전환 : Ctrl + A, C 
+# 도움말 : Ctrl + A, H

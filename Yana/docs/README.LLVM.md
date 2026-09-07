@@ -19,7 +19,7 @@ find . -path "*AsmLexer.cpp"
 find ~/llvm-project -path "*/MC/MCParser/AsmLexer.cpp"
 ```
 
-### llvm-project build
+### llvm-project build (한글화)
 
 ```bash
 cmake -S llvm -B build -G Ninja \
@@ -38,6 +38,15 @@ ninja -C build
   - static bool isIdentityfierChar(char C, bool AllowAt, bool AllowHash);
 
 ### lldb
+
+- **lldb (디버거)**: 코드의 버그를 잡고 분석할 때 쓰는 아주 강력한 디버거. (gcc 진영의 gdb 같은 존재!)
+
+- **clang / clang++ (C/C++ 컴파일러)**: 소스코드를 기계어로 바꿔주는 가장 중요한 컴파일러 실행 파일.
+
+- **lld (링커)**: 여러 개로 쪼개진 오브젝트 파일들을 하나로 묶어서 최종 실행 파일로 만들어주는 실행 파일.
+
+- **llvm-as / llvm-dis (어셈블러/디스어셈블러)**: LLVM의 중간 표현(IR) 코드를 다룰 때 쓰는 파일들
+
 
 ```bash
 
@@ -64,6 +73,7 @@ ld hello.o -o hello -l System -syslibroot `xcrun -sdk macosx --show-sdk-path` -e
 xcrun -sdk macosx --show-sdk-path
 
 ### =============== (lldb) ===============
+
 register read/d
 register read --all
 registar read x0, x1, x2
@@ -157,47 +167,51 @@ disassemble -n _main
 p $x0
 x/s $x0
 
-    process launch
-    run
-    r
-    frame variable
-    memory read -fx -c4 -s4 &a
-    memory read -fx -c4 -s4 &b
-    display variable-name
-    b 10 (breakpoint)
-    breakpoint set --file main.c --line 6
-    breakpoint set --method foo
-    br s --file main.c --line 13
-    c (continue)
-    clang CalculateApp.c -o ./Bin/Calculate
+process launch
+run
+r
+frame variable
 
-    register read
-    reg r
+memory read -f s $x0 # 문자열 읽기 샘플, (lldb) setvar (char *)$x0
 
-    f
-    list main
-    up
-    down
-    step (s)
-    next(n)
-    finish
-    quit
+memory read -fx -c4 -s4 &a
+memory read -fx -c4 -s4 &b
 
-    b (pos)
-    tbreak (pos)
-    breakpoint delete (or br del) : delete all breakpoints
-    breakpoint delete (number) : delete the breakpoint indicated by (number)
+# 문자열이 너무 길어서 잘릴때 
+# 한 번에 최대 200글자까지 읽어오도록 설정 변경
+(lldb) settings set target.max-string-summary-length 200
 
 
-    print (var)
-    p  (var) : 주어진 변수의 값을 인쇄
-    print *(ptr) : 포인터의 목적지를 인쇄
-    x/(format) (var/address) :
-    display (var) : 프로그램이 일시 중지될 때마다 항상 (var) 값을 표시.
-    display
-    undisplay (num) : 변수 표시 취소.
-    expr (var) = (value) : 변수 (var) 를 값으로 설정 expr foo = 5
-    up and down : 충돌하거나 일시 중지된 프로그램의 백트레이스 (bt)에서 프레임으르 위로 이동하거나 아래로 이동.
+display variable-name
+b 10 (breakpoint)
+breakpoint set --file main.c --line 6
+breakpoint set --method foo
+br s --file main.c --line 13
+c (continue)
+clang CalculateApp.c -o ./Bin/Calculate
+register read
+reg r
+f
+list main
+up
+down
+step (s)
+next(n)
+finish
+quit
+b (pos)
+tbreak (pos)
+breakpoint delete (or br del) : delete all breakpoints
+breakpoint delete (number) : delete the breakpoint indicated by (number)
+print (var)
+p  (var) : 주어진 변수의 값을 인쇄
+print *(ptr) : 포인터의 목적지를 인쇄
+x/(format) (var/address) :
+display (var) : 프로그램이 일시 중지될 때마다 항상 (var) 값을 표시.
+display
+undisplay (num) : 변수 표시 취소.
+expr (var) = (value) : 변수 (var) 를 값으로 설정 expr foo = 5
+up and down : 충돌하거나 일시 중지된 프로그램의 백트레이스 (bt)에서 프레임으르 위로 이동하거나 아래로 이동.
 
 # register
 register read --format d x0
@@ -211,17 +225,87 @@ register read -f b x0 // 2진수로 보고 싶을때 (비트연산 디버깅용)
 
  register read cpsr
 
- # 다음 함수까지 쭉 실행 (스텝인 대신)
- ni // step over (si 는 step into, ni 는 건너뛰기)
- finish // 현재 함수 끝가지 실행하고 호출자로 복귀
+# 다음 함수까지 쭉 실행 (스텝인 대신)
+# si 는 step into, ni 는 건너뛰기
+ni // step over 
+finish // 현재 함수 끝가지 실행하고 호출자로 복귀
 
- - _printf 안에서 si 하면 libc 내부까지 딸려 들어가서
- headahe - 이럴때 ni 로 건너뛰는게 정신 건강에 좋음.
+# 디스어셈블 + 현재 위치 동시에 현재 실행위치 하이라이트
+disassemble --pc
 
- # 디스어셈블 + 현재 위치 동시에
- # 현재 실행위치 하이라이트
- disassemble --pc
+disassemble -c 10 #어셈블리 코드 10줄 출력 하기
 
+# [ expr : 수식을 계산 ] 
+
+# 변수 만들기
+# `-l c++` :어셈블리 영역, C++ 언어의 규칙(타입 시스템) 을 빌려와서 해석하라. 
+# `--` : 이뒤에 나오는 진짜 내 코드 만 집중해서 계산할하. 
+expr -l c++ -- unsigned int $foo = 5
+
+# 특정 절대 메모리 주소(0x7fffffffe1a0)에 있는 값을 32비트 정수(int)로 읽기
+expr *(int *)0x7fffffffe1a0
+
+# 임시변수 만들기 (어셈블리 상태에서)
+expr -l c++ -- unsigned int $foo = 5
+
+# 함수 리턴값이나 첫번째 인자(x0)에 10 더해 보기
+expr $x0 + 10
+
+p $x0 + 10 # print
+
+# 변수 이름 앞에는 무조건 $를 붙임
+# 선언할 때 자료형(Type) 을 명시
+expr -l c++ -- unsigned long $a = $x0 + $x1
+p $a
+
+# 별칭
+command alias <별칭> expr -l c++
+
+# 글로벌 홈 루트에 별칭 모아 만들기
+cd ~
+vim .lldbinit
+
+# 글로벌 .lldbinit 에서 
+# 현재 작업 디렉토리(프로젝트 루트)의 .lldbinit 파일 로드를 허용함
+settings set target.load-cwd-lldbinit true
+
+# ----------------------------------------------------
+# 디버깅 치트키
+# ----------------------------------------------------
+
+# 1. ARM64 레지스터 싹 다 보기 (register read는 너무 길어!)
+# 사용법: (lldb) rr
+command alias rr register read
+
+# 2. 어셈블리 코드 폼나게 10줄만 출력하기
+# 사용법: (lldb) asm
+command alias asm disassemble -c 10
+
+# 3. 현재 멈춘 곳의 소스코드 주변 깔끔하게 보기
+# 사용법: (lldb) src
+command alias src frame select
+
+# 4. 메모리 주소 뒤져서 '진짜 문자열(String)'로 해석해서 출력하기
+# 사용법: (lldb) reads $x0  (x0 주소에 있는 문자열 출력)
+command alias reads memory read -f s
+
+# 5. 메모리를 16진수(Hex) 바이트 형태로 멋지게 덤프 뜨기 (16바이트 보기)
+# 사용법: (lldb) readx $sp  (스택 주소의 메모리 날것으로 보기)
+command alias readx memory read -c 16 -f x
+
+# 6. 이전 명령어들의 히스토리(기록) 확인하기
+# 사용법: (lldb) hist
+command alias hist command history
+
+
+# vdump (사용자 정의 샘플, 교안 참조)
+vdump v1 4s f
+vdumpall v1 v3 2d s
+```
+
+### 한글 어셈블리
+
+```bash
 # 테스트 1
 nm /tmp/한글테스트
 0000000100000000 T __mh_execute_header
@@ -237,7 +321,11 @@ SYMBOL TABLE:
 0000000100000000 g     F __TEXT,__text __mh_execute_header
 00000001000002d8 g     F __TEXT,__text _main
 
+```
 
+### 하노이탑 디버깅 테스트
+
+```bash
 ### 하노이 탑 고급 디버깅을 위한 상남자 명령어 세트 ###
 ## 1. 프레임 가시화 및 컨텍스트 스위칭 (f & bt)
 # 재귀 호출이 깊어 지면 지금 몇 번째 하오니 탑에 빠져 있는지 헷갈림
@@ -402,7 +490,7 @@ _hanoi_return:
 
 ### 🕵️ 훈련소 입소 완료! 
 
-> lldb로 이 코드 털어먹는 관전 포인트 위 코드를 빌드해서 lldb로 들어간 뒤, 아래 순서대로 맛보시면 뇌가 짜릿해집니다
+> lldb로 이 코드 털어먹는 관전 포인트 위 코드를 빌드해서 lldb로 들어간 뒤, 아래 순서대로 디버깅 맛보기
 >> 1. 터미널에서 lldb ./프로그램이름 진입 후 b _hanoi 쳐서 브레이크포인트 장착!
 >> 2. run을 치면 첫 진입(n=3) 상태에서 멈춥니다.
 >> 3. c(continue)를 두 번 더 눌러서 n=1일 때까지 깊숙이 들어갑니다.

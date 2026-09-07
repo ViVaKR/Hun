@@ -21,18 +21,22 @@ extern void uart_puts(const char *s);
 
 void mmu_init(void)
 {
+    uart_puts("[MMU-디버그] 1. mmu_init 진입\n"); // ★ 체크포인트 1
+
     // 1. L1 테이블 초기화 — 전부 invalid(0)로 시작 (bit0=0 → Fault)
     for (int i = 0; i < 512; i++)
     {
         l1_page_table[i] = 0;
     }
 
+    uart_puts("[MMU-디버그] 2. L1 테이블 클리어 완료\n"); // ★ 체크포인트 2
+
     // Entry[0]: 0x00000000 ~ 0x3FFFFFFF (1GB) → Device (GICD 0x08000000, GICC 0x08010000, UART 0x09000000)
     l1_page_table[0] = (uint64_t)0x00000000 | DEVICE_BLOCK_FLAGS;
 
     // Entry[1]: 0x40000000 ~ 0x7FFFFFFF (1GB) → Normal (커널 자신이 이 안에 삼)
     l1_page_table[1] = (uint64_t)0x40000000 | NORMAL_BLOCK_FLAGS;
-
+    uart_puts("[MMU-디버그] 3. 엔트리 기록 완료\n"); // ★ 체크포인트 3
     // 2. MAIR_EL1 — attr index 0 = Normal WB Cacheable(0xFF), index 1 = Device-nGnRnE(0x00)
     uint64_t mair = (0xFFULL << (8 * MT_NORMAL)) | (0x00ULL << (8 * MT_DEVICE_nGnRnE));
 
@@ -58,21 +62,25 @@ void mmu_init(void)
     __asm__ volatile("msr ttbr0_el1, %0" ::"r"((uint64_t)l1_page_table));
     __asm__ volatile("isb");
 
+    uart_puts("[MMU-디버그] 4. MAIR/TCR/TTBR0 설정 완료\n"); // ★ 체크포인트 4
+
     // 4. TLB 청소 (콜드 부팅이라 원래 비어있어야 정상이지만, 방어적으로)
     __asm__ volatile("tlbi vmalle1");
     __asm__ volatile("dsb sy");
     __asm__ volatile("isb");
 
+    uart_puts("[MMU-디버그] 5. TLB 청소 완료\n"); // ★ 체크포인트 5
+
     // 5. SCTLR_EL1 읽어서 M(MMU) + C(D-Cache) + I(I-Cache) 비트만 켠다
     uint64_t sctlr;
     __asm__ volatile("mrs %0, sctlr_el1" : "=r"(sctlr));
-    sctlr |= (1ULL << 0);  // M  — MMU 활성화, 이 줄이 실제 스위치
-    sctlr |= (1ULL << 2);  // C  — 데이터 캐시 활성화
-    sctlr |= (1ULL << 12); // I  — 명령어 캐시 활성화
-
+    sctlr |= (1ULL << 0);                                     // M  — MMU 활성화, 이 줄이 실제 스위치
+    sctlr |= (1ULL << 2);                                     // C  — 데이터 캐시 활성화
+    sctlr |= (1ULL << 12);                                    // I  — 명령어 캐시 활성화
+    uart_puts("[MMU-디버그] 6. SCTLR 스위치 올리기 직전!\n"); // ★ 체크포인트 6 (이게 찍히면 MMU 켜기 전까진 정상)
     __asm__ volatile("dsb sy");
     __asm__ volatile("msr sctlr_el1, %0" ::"r"(sctlr));
-    __asm__ volatile("isb"); // 이 시점부터 명령어 페치도 MMU를 통과한다
-
-    uart_puts("[MMU] ✅ 가상주소 점화 완료 — 아이덴티티 매핑 2GB (Device 1GB + Normal 1GB)\n");
+    __asm__ volatile("isb");                                                  // 이 시점부터 명령어 페치도 MMU를 통과한다
+    uart_puts("[MMU-디버그] 7. ✅ MMU ON! 살아있음 — 아이덴티티 매핑 2GB\n"); // ★ 체크포인트 7 (이게 찍히면 완전 성공)
+    // uart_puts("[MMU] ✅ 가상주소 점화 완료 — 아이덴티티 매핑 2GB (Device 1GB + Normal 1GB)\n");
 }

@@ -113,14 +113,14 @@ _v_invalid_serr: SAVE_ALL
 // -------------------------------------------------------------
 _sync_handler:
   SAVE_ALL
-	mov x0, #1      // type = SYNC
+	mov x0, #1         // type = SYNC
 	b   _exc_dispatch
 
 _irq_handler:
 	SAVE_ALL
-	bl irq_handler_c   // ★ GIC ack → 타이머 처리 → EOI까지 여기서 끝
+	bl irq_handler_c  // ★ GIC ack → 타이머 처리 → EOI까지 여기서 끝
 	RESTORE_ALL
-	eret // 원래 실행하던 곳으로 정상 복귀
+	eret   // 원래 실행하던 곳으로 정상 복귀
 
 _fiq_handler:
 	SAVE_ALL
@@ -136,19 +136,23 @@ _serr_handler:
 // 공통 디스패처: ESR/ELR/FAR 긁어서 C 핸들러로 토스
 // -------------------------------------------------------------
 _exc_dispatch:
-	mrs x1, esr_el1         // 왜 예외가 났는지 (원인 코드)
-	mrs x2, elr_el1         // 예외 발생 당시 실행 중이던 명령어 주소
-	mrs x3, far_el1         // (메모리 접근 오류라면) 문제의 주소
+	mrs x1, esr_el1  // 왜 예외가 났는지 (원인 코드)
+	mrs x2, elr_el1  // 예외 발생 당시 실행 중이던 명령어 주소
+	mrs x3, far_el1  // (메모리 접근 오류라면) 문제의 주소
+
+	// SAVE_ALL 이 저장해둔 레지스터 프레임주소를 5번째 인자로 토스
+	mov x4, sp
 	bl  exc_c_handler
   
-  // IRQ만 정상적으로 복귀. 나머지(SYNC/FIQ/SError)는 대부분 복구 불가능한 fault
-	cmp  x0, #2
+	// 정정: exec_c_handler 의 진짜 리턴값(1=복구해서 계속, 0=정지)만으로 판단
+	cmp x0, #1
+
 	b.ne _exc_halt
 	RESTORE_ALL
 	eret
 
 _exc_halt:
-	b .                   // 무한 정지 — 원인 파악 후 리셋
+	b .  // 무한 정지 — 원인 파악 후 리셋
   
 // -------------------------------------------------------------
 // void _install_vectors(void);
@@ -158,5 +162,5 @@ _install_vectors:
 	adrp x0, vector_table_el1
 	add  x0, x0, :lo12:vector_table_el1
 	msr  vbar_el1, x0
-	isb  // ★ 필수! 명령어 파이프라인을 동기화해서 새 VBAR가 즉시 반영되게 함
+	isb                                  // ★ 필수! 명령어 파이프라인을 동기화해서 새 VBAR가 즉시 반영되게 함
 	ret

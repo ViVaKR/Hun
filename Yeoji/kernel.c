@@ -1,9 +1,12 @@
 #include "mmu.h"
 
 #define UART0_BASE 0x09000000
+#define UART_FR_RXFE 0x10
+#define ESR_EC(esr) (((esr >> 26) & 0x3FULL))
+#define EC_SVC64 0x15ULL // ★ 추가: AArch64 SVC 명령어의 Exception Class 값
+
 volatile unsigned int *const UART0_DR = (unsigned int *)(UART0_BASE + 0x00);
 volatile unsigned int *const UART0_FR = (unsigned int *)(UART0_BASE + 0x18);
-#define UART_FR_RXFE 0x10
 
 int test_global_variable;
 
@@ -15,8 +18,9 @@ extern void uart_puts(const char *s);
 extern void _install_vectors(void);
 extern void mmu_init(void);
 extern void gic_init(void);
+extern char _user_stack_top; // link.ld 가 정의 한 실볼 (배열이 아니라 "주소" 로만 씀)
 
-void uart_putc(char c); // ★ 정의는 뒤에 있어도, 미리 이렇게 원형만 알려주면 됨
+void uart_putc(char c); // ★ 정의는 뒤에 있음.
 
 static void uart_put_hex64(unsigned long long val)
 {
@@ -185,10 +189,39 @@ void yeoji_shell_execute(char *cmd_line)
   }
 }
 
-// x0=type, x1=ESR_EL1, x2=ELR_EL1, x3=FAR_EL1  (AAPCS64 인자 순서 그대로!)
-void exc_c_handler(unsigned long long type, unsigned long long esr,
-                   unsigned long long elr, unsigned long long far)
+// -------------------------------------------------------------
+// ★ 추가: 최소 시스템 콜 디스패처
+// num = 시스템 콜 번호(원래 x0), arg1 = 첫 인자(원래 x1)
+// -------------------------------------------------------------
+long long syscall_dispatch(unsigned long long num, unsigned long long arg1)
 {
+  switch (num)
+  {
+  case 0: // SYS_PUTS: arg1 = 출력할 문자열 포인터
+    uart_puts((const char *)arg1);
+    return 0;
+  default:
+    uart_puts("\n[SYS] ❓ 알 수 없는 시스템 콜 번호\n");
+    return -1;
+  }
+}
+
+// x0=type, x1=ESR_EL1, x2=ELR_EL1, x3=FAR_EL1, x4=regs(SAVE_ALL 프레임)
+// 반환값: 1 = 복구해서 계속 진행, 0 = 정지 (vectors.S의 cmp x0,#1 이 이 값을 봄)
+int exc_c_handler(unsigned long long type, unsigned long long esr,
+                  unsigned long long elr, unsigned long long far,
+                  unsigned long long *regs)
+{
+  // ★ 추가: SYNC 예외인데 원인이 SVC 명령어라면 — 시스템 콜로 처리하고 살려서 복귀
+  if (type == 1 && ESR_EC(esr) == EC_SVC64)
+  {
+    // regs[0] = 예외 발생 당시의 원본 x0 (SAVE_ALL이 mov x0,#type 이전에 저장해둠)
+    // regs[1] = 원본 x1
+    regs[0] = (unsigned long long)syscall_dispatch(regs[0], regs[1]);
+    return 1; // RESTORE_ALL이 regs[0]을 다시 x0로 복원 → 호출자는 이걸 리턴값으로 받음
+  }
+
+  // 여기부턴 기존 "진짜 치명적 예외" 처리
   uart_puts("\n\n💥 [예외 발생] ");
   switch (type)
   {
@@ -220,6 +253,8 @@ void exc_c_handler(unsigned long long type, unsigned long long esr,
 
   if (type != 2)
     uart_puts("\n⚠️  복구 불가능한 예외 — CPU 정지\n");
+
+  return 0;
 }
 
 void kernel_main(void)
@@ -268,14 +303,42 @@ void kernel_main(void)
   _install_vectors();
   uart_puts("[벡터] ✅ VBAR_EL1 등록 완료 — 예외 처리 준비 끝!\n\n");
 
+  // 추가 : SP_EL0 레지스터에 유저 스택 상단 주소를 미리 심어둠
+  {
+    unsigned long long user_sp = (unsigned long long)&_user_stack_top;
+    __asm__ volatile("msr sp_el0, %0" ::"r"(user_sp));
+
+    // 검증: 방금 넣은 값이 진짜 SP_EL0에 살아있는지 되읽어서 확인
+    unsigned long long readback;
+    __asm__ volatile("mrs %0, sp_el0" : "=r"(readback));
+
+    uart_puts("[SP_EL0] ✅ 유저 스택 등록 완료 — 주소 = ");
+    uart_put_hex64(readback);
+    uart_puts("\n\n");
+  }
+
   mmu_init(); // GIC/UART 를 Device로 매핑해두고 나서
 
-  gic_init();                             // 그 다음에 GIC 를 건드려야 함
+  gic_init(); // 그 다음에 GIC 를 건드려야 함
+
   asm_enable_timer(asm_get_timer_freq()); // 첫 타이머 장전
 
-  // __asm__ volatile("svc #0"); // ★ 일부러 예외를 터뜨려서 진짜 잡히는지 확인
-  // 🔑 [출격 완료] 쉘이 뜨기 전, 베어메탈의 심장박동을 먼저 요란하게 확인합니다!
+  // ★ 추가: SVC 생환 테스트 — 예전엔 이 줄이 있으면 무조건 halt 됐음.
+  // 지금은 exc_c_handler가 EC_SVC64를 구분해서 살려 보내므로,
+  // 아래 메시지가 출력되고 곧바로 쉘 프롬프트까지 정상 진입해야 성공!
+  {
+    register long long call_num __asm__("x0") = 0; // SYS_PUTS
+    register long long arg1 __asm__("x1") =
+        (long long)"🎉 [SVC 생환 테스트] 시스템 콜이 커널을 멈추지 않고 살아서 복귀했다!\n\n";
+    __asm__ volatile("svc #0" ::"r"(call_num), "r"(arg1) : "memory"); // ★ "x0","x1" 제거
+  }
+
+  // ★ 일부러 예외를발생시키는 테스트 부분
+  // __asm__ volatile("svc #0");
+
+  // 🔑 [출격 완료] 쉘이 뜨기 전, 베어메탈의 심장박동 확인 테스트 부분
   // test_timer_heartbeat();
+
   char cmd_buffer[128];
   int buf_idx = 0;
 
