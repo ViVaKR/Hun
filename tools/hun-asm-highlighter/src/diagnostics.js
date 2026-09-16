@@ -22,7 +22,12 @@
 //       "100% 이 파일 안에서 확실하게 판정 가능한 것"만 다룬다는 원칙을 지킨다.)
 
 const vscode = require('vscode');
-const { KNOWN_SET } = require('./mnemonics');
+const { KNOWN_SET: ARM64_KNOWN_SET } = require('./mnemonics');
+// 🆕 [RISC-V 연결] mnemonics-riscv.js의 KNOWN_SET을 추가로 불러와서,
+//    document.languageId가 'hun-riscv'일 때는 이쪽을 참조하게 만든다.
+//    (이게 없으면 li/la/beqz/j 같은 RISC-V 의사명령어가 ARM64 KNOWN_SET에
+//     없다는 이유로 "모르는 명령어"로 계속 오탐났었음.)
+const { RISCV_KNOWN_SET } = require('./mnemonics-riscv');
 
 const PAIR_RE =
   /^(ldp|stp|쌍적재|쌍저장)\s+([^,\s]+)\s*,\s*([^,\s]+)\s*,\s*\[\s*([^\],\s]+)\s*(?:,\s*#(-?\d+)\s*)?\]\s*(!)?\s*(?:,\s*#(-?\d+))?/;
@@ -99,14 +104,16 @@ function stripLeadingLabel(t) {
   return m ? t.slice(m[0].length) : t;
 }
 
-function addDiag(diags, rawText, lineIdx, needle, message, severity) {
+function addDiag(diags, rawText, lineIdx, needle, message, severity, source) {
   severity = severity === undefined ? vscode.DiagnosticSeverity.Error : severity;
   let start = needle ? rawText.indexOf(needle) : -1;
   if (start < 0) start = 0;
   const length = needle ? needle.length : rawText.length;
   const range = new vscode.Range(lineIdx, start, lineIdx, start + length);
   const d = new vscode.Diagnostic(range, message, severity);
-  d.source = 'hun-asm';
+  // 🆕 호출부에서 source를 안 넘기면 기존처럼 'hun-asm'을 기본값으로 유지
+  // (checkUnknownMnemonic처럼 언어별로 갈릴 수 있는 지점만 명시적으로 넘겨줌)
+  d.source = source || 'hun-asm';
   diags.push(d);
 }
 
@@ -208,7 +215,7 @@ function checkSingleInstruction(trimmed, rawText, lineIdx, diags) {
   }
 }
 
-function checkUnknownMnemonic(trimmed, rawText, lineIdx, diags) {
+function checkUnknownMnemonic(trimmed, rawText, lineIdx, diags, knownSet) {
   if (trimmed.startsWith('.')) return;
   if (LABEL_ONLY_RE.test(trimmed)) return;
 
@@ -220,11 +227,12 @@ function checkUnknownMnemonic(trimmed, rawText, lineIdx, diags) {
   if (/^[A-Z0-9_]+$/.test(first)) return;
   // 영문 소문자로만 된 토큰만 대상으로 함 (한글 니모닉은 규칙이 다양해서 여기선 보류)
   if (!/^[a-z][a-z.]*$/.test(first)) return;
-  if (KNOWN_SET.has(first)) return;
+  if (knownSet.has(first)) return;
 
+  const source = knownSet === RISCV_KNOWN_SET ? 'hun-riscv' : 'hun-asm';
   addDiag(diags, rawText, lineIdx, first,
     `"${first}"... 내가 아는 명령어 목록엔 없는 녀석인데? 오타 아닌지 한번 봐주게.`,
-    vscode.DiagnosticSeverity.Information);
+    vscode.DiagnosticSeverity.Information, source);
 }
 
 function checkStackAlignment(trimmed, rawText, lineIdx, diags) {
@@ -279,7 +287,15 @@ function checkLocalLabelReferences(trimmed, rawText, lineIdx, definedLocalLabels
   }
 }
 
+// 🆕 [언어별 분기] hun-riscv 문서는 ARM64 인코딩 규칙(LDP/STP 정렬, sp 16바이트
+// 정렬 등)과 아예 무관하므로 그 검사들은 건너뛴다. 지금은 "모르는 명령어" 검사만
+// RISC-V 전용 사전(RISCV_KNOWN_SET)으로 돌려서, 최소한 안전하게(오탐 없이) 동작하는
+// 것을 우선한다. RISC-V 고유의 정렬/인코딩 검사(예: addi immediate 12비트 범위)는
+// 추후 별도 checkRiscvXxx 함수들로 확장 예정.
 function validateDocument(document) {
+  const isRiscv = document.languageId === 'hun-riscv';
+  const knownSet = isRiscv ? RISCV_KNOWN_SET : ARM64_KNOWN_SET;
+
   const diags = [];
   const definedLocalLabels = collectLocalLabels(document);
 
@@ -290,10 +306,15 @@ function validateDocument(document) {
     text = stripLeadingLabel(text).trim();
     if (!text) continue;
 
-    checkPairInstruction(text, rawText, i, diags);
-    checkSingleInstruction(text, rawText, i, diags);
-    checkUnknownMnemonic(text, rawText, i, diags);
-    checkStackAlignment(text, rawText, i, diags);
+    if (!isRiscv) {
+      // ARM64 전용 검사 (LDP/STP·LDR/STR 정렬 및 범위, sp 16바이트 정렬)
+      checkPairInstruction(text, rawText, i, diags);
+      checkSingleInstruction(text, rawText, i, diags);
+      checkStackAlignment(text, rawText, i, diags);
+    }
+
+    // 언어 공통: "모르는 명령어" 검사는 언어별 사전만 바꿔서 그대로 재사용
+    checkUnknownMnemonic(text, rawText, i, diags, knownSet);
     checkLocalLabelReferences(text, rawText, i, definedLocalLabels, diags);
   }
   return diags;

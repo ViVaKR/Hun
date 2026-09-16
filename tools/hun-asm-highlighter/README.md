@@ -141,7 +141,11 @@ Add the following to your VS Code settings to enforce precise file mapping and a
 > **Note on Markdown Code Blocks:** Inside your `.md` files, use ` ```hun-asm ` or ` ```asm ` to instantly trigger full color syntax highlighting, autocomplete, and alignment mechanics.
 
 ---
+
 ## Changelog
+
+### 🐛 v2.7.8 — Fixed a bug where Markdown preview syntax highlighting was missing.
+*Bug fix: syntax highlighting inside Markdown code fences (` ```hun-asm ` / ` ```hun-riscv `) was silently broken due to missing `scopeName` declarations in the injection grammars. Editor highlighting for `.S` files was unaffected.*
 
 ### 🚀 v2.7.0 — Dual-Architecture Sovereignty: RISC-V Expansion & Hybrid Engine Launch
 Following our established ARM64 territory, we have officially annexed **64-bit RISC-V (RV64I)**—the pure, untainted, and fully open-source architecture of humanity's shared software heritage. This release transforms the extension into a transcendent, All-in-One package capable of ruling two unique CPU universes simultaneously.
@@ -152,6 +156,9 @@ Following our established ARM64 territory, we have officially annexed **64-bit R
 * **Suppression of Petty Visual Dilemmas**: Deployed tactical configurations to tame VS Code's stubborn JSON formatter, permanently stopping braces and properties from awkwardly warping onto new lines.
 
 > Note on the version jump (2.6.1 → 2.7.0): This substantial leap reflects a massive expansion into a brand-new territory of processor architecture (New Feature Category). Aligned with SemVer rules, the MINOR version is aggressively promoted to v2.7.0 for this historic rollout.
+
+<details>
+<summary>📜  Show older changelog (v1.0.1 – v2.6.1)</summary>
 
 ### 🐛 v2.6.1 — Debug Provider Bug Fixes
 Following up on v2.6.0's debugging integration, this patch fixes three real-world bugs discovered while dogfooding the feature on a fresh macOS project.
@@ -236,6 +243,9 @@ Also published a standalone **[Mnemonic Dictionary](https://vivakr.github.io/Hun
 
 ### 1.0.1
 - Initial release: syntax highlighting, basic diagnostics (offset alignment/range, register width), hover, autocomplete
+
+</details>
+---
 
 ## License
 
@@ -399,6 +409,15 @@ VS Code의 전역 설정 파일(`settings.json`)에 아래 내용을 추가하�
 
 ## 변경 이력
 
+### 🐛 v2.7.8 — 마크다운 미리보기 구문 강조 누락 버그 수정
+`README.md` 등 마크다운 문서 안의 ` ```hun-asm ` / ` ```hun-riscv ` 코드 블록에서 구문 강조가 전혀 적용되지 않던 버그를 수정했습니다.
+
+* injection grammar 파일(`hun-asm.injection.json`, `hun-riscv.injection.json`)에 최상위 `scopeName` 선언이 누락되어 있어, `vscode-textmate` 엔진이 이 grammar를 온전히 등록하지 못하던 것이 원인
+* 에디터 내 일반 `.S` 파일 강조에는 영향 없었음 (해당 파일들은 `tmLanguage.json`을 직접 참조하므로 이미 `scopeName`이 존재)
+* 참고: VS Code 마크다운 **미리보기(Preview)** 패널 자체는 서드파티 `highlight.js` 렌더러를 쓰기 때문에, 이번 수정과는 무관하게 여전히 커스텀 언어를 인식하지 못합니다 — 이는 별개의 알려진 한계입니다
+
+> PATCH인 이유: 새 기능/설정 변경 없이 순수 버그 수정.
+
 ### 🚀 v2.7.0 — RISC-V 아키텍처 영토 확장 및 듀얼 엔진 선포 (Dual-Architecture Sovereignty)
 기존 ARM64 진형에 이어, 인류의 청정 유산이자 완전 자유 오픈소스 아키텍처인 **RISC-V 64비트(RV64I)** 영토를 정식 합병했습니다. 확장팩 하나로 두 개의 우주를 동시에 지배하는 초월적 올인원(All-in-One) 패키지 체제입니다.
 
@@ -408,6 +427,9 @@ VS Code의 전역 설정 파일(`settings.json`)에 아래 내용을 추가하�
 * **사소한 비주얼 딜레마 진압**: 중괄호와 속성값들이 멋대로 줄 바꿈되어 늘어지던 VS Code json 포맷터 똥고집 제어 옵션 탑재.
 
 > Note on the version jump (2.6.1 → 2.7.0): RISC-V 아키텍처 지원이라는 거대한 신규 영토 확장(New Feature Category)이 이루어졌으므로, SemVer 규칙에 따라 MINOR 버전을 2.7.0으로 대폭 격상하여 반포합니다.
+
+<details>
+<summary>📜 이전 변경 이력 보기 (v1.0.1 ~ v2.6.1)</summary>
 
 ### 🐛 v2.6.1 — 디버그 프로바이더 버그 수정
 v2.6.0의 디버깅 통합 기능을 실제 macOS 프로젝트에서 써보며 발견된 버그 3건을 수정한 패치입니다.
@@ -481,6 +503,9 @@ v2.6.0의 디버깅 통합 기능을 실제 macOS 프로젝트에서 써보며 �
 ### 1.0.1
 
 - 초기 배포: 문법 강조, 기본 진단(오프셋 정렬/범위, 레지스터 폭), hover, 자동완성
+</details>
+
+---
 
 ## 라이선스
 

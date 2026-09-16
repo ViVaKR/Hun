@@ -60,6 +60,11 @@ const ALL_ARM_REGISTERS = [...arm64Registers, ...(arm64FpSimdRegisters || []), .
 const REGISTER_INDEX = new Map(ALL_ARM_REGISTERS.map((r) => [r.name.toUpperCase(), r]));
 
 const LANGUAGE_ID = 'hun-asm';
+// 🆕 [RISC-V 연결] diagnostics(진단)만 우선 hun-riscv까지 확장.
+//    hover/자동완성/정의이동/아웃라인/포맷터는 아직 ARM64 전용 로직(레지스터,
+//    니모닉 설명 등)이라 그대로 LANGUAGE_ID('hun-asm')만 바라보게 남겨둔다.
+//    (RISC-V용 hover/completion까지 확장하는 건 3단계 별도 작업.)
+const DIAGNOSTIC_LANGUAGES = ['hun-asm', 'hun-riscv'];
 
 // [정규식 감시탑] 라벨 정의 감지: "이름:" 형태 (한글 라벨 및 .L_ 로컬 라벨 포획용)
 const LABEL_DEF_RE = /^\s*([\p{L}_.$][\p{L}0-9_.$]*)\s*:/u;
@@ -429,11 +434,11 @@ function activate(context) {
   // -----------------------------------------------------------------------
   // 🩺 [1구역: 실시간 코드 검진기] 문법 에러 및 경고(Diagnostics) 배포
   // -----------------------------------------------------------------------
-  diagnosticCollection = vscode.languages.createDiagnosticCollection(LANGUAGE_ID);
+  diagnosticCollection = vscode.languages.createDiagnosticCollection('hun-asm-family');
   context.subscriptions.push(diagnosticCollection);
 
   function refresh(document) {
-    if (!document || document.languageId !== LANGUAGE_ID) return;
+    if (!document || !DIAGNOSTIC_LANGUAGES.includes(document.languageId)) return;
     try {
       diagnosticCollection.set(document.uri, validateDocument(document));
     } catch (err) {

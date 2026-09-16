@@ -75,9 +75,9 @@
       "match": "\\bFUNC_[A-Z0-9_]*\\b"
     },
     "standard-mnemonics": {
-      "comment": "mnemonics-riscv.js의 RISCV_ALL_MNEMONICS(RISCV_BASE_INSTRUCTIONS + RISCV_PSEUDO_INSTRUCTIONS)와 전수 동기화(2026-09). 그 파일이 diagnostics.js의 '모르는 명령어' 판정 사전이므로, 여기 구문강조 목록도 항상 같이 맞춰야 li/la/beqz/j 같은 의사명령어가 강조는 되는데 진단에선 오탐나는(혹은 그 반대) 불일치가 안 생김. 순서 원칙: 'fence' 뒤에 곧장 '.i'가 붙는 'fence.i' 처럼, 점(.) 포함 토큰이 그 접두어 단독형과 같이 있는 경우 반드시 점 포함 쪽을 먼저 둘 것 — \\b 경계가 점(.) 앞에서도 성립해서 접두어만 먼저 매칭되고 '.i'가 뒤에 남는 버그가 생기기 때문 (hun-asm의 b.eq/b와 동일한 함정).",
+      "comment": "현재 목록 그대로 유지 — 니모닉 확장은 별도 작업(2번 항목)에서 진행 예정",
       "name": "keyword.control.mnemonic.hun-riscv",
-      "match": "\\b(li|la|lla|mv|not|neg|negw|nop|ret|call|tail|jr|j|seqz|snez|sltz|sgtz|beqz|bnez|blez|bgez|bltz|bgtz|bgt|ble|bgtu|bleu|sext\\.w|add|addi|addw|addiw|sub|subw|and|andi|or|ori|xor|xori|sll|slli|sllw|slliw|srl|srli|srlw|srliw|sra|srai|sraw|sraiw|slt|slti|sltu|sltiu|lui|auipc|beq|bne|blt|bge|bltu|bgeu|jal|jalr|lb|lbu|lh|lhu|lw|lwu|ld|sb|sh|sw|sd|ecall|ebreak|fence\\.i|fence|csrrw|csrrs|csrrc|csrrwi|csrrsi|csrrci|mul|mulh|mulhsu|mulhu|mulw|div|divu|divw|divuw|rem|remu|remw|remuw|lr\\.w|lr\\.d|sc\\.w|sc\\.d|amoswap\\.w|amoadd\\.w|amoand\\.w|amoor\\.w|amoxor\\.w|flw|fsw|fld|fsd|fadd\\.s|fsub\\.s|fmul\\.s|fdiv\\.s|fsqrt\\.s|fadd\\.d|fsub\\.d|fmul\\.d|fdiv\\.d|fsqrt\\.d|fcvt\\.w\\.s|fcvt\\.s\\.w|fcvt\\.w\\.d|fcvt\\.d\\.w|fmv\\.x\\.w|fmv\\.w\\.x)\\b"
+      "match": "\\b(li|add|addi|beq|bne|bgt|blt|j|ecall|lui|auipc|jal|jalr|bge|lw|sw|ld|sd)\\b"
     },
     "registers": {
       "name": "variable.language.register.hun-riscv",
