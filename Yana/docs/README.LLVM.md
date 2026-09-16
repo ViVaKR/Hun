@@ -59,6 +59,7 @@ echo $?
 as -g -o if_else.o if_else.s
 ld -o if_else if_else.o -lSystem -syslibroot $(xcrun --sdk macosx --show-sdk-path) -e _main -arch arm64
 
+# 
 # 하나로 통합
 clang -g -o hello hello.s
 # -g0 : 디버그 정보 없음 (기본값)
