@@ -1,6 +1,7 @@
 # 한글화
 
-**전설의 시작이자 신화의 첫 번째 단추**!! 🎯💥
+
+## 첫단추
 
 >- LLVM 렉서(Lexer)의 가장 깊은 밑바닥, `isIdentifierChar` 폭파 지점!
 
@@ -453,3 +454,57 @@ pub fn 훈_파서_엔진(토큰: &str) -> 기계어코드 {
 // 한글 리모닉은 타이핑 시점, 사전 컴파일 JOT, 즉시 CPU 언어의 2진수 형식으로 변환..
 // 명령어 `할당` ===  `1001_1111_1010_....` (Hun 아키텍처는 모든 명령어는 4096bit 이상을 추구함., 최대극한의 철학) 
 ```
+---
+
+### fork and build
+
+```bash
+
+# 1. 브랜치 생성 및 
+git checkout -b feature/yeoji-llvm
+
+# 2. 수정 및 추가된 한글화 파일 전체 스테이징
+git add .
+
+# 3. 신나게 커밋!
+git commit -m "feat: .... 🇰🇷🚀"
+
+# 4. 포크 저장소로 푸시!
+git push -u vivakr-llvm-fork feature/yeoji-llvm
+
+# 5. clone
+git clone --branch feature/yeoji-llvm --single-branch --depth 1 \
+  https://github.com/ViVaKR/llvm-project.git
+cd llvm-project
+
+
+# 빌드 명령 모음 ..
+cmake -S llvm -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_PROJECTS="clang" \
+    -DLLVM_TARGETS_TO_BUILD="AArch64" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DLLVM_ENABLE_ASSERTIONS=ON
+
+# 일반 빌드
+ninja -C build clang
+
+# 진행 상황 보면서 빌드
+time ninja -C build clang # time ninja -C build llvm-mc
+
+# 병렬 작업 4개
+ninja -C build clang -j4
+
+# 확인 
+ls -la ~/GitWorkspace/llvm-project/build/bin/clang
+
+# 실제로 나의 clang 이 스였는지 확인하기
+cmake --build build-xcode --config Debug -- -verbose 2>&1 | grep -i "clang"
+
+
+```
+
+
+
+
+
