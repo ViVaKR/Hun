@@ -48,6 +48,7 @@ char uart_getc(void)
   while (*UART0_FR & UART_FR_RXFE)
   {
   }
+
   return (char)(*UART0_DR & 0xFF);
 }
 
@@ -58,6 +59,7 @@ int baremetal_strcmp(const char *s1, const char *s2)
     s1++;
     s2++;
   }
+
   return *(unsigned char *)s1 - *(unsigned char *)s2;
 }
 

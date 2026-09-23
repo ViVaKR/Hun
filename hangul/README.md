@@ -55,7 +55,7 @@ static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
 
 ### `한글인식` 파트
 
->- `./llvm/lib/MC/MCParser/AsmLexer.cpp` 
+>- `./llvm/lib/MC/MCParser/AsmLexer.cpp`
 >- line number `231`
 >- [한글인식](./llvm/lib/MC/MCParser/AsmLexer.cpp#L231)
 
@@ -69,7 +69,7 @@ static bool isIdentifierChar(char C, bool AllowAt, bool AllowHash) {
 
 ```
 
-### `공통 지시어 / 심볼` 한글화 파트 관리 
+### `공통 지시어 / 심볼` 한글화 파트 관리
 
 >- `llvm/lib/MC/MCParser/AsmParser.cpp` 파일
 >- `AsmParser::parseIdentifier` 함수 내부 (약 2,980 라인 부근)
@@ -86,7 +86,7 @@ else if (Res == "알몸진입점")
 
 ### `한글 릴로케이션 수식어 (예: @페이지)` 관리
 
->- `@PAGE, @페이지` 나 `@PAGEOFF, @페이지오프셋` 외에 다른 릴로케이션 수식어를 한글화 할때 
+>- `@PAGE, @페이지` 나 `@PAGEOFF, @페이지오프셋` 외에 다른 릴로케이션 수식어를 한글화 할때
 >- `llvm/lib/MC/MCParser/AsmParser.cpp`
 >- `MCAsmParser::parseAtSpecifier` 함수 내부 (약 1,440 라인 부근)
 >- `@` PAGE, PAGEOFF, GOT (LLVM 표준 영문 수식어)
@@ -128,7 +128,7 @@ IDVal = StringSwitch<StringRef>(IDVal)
             .Case("글자", ".asciz")
             .Case("새지시어", ".word") // <- 요렇게 한 줄 추가!
             .Default(IDVal);
-            
+
   // Hangul Assembly Directive translation
   IDVal = StringSwitch<StringRef>(IDVal)
               .Case("공개", ".global")
@@ -149,7 +149,7 @@ IDVal = StringSwitch<StringRef>(IDVal)
 
 ### `AArch64 레지스터` 한글화 파트
 
->- `llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp` 
+>- `llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp`
 >- line number `3023`
 >- [레지스터](./llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp#L3023)
 
@@ -198,12 +198,12 @@ ParseStatus AArch64AsmParser::tryParseScalarRegister(MCRegister &RegNum) {
 ## `AArch64 니모닉` 한글화 파트
 
 >- `./llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp` 파일
->- `TranslateHunminMnemonic` 함수, 페이지 `5,296` 라인 
+>- `TranslateHunminMnemonic` 함수, 페이지 `5,296` 라인
 >-[한글 명령어](./llvm/lib/Target/AArch64/AsmParser/AArch64AsmParser.cpp#L5296)
 
 ```cpp
 
-# 현재 
+# 현재
 
 // -----------------------------------------------------------------------------
 // 훈 한글 어셈블리 (Hun ASM) 명령어 대조표
@@ -319,7 +319,7 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
 >- `hangul/`
 
 ```bash
-./run.ps1 # 파워쉘 
+./run.ps1 # 파워쉘
 ./run.sh  # zsh
 ```
 
@@ -335,7 +335,7 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
   static const std::unordered_map<std::string, std::string> HunminTable = {
 
       // 1. 사칙연산 및 산술
-      {"올림더하기", "adc"}, 
+      {"올림더하기", "adc"},
       {"올림더하기기표", "adcs"},
       {"더하기", "add"},
       {"태그더하기", "addg"},
@@ -349,7 +349,7 @@ static StringRef TranslateHunminMnemonic(StringRef Name) {
       {"곱하고더하기", "madd"},
       {"곱하고빼기", "msub"},
       {"곱하기", "mul"},
-      {"곱하고부호바꾸기", "mneg"}, 
+      {"곱하고부호바꾸기", "mneg"},
       {"정수나누기", "sdiv"},
       {"양수나누기", "udiv"},
       {"상위곱하기", "smulh"},
@@ -452,7 +452,7 @@ pub fn 훈_파서_엔진(토큰: &str) -> 기계어코드 {
 }
 
 // 한글 리모닉은 타이핑 시점, 사전 컴파일 JOT, 즉시 CPU 언어의 2진수 형식으로 변환..
-// 명령어 `할당` ===  `1001_1111_1010_....` (Hun 아키텍처는 모든 명령어는 4096bit 이상을 추구함., 최대극한의 철학) 
+// 명령어 `할당` ===  `1001_1111_1010_....` (Hun 아키텍처는 모든 명령어는 4096bit 이상을 추구함., 최대극한의 철학)
 ```
 ---
 
@@ -460,7 +460,7 @@ pub fn 훈_파서_엔진(토큰: &str) -> 기계어코드 {
 
 ```bash
 
-# 1. 브랜치 생성 및 
+# 1. 브랜치 생성 및
 git checkout -b feature/yeoji-llvm
 
 # 2. 수정 및 추가된 한글화 파일 전체 스테이징
@@ -475,8 +475,16 @@ git push -u vivakr-llvm-fork feature/yeoji-llvm
 # 5. clone
 git clone --branch feature/yeoji-llvm --single-branch --depth 1 \
   https://github.com/ViVaKR/llvm-project.git
+
+GitHub
+  └── ViVaKR/llvm-project
+          └── feature/yeoji-llvm
+                    ↓
+                   M4
 cd llvm-project
 
+# 5-2. 오래된 커밋까지
+git fetch --unshallow
 
 # 빌드 명령 모음 ..
 cmake -S llvm -B build -G Ninja \
@@ -492,19 +500,40 @@ ninja -C build clang
 # 진행 상황 보면서 빌드
 time ninja -C build clang # time ninja -C build llvm-mc
 
-# 병렬 작업 4개
+# 병렬 작업 4개 지정
+# -j4는 동시에 4개 작업만 병렬로 돌려라 라는 뜻
+# 기본값은 CPU 코어 수만큼 다 씀
 ninja -C build clang -j4
 
-# 확인 
+# 확인
 ls -la ~/GitWorkspace/llvm-project/build/bin/clang
 
 # 실제로 나의 clang 이 스였는지 확인하기
 cmake --build build-xcode --config Debug -- -verbose 2>&1 | grep -i "clang"
-
+"~/GitWorkspace/llvm-project/build/bin/clang" --version
 
 ```
 
-
-
-
-
+```text
+┌────────────────────────────────────┐
+│       ViVaKR LLVM / Hunmin         │
+├────────────────────────────────────┤
+│ Git                                │
+│   branch: feature/yeoji-llvm       │
+│                                    │
+│ Build                              │
+│   cmake -S llvm -B build -G Ninja  │
+│   ninja -C build clang             │
+│                                    │
+│ Verify                             │
+│   ./build/bin/clang --version      │
+│   ./build/bin/llvm-mc --version    │
+│                                    │
+│ Current proof                      │
+│   ARM64 → Mach-O → macOS           │
+│                                    │
+│ Next proof                         │
+│   RISC-V → ELF → QEMU              │
+└────────────────────────────────────┘
+```
+---
