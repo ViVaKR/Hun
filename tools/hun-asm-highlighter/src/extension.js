@@ -69,9 +69,13 @@ const DIAGNOSTIC_LANGUAGES = ['hun-asm', 'hun-riscv'];
 // [정규식 감시탑] 라벨 정의 감지: "이름:" 형태 (한글 라벨 및 .L_ 로컬 라벨 포획용)
 const LABEL_DEF_RE = /^\s*([\p{L}_.$][\p{L}0-9_.$]*)\s*:/u;
 
+// 1. .equ 심볼 포획용 정규식 추가 (상수 이름 포획)
+const EQU_DEF_RE = /^\s*([\p{L}_.\(][\p{L}0-9_.\)]*)\s+\.equ\b/u;
+// const EQU_HOVER_RE = /(?:^\s*\.equ\s+([\p{L}_.][\p{L}0-9_.]*)\s*,\s*(.+))|(?:^\s*([\p{L}_.][\p{L}0-9_.]*)\s+\.equ\s+(.+))/u;
+const EQU_HOVER_RE = /(?:^\s*\\.equ\s+([\p{L}_.][\p{L}0-9_.]*)\s*,\s*(.+))|(?:^\s*([\p{L}_.][\p{L}0-9_.]*)\s+\\.equ\s+(.+))/u;
+
 /** @type {vscode.DiagnosticCollection} */
 let diagnosticCollection;
-
 
 // =========================================================================
 // 🔍 [내부 첩보원] 문서 내 라벨 위치 추적 함수
@@ -79,11 +83,33 @@ let diagnosticCollection;
 function findLabelInDocument(document, name) {
   for (let i = 0; i < document.lineCount; i++) {
     const text = document.lineAt(i).text;
+
+    // 라벨 (LABEL:) 검사
     const m = LABEL_DEF_RE.exec(text);
     if (m && m[1] === name) {
-      const col = text.indexOf(m[1]);
+      const col = text.indexOf(m[1], m.index);
       return new vscode.Position(i, col);
     }
+
+    // 2. .equ 심볼(.equ FOO 또는 FOO .equ) 검사
+    const mEqu = EQU_DEF_RE.exec(text);
+    if (mEqu) {
+      // 1번 그룹(표준형)과 2번 그룹(별칭형) 중 매칭된 녀석을 가져옴
+      const matchedName = mEqu[1] || mEqu[2];
+
+      if (matchedName === name) {
+        // 정확한 상수 이름의 시작 위치를 검색
+        const col = text.indexOf(matchedName, mEqu.index);
+        return new vscode.Position(i, col);
+      }
+    }
+
+    // .equ 심볼(CONST .equ 10) 검사
+    // const mEqu = EQU_DEF_RE.exec(text);
+    // if (mEqu && mEqu[1] === name) {
+    //   const col = text.indexOf(mEqu[1]);
+    //   return new vscode.Position(i, col);
+    // }
   }
   return null;
 }
@@ -515,6 +541,8 @@ function activate(context) {
     vscode.languages.registerHoverProvider(LANGUAGE_ID, {
       provideHover(document, position) {
         // 점(.)기호와 다국어 식별자가 쪼개지지 않도록 범위 설정 포획
+        // 🎯 점(.)을 뺀 순수 식별자만 잡도록 단어 감지 범위를 양보 및 조정합니다!
+        // const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_]+/u);
         const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
         if (!range) return;
 
@@ -542,7 +570,8 @@ function activate(context) {
           return new vscode.Hover(md, range);
         }
 
-        // 🎯 [3순위 수색 - v2.5.2 신설 요새] 링커 스크립트 핵심 지시어 및 기호 포획!
+        // 🎯 [3순위 수색 - v2.5.2 신설 요새]
+        // 링커 스크립트 핵심 지시어 및 기호 포획!
         const linkerInfo = LINKER_KEYWORDS_MAP[wordUpper] || LINKER_KEYWORDS_MAP[originalWord.trim()];
         if (linkerInfo) {
           const md = new vscode.MarkdownString();
@@ -555,6 +584,30 @@ function activate(context) {
             md.appendCodeblock(linkerInfo.syntax, 'linker');
           }
           return new vscode.Hover(md, range);
+        }
+
+        // [4순위 수색 - 대제독 보강] 마우스를 올린 단어가.equ로 정의된 상수(Symbol)인지 문서 전체 스캔!
+        for (let i = 0; i < document.lineCount; i++) {
+          const lineText = document.lineAt(i).text;
+          const m = EQU_HOVER_RE.exec(lineText);
+
+          if (m) {
+            // 1, 2번 그룹(표준형)이 매칭되었는지, 3, 4번 그룹(별칭형)이 매칭되었는지 판단
+            const constName = m[1] || m[3];
+            const constValue = m[2] || m[4];
+
+            if (constName === originalWord) {
+              const md = new vscode.MarkdownString();
+              md.isTrusted = true;
+              md.supportHtml = true;
+
+              md.appendMarkdown(`### 📌 Constant Symbol: \`\${constName}\`\n\n`);
+              md.appendMarkdown(`**Equated Value:** \`\${constValue.trim()}\`\n\n`);
+              md.appendMarkdown(`*Defined at line ${i + 1}*`);
+
+              return new vscode.Hover(md, range);
+            }
+          }
         }
 
         return;
@@ -591,8 +644,16 @@ function activate(context) {
                 item.detail = 'Hun-ASM mnemonic';
               }
 
+              // item.insertText = new vscode.SnippetString(`${entry.insertText} `);
+              // item.filterText = `${entry.insertText.toLowerCase()} ${entry.insertText}`;
+
+              // 🎯 [교정] 입력 문자열이 .equ 처럼 점으로 시작할 때 스니펫이 꼬이지 않도록 안전 바인딩
               item.insertText = new vscode.SnippetString(`${entry.insertText} `);
-              item.filterText = `${entry.insertText.toLowerCase()} ${entry.insertText}`;
+
+              // 🎯 [핵심 교정] filterText에 쓸데없는 공백 조합을 없애고 소문자 순수 단어로만 필터링하게 하여
+              // 사용자가 점(.)을 쳤을 때 .equ가 최우선으로 매칭되도록 가중치를 부여합니다.
+              item.filterText = entry.insertText.toLowerCase();
+
               if (range) item.range = range;
               completionItems.push(item);
             } catch (e) {
@@ -643,25 +704,24 @@ function activate(context) {
             if (range) item.range = range;
             completionItems.push(item);
           }
+          // 🎯 여기다가 쏙 집어넣으면 된다네 친구야! 🔥
+          // 🆕 4) 현재 문서 내의 .equ 상수 자동완성 목록에 동적 추가
+          for (let i = 0; i < document.lineCount; i++) {
+            const lineText = document.lineAt(i).text;
+            const mEqu = EQU_DEF_RE.exec(lineText);
+            if (mEqu) {
+              const constName = mEqu[1] || mEqu[2];
+              if (constName && !seenLabelNames.has(constName)) {
+                seenLabelNames.add(constName);
 
-          // 3) 사용자 정의 라벨 자동완성 (같은 문서의 .L_ 로컬 라벨 + 전역 라벨)
-          // for (let i = 0; i < document.lineCount; i++) {
-          //   if (i === position.line) continue;
-
-          //   const text = document.lineAt(i).text;
-          //   const m = LABEL_DEF_RE.exec(text);
-          //   if (!m) continue;
-          //   const name = m[1];
-          //   const isLocal = name.startsWith('.L');
-
-          //   const item = new vscode.CompletionItem(
-          //     name,
-          //     isLocal ? vscode.CompletionItemKind.Field : vscode.CompletionItemKind.Function);
-          //   item.sortText = `0_${name}`
-          //   item.detail = isLocal ? '로컬 라벨 (현재 파일)' : '전역 라벨 / 함수';
-          //   if (range) item.range = range;
-          //   completionItems.push(item);
-          // }
+                const item = new vscode.CompletionItem(constName, vscode.CompletionItemKind.Constant);
+                item.sortText = `0_${constName}`; // 🩹 보완: 문자열 템플릿 변수가 잘 적용되도록 빽틱/일반문자 교정함!
+                item.detail = `.equ 상수 기호 (현재 파일)`;
+                if (range) item.range = range;
+                completionItems.push(item);
+              }
+            }
+          }
 
           return completionItems;
 

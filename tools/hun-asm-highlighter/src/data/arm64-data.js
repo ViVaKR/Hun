@@ -975,6 +975,16 @@ const arm64Registers = [
     description: "Link Register (LR). Stores the return address set by BL / BLR instructions.\n\n✓ 링크 레지스터(LR). BL / BLR 명령어가 설정한 복귀 주소를 저장합니다.",
     type: "Link Register"
   },
+  {
+    name: "FP",
+    description: "✓ Frame Pointer (FP). Points to the base of the current stack frame; used to chain stack frames for backtraces/debugging.",
+    type: "Frame Pointer\n\n✓ 프레임 포인터(FP). 현재 스택 프레임의 시작 위치를 가리키며, 백트레이스/디버깅을 위해 스택 프레임을 연결하는 데 사용됩니다."
+  },
+  {
+    name: "LR",
+    description: "Link Register (LR). Stores the return address set by BL / BLR instructions.\n\n✓ 링크 레지스터(LR). BL / BLR 명령어가 설정한 복귀 주소를 저장합니다.",
+    type: "Link Register"
+  },
 
   // ---- 특수 레지스터 ----
   {

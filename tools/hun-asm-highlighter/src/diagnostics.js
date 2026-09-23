@@ -22,11 +22,14 @@
 //       "100% 이 파일 안에서 확실하게 판정 가능한 것"만 다룬다는 원칙을 지킨다.)
 
 const vscode = require('vscode');
+
 const { KNOWN_SET: ARM64_KNOWN_SET } = require('./mnemonics');
+
 // 🆕 [RISC-V 연결] mnemonics-riscv.js의 KNOWN_SET을 추가로 불러와서,
 //    document.languageId가 'hun-riscv'일 때는 이쪽을 참조하게 만든다.
 //    (이게 없으면 li/la/beqz/j 같은 RISC-V 의사명령어가 ARM64 KNOWN_SET에
 //     없다는 이유로 "모르는 명령어"로 계속 오탐났었음.)
+
 const { RISCV_KNOWN_SET } = require('./mnemonics-riscv');
 
 const PAIR_RE =
@@ -216,8 +219,21 @@ function checkSingleInstruction(trimmed, rawText, lineIdx, diags) {
 }
 
 function checkUnknownMnemonic(trimmed, rawText, lineIdx, diags, knownSet) {
+  // 1. 기본 디렉티브(.로 시작) 및 단독 라벨 (LABEL:) 라인 제외
   if (trimmed.startsWith('.')) return;
   if (LABEL_ONLY_RE.test(trimmed)) return;
+
+  // 2. 주석 제거 후 실제 코드 내용만 추출 (오탐 방지 핵심)
+  // ARM64 어셈블리에서 흔히 쓰는 주석 기호(//, ;, @) 이후의 텍스트를 모두 잘라냅니다.
+  const pureCode = trimmed.split(/\/\/|;|@/)[0].trim();
+
+  // 만약 주석을 지웠더니 빈 줄이 되었다면 검사 제외
+  if (!pureCode) return;
+
+  // 3. 🆕 주석이 제거된 순수 코드에 .equ가 포함되어 있다면 '상수 정의 라인'이므로 명령어 검사 제외!
+  if (/\.equ\b/i.test(pureCode)) return;
+  // 🆕 .equ 가 포함된 라인은 심볼 정의 라인이므로 명령어 오탐 검사 대상에서 제외!
+  // if (/\.equ\b/i.test(trimmed)) return;
 
   const firstTokMatch = /^([\p{L}_][\p{L}0-9_.]*)/u.exec(trimmed);
   if (!firstTokMatch) return;
@@ -230,6 +246,7 @@ function checkUnknownMnemonic(trimmed, rawText, lineIdx, diags, knownSet) {
   if (knownSet.has(first)) return;
 
   const source = knownSet === RISCV_KNOWN_SET ? 'hun-riscv' : 'hun-asm';
+
   addDiag(diags, rawText, lineIdx, first,
     `"${first}"... 내가 아는 명령어 목록엔 없는 녀석인데? 오타 아닌지 한번 봐주게.`,
     vscode.DiagnosticSeverity.Information, source);

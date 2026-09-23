@@ -28,6 +28,7 @@ const {
 
 const {
   MNEMONIC_MAP,
+  DIRECTIVE_MAP,
   ENGLISH_MNEMONICS,
   HANGUL_MNEMONICS,
 } = require('./mnemonics');
@@ -78,8 +79,26 @@ function resolveEnglish(rawToken) {
  */
 function getMnemonicInfo(rawToken) {
   if (!rawToken) return null;
-  const english = resolveEnglish(rawToken);
 
+  // 🎯 [핵심 교정] 마우스 올린 단어의 순수 소문자 및 공백 제거 버전을 최상단에 확실히 바인딩!
+  const tokenLower = rawToken.trim().toLowerCase();
+  // 🎯 [0순위 수색 레이어] 점(.)으로 시작하는 "지시어 패밀리" 백과사전 수색관 가동!
+  if (tokenLower.startsWith('.')) {
+    const dirItem = DIRECTIVE_MAP[tokenLower];
+    if (dirItem) {
+      return {
+        english: dirItem.english,
+        hangulAliases: [],
+        description: dirItem.desc,
+        syntax: undefined,
+        example: undefined,
+        kind: 'instruction',
+      };
+    }
+  }
+
+  // 지시어가 아니라면 기존대로 영어 니모닉 변환 파이프라인 진행
+  const english = resolveEnglish(rawToken);
   // 1) arm64-data.js 의 풍부한 명령어 데이터 (최우선)
   const instr = instructionByEnglish.get(english);
   if (instr) {

@@ -3,48 +3,22 @@
   "name": "Hun ARM64 Assembly",
   "scopeName": "source.hun-asm",
   "patterns": [
-    {
-      "include": "#comments"
-    },
-    {
-      "include": "#strings"
-    },
-    {
-      "include": "#char-literals"
-    },
-    {
-      "include": "#directives"
-    },
-    {
-      "include": "#macro-definition"
-    },
-    {
-      "include": "#section-macros"
-    },
-    {
-      "include": "#func-macros"
-    },
-    {
-      "include": "#hangul-mnemonics"
-    },
-    {
-      "include": "#standard-mnemonics"
-    },
-    {
-      "include": "#registers"
-    },
-    {
-      "include": "#numbers"
-    },
-    {
-      "include": "#labels"
-    },
-    {
-      "include": "#linker-keywords"
-    },
-    {
-      "include": "#linker-operators"
-    }
+    { "include": "#c-preprocessor" },
+    { "include": "#equ-definition" },
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#char-literals" },
+    { "include": "#directives" },
+    { "include": "#macro-definition" },
+    { "include": "#section-macros" },
+    { "include": "#func-macros" },
+    { "include": "#hangul-mnemonics" },
+    { "include": "#standard-mnemonics" },
+    { "include": "#registers" },
+    { "include": "#numbers" },
+    { "include": "#labels" },
+    { "include": "#linker-keywords" },
+    { "include": "#linker-operators" }
   ],
   "repository": {
     "comments": {
@@ -78,7 +52,7 @@
     "directives": {
       "comment": ".section, .global, .macro, .equ 등 내장 지시어",
       "name": "keyword.control.directive.hun-asm",
-      "match": "\\.(glob(?:al|l)|section|align|include|macro|endmacro|endm|equ|asciz|ascii|octa|quad|long|int|double|float|hword|short|2byte|word|byte|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
+      "match": "\\.(glob(?:al|l)|section|align|p2align|include|macro|endmacro|endm|equ|asciz|ascii|octa|quad|long|int|double|float|hword|short|2byte|word|byte|set|ifndef|ifdef|endif|extern|zerofill|data|bss|const|text)\\b"
     },
     "macro-definition": {
       "comment": "매크로 '정의' 자리 (.macro 앞에 오는 이름). entity.name = 선언/정의",
@@ -89,6 +63,43 @@
         }
       }
     },
+    "equ-definition": {
+      "comment": "앞에 오는 형태와 뒤에 오는 형태 모두 .equ 지시어와 상수명을 칼라풀하게 포획",
+      "patterns": [
+        {
+          "comment": "표준 형태: .equ FOO, 100",
+          "match": "^\\s*(\\\\.equ)\\s+([\\p{L}_.][\\p{L}0-9_.]*)",
+          "captures": {
+            "1": { "name": "keyword.control.directive.hun-asm" },
+            "2": { "name": "variable.other.constant.hun-asm" }
+          }
+        },
+        {
+          "comment": "별칭/특수 형태: FOO .equ 100",
+          "match": "^\\s*([\\p{L}_.][\\p{L}0-9_.]*)\\s+(\\\\.equ)\\b",
+          "captures": {
+            "1": { "name": "variable.other.constant.hun-asm" },
+            "2": { "name": "keyword.control.directive.hun-asm" }
+          }
+        }
+      ]
+    },
+    "c-preprocessor": {
+      "comment": "#define args x26 형태에서 지시어, 매크로명, 치환값을 모두 다채롭게 포획",
+      "match": "^\\s*(#define)\\s+([\\p{L}_][\\p{L}0-9_]*)\\s+(.+)$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.preprocessor.hun-asm"
+        },
+        "2": {
+          "name": "variable.other.macro.hun-asm"
+        },
+        "3": {
+          "name": "meta.preprocessor.string.hun-asm"
+        }
+      }
+    },
+
     "linker-keywords": {
       "comment": "링커 스크립트 핵심 지시어 및 메모리 구역 설정 키워드",
       "name": "keyword.control.linker.hun-asm",

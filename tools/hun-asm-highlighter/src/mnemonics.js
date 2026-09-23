@@ -14,6 +14,7 @@
 //    → arm64-data.js를 여기서도 직접 흡수해서, 앞으로 그 파일에 뭘 추가하든
 //      diagnostics.js가 자동으로 같이 알게 만든다 (진짜 단일 진실 공급원).
 const { arm64Instructions, arm64FpInstructions, arm64NeonInstructions, arm64SystemInstructions, arm64ScalarGapFillInstructions } = require('./data/arm64-data');
+
 const ARM64_DATA_MNEMONICS = [
   ...(arm64Instructions || []),
   ...(arm64FpInstructions || []),
@@ -22,7 +23,19 @@ const ARM64_DATA_MNEMONICS = [
   ...(arm64ScalarGapFillInstructions || []),
 ].map((i) => i.name.toLowerCase());
 
+const DIRECTIVE_MAP = {
+  '.section': { english: '.section', desc: '✓ **메모리 섹션 선언 지시어**.\n\n코드(`.text`), 데이터(`.data`), 읽기 전역 데이터(`.const`/`.rodata`), 초기화되지 않은 변수 영역(`.bss`) 등의 구역을 정의하여 메모리에 배치합니다.' },
+  '.align': { english: '.align', desc: '✓ **메모리 경계 정렬 지시어**.\n\n다음에 올 코드나 데이터의 주소를 **\(2^N\) 바이트(또는 어셈블러에 따라 바이트 수 자체)** 경계로 정렬하여 CPU의 메모리 접근 효율을 극대화합니다.' },
+  '.p2align': { english: '.p2align', desc: '✓ **거듭제곱 기반 메모리 정렬 지시어**.\n\n뒤따라오는 숫자 N에 대해 주소를 **\(2^N\) 바이트 경계**로 정렬합니다. (예: `.p2align 2`는 2² = 4바이트 정렬)' },
+  '.global': { english: '.global', desc: '✓ **전역 심볼 선언 지시어**.\n\n지정한 라벨(함수 또는 변수)의 범위를 전역(Global)으로 확장하여, **다른 소스 파일이나 링커가 이 라벨을 찾아 연결할 수 있도록** 외부에 공개합니다.' },
+  '.globl': { english: '.globl', desc: '✓ **전역 심볼 선언 지시어 (.global과 동일)**.\n\nGNU 어셈블러 표준 규격에서 사용하는 `.global`과 완전히 동일한 전역 공개 지시어 별칭입니다.' },
+  '.asciz': { english: '.asciz', desc: '✓ **NUL 문자 포함 문자열 데이터 선언**.\n\n문자열 데이터를 메모리에 저장하고, 문자열의 끝을 알리는 **종료 문자 NUL(`\\0`)을 자동으로 맨 뒤에 붙여줍니다**.' },
+  '.ascii': { english: '.ascii', desc: '✓ **순수 문자열 데이터 선언**.\n\n종료 문자(`\\0`) 없이 기입한 문자열 데이터만 메모리에 순수하게 적재합니다.' },
+  '.equ': { english: '.equ', desc: '상수(Symbol)를 정의하는 지시어입니다.' },
+};
+
 const MNEMONIC_MAP = {
+
   // === 기존에 넣어둔 4대 천왕 ===
   'ldr': { english: 'ldr', desc: '메모리 값을 레지스터로 적재(load)합니다.' },
   '적재': { english: 'ldr', desc: '메모리 값을 레지스터로 적재(load)합니다.' },
@@ -143,6 +156,10 @@ const MNEMONIC_MAP = {
 };
 
 const ENGLISH_MNEMONICS = [
+
+  // 0. 지시어 패밀리 전원 안착!
+  '.equ', '.section', '.align', '.p2align', '.global', '.globl', '.asciz', '.ascii',
+
   // 1. 데이터 이동 및 상수 주소 계산
   'mov', 'mvn', 'fmov', 'adr', 'adrp',
 
@@ -196,4 +213,11 @@ const HANGUL_MNEMONICS = [
 const ALL_MNEMONICS = Array.from(new Set([...ENGLISH_MNEMONICS, ...HANGUL_MNEMONICS, ...ARM64_DATA_MNEMONICS]));
 const KNOWN_SET = new Set(ALL_MNEMONICS);
 
-module.exports = { MNEMONIC_MAP, ALL_MNEMONICS, KNOWN_SET, ENGLISH_MNEMONICS, HANGUL_MNEMONICS };
+module.exports = {
+  MNEMONIC_MAP,
+  DIRECTIVE_MAP,
+  ALL_MNEMONICS,
+  KNOWN_SET,
+  ENGLISH_MNEMONICS,
+  HANGUL_MNEMONICS
+};
