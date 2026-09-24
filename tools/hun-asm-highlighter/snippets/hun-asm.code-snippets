@@ -179,7 +179,6 @@
     "body": ["cmp ${1:x0}, ${2:x1}", "csel ${3:x0}, ${1:x0}, ${2:x1}, ${4|ge,gt,le,lt,eq,ne,hs,lo|}$0"],
     "description": "csel 삼항연산 (예: ge → x1>=x2면 x1, 아니면 x2)",
   },
-
   "Rust FFI call (extern \"C\", ptr+len 방식)": {
     "scope": "hun-asm",
     "prefix": "_rustffi",
@@ -193,8 +192,7 @@
     ],
     "description": "Rust extern \"C\" 함수 호출 — 반드시 extern \"C\" 붙은 함수만 부를 것 (ABI 안정성)",
   },
-
-  "Section macros block (전체)": {
+  "Section macros block (All/전체)": {
     "scope": "hun-asm",
     "prefix": "_sect",
     "body": ["BSS_SECTION", "CONST_DATA_SECTION", "DATA_SECTION", "CONST_SECTION", "CSTRING_SECTION", "CODE_SECTION$0"],

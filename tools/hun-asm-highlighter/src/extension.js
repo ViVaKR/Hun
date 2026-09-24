@@ -103,13 +103,6 @@ function findLabelInDocument(document, name) {
         return new vscode.Position(i, col);
       }
     }
-
-    // .equ 심볼(CONST .equ 10) 검사
-    // const mEqu = EQU_DEF_RE.exec(text);
-    // if (mEqu && mEqu[1] === name) {
-    //   const col = text.indexOf(mEqu[1]);
-    //   return new vscode.Position(i, col);
-    // }
   }
   return null;
 }
@@ -840,6 +833,123 @@ function activate(context) {
     'settings set target.language c',
   ];
 
+  // -----------------------------------------------------------------------
+  // [8구역: include inc] 공용 매크로 인클루드 파일(.inc) 생성 엔진
+  // -----------------------------------------------------------------------
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hun-asm.createMacroFile', async () => {
+      // 1. 사용자가 현재 열어놓은 작업 공간(프로젝트 폴더 배열) 확보
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders || workspaceFolders.length === 0) {
+        vscode.window.showErrorMessage("어이 친구, 매크로를 하사받기 전에 먼저 프로젝트 폴더(Workspace)를 열어주게나! 하하하.");
+        return;
+      }
+
+      // 🎯 [완벽 교정] workspaceFolders는 배열이므로 반드시 [0]번 인덱스 뒤에 .uri를 붙여야 합니다!
+      const targetRootUri = workspaceFolders[0].uri;
+      const targetFileUri = vscode.Uri.joinPath(targetRootUri, 'hun.macros.inc');
+
+      // 2. 이미 프로젝트 폴더에 파일이 존재(중복)하는지 안전 검사 수행
+      let fileExists = false;
+      try {
+        await vscode.workspace.fs.stat(targetFileUri);
+        fileExists = true;
+      } catch {
+        fileExists = false;
+      }
+
+      // 3. 이미 존재한다면 중앙 집중식 모달 방패로 사용자 오작동 차단!
+      if (fileExists) {
+        const choice = await vscode.window.showWarningMessage(
+          "어이 친구! 현재 프로젝트 루트에 이미 'hun.macros.inc' 파일이 숨쉬고 있네! 진짜로 무자비하게 덮어쓸 건가?",
+          { modal: true },
+          "그래도 덮어쓰기 🔥",
+          "아니, 취소할래 🛑"
+        );
+
+        if (choice !== "그래도 덮어쓰기 🔥") {
+          return;
+        }
+      }
+
+      // 4. 확장 기능 설치 폴더 내의 assets 주소 추출!
+      const sourceTemplateUri = vscode.Uri.joinPath(context.extensionUri, 'src', 'assets', 'hun.macros.inc');
+
+      try {
+        // 5. 내장된 템플릿 자산 파일에서 순수 바이트 바이너리를 통째로 읽어옵니다.
+        const templateData = await vscode.workspace.fs.readFile(sourceTemplateUri);
+
+        // 6. 읽어온 바이트 그대로 백성의 워크스페이스 타겟 경로에 쾌속 복사!
+        await vscode.workspace.fs.writeFile(targetFileUri, templateData);
+
+        // 7. 영광스러운 성공 알림 및 에디터 즉시 활성화
+        vscode.window.showInformationMessage("🔥 'src/assets/'에서 원본을 추출하여 'hun.macros.inc' 파일을 완벽하게 보급했네! 자네의 어셈블리 소스 파일(.s) 맨 위에 `.include \"hun.macros.inc\"` 코드를 한 줄 얹고 우아미 그득한 코딩을 하게나! 하하하.");
+        const doc = await vscode.workspace.openTextDocument(targetFileUri);
+        await vscode.window.showTextDocument(doc);
+
+      } catch (err) {
+        vscode.window.showErrorMessage("어라 법우여, 내장 템플릿 자산을 읽거나 복사하는 도중 오류가 났네: " + err.message);
+      }
+    })
+  );
+
+  // -----------------------------------------------------------------------
+  // [9구역: hun-build.cs] 닷넷 오케스트레이터
+  // -----------------------------------------------------------------------
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hun-asm.createDotnetOrchestrator', async () => {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders || workspaceFolders.length === 0) {
+        vscode.window.showErrorMessage("어이 친구, 턱시도 기어를 하사받기 전에 먼저 프로젝트 폴더를 열어주게나! 하하하.");
+        return;
+      }
+
+      const targetRootUri = workspaceFolders[0].uri;
+      const targetFileUri = vscode.Uri.joinPath(targetRootUri, 'hun-build.cs');
+
+      // 1. 이미 파일이 설치(존재)되어 있는지 먼저 첩보 수색!
+      let fileExists = false;
+      try {
+        await vscode.workspace.fs.stat(targetFileUri);
+        fileExists = true;
+      } catch {
+        fileExists = false;
+      }
+
+      // 2. 이미 파일이 존재한다면 중앙 집중식 모달 방패 가동
+      if (fileExists) {
+        const choice = await vscode.window.showWarningMessage(
+          "어이 친구! 이미 'hun-build.cs' 턱시도 파일이 존재하네! 대제독의 오케스트레이터로 무자비하게 교체할 건가?",
+          { modal: true },
+          "그래도 교체 🔥",
+          "아니, 유지할래 🛑"
+        );
+        if (choice !== "그래도 교체 🔥") return;
+      }
+
+      // 3. 자산 폴더에서 단일 .cs 템플릿 파일 추출 및 다이렉트 바이트 카피!
+      const sourceTemplateUri = vscode.Uri.joinPath(context.extensionUri, 'src', 'assets', 'hun-build.cs.template');
+
+      try {
+        const templateData = await vscode.workspace.fs.readFile(sourceTemplateUri);
+        await vscode.workspace.fs.writeFile(targetFileUri, templateData);
+
+        // 4. 감동의 사용법 꿀팁 메시지 선포!
+        vscode.window.showInformationMessage(
+          "👑 닷넷 10 턱시도 스타일 사격 통제 장치가 하사되었네! 터미널 야전에서 `dotnet hun-build.cs` 한 줄만 치면 하위 폴더 전체를 재귀 수색하여 즉시 토벌(컴파일/실행)한다네! 하하하."
+        );
+
+        const doc = await vscode.workspace.openTextDocument(targetFileUri);
+        await vscode.window.showTextDocument(doc);
+
+      } catch (err) {
+        vscode.window.showErrorMessage("닷넷 턱시도 기어 하사 도중 에러가 났네: " + err.message);
+      }
+    })
+  );
+
+  // -----------------------------------------------------------------------
+
   async function detectExecutable(workspaceRoot) {
     const fs = vscode.workspace.fs;
 
@@ -905,6 +1015,7 @@ function activate(context) {
       return config;
     },
   });
+
   context.subscriptions.push(debugConfigProvider);
 }
 

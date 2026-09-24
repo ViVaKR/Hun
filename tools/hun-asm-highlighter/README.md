@@ -26,6 +26,20 @@ It gives you rich syntax highlighting, IntelliSense (hover + autocomplete) for t
 - **Dual-Architecture Sovereignty (ARM64 & RISC-V)**: Fully decouples from the constraints of a single architecture. Open a `.riscv` or `.v` file, and the extension instantly morphs into a pristine RISC-V environment.
 - **RISC-V Language ID (`hun-riscv`)**: Native recognition for `.riscv` and `.v` extensions with isolated syntax maps, duplicate-free IntelliSense, and targeted formatting rules.
 
+### 👑 Sovereign Orchestration Commands (Scaffold Infrastructure)
+
+The extension introduces next-generation workspace scaffolding commands to instantly deploy project-level 무기고 (Armory) infrastructure. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) and type `Hun-ASM` to unleash:
+
+1. **`Hun-ASM: Create Shared Macro Include File (.inc)`**
+   - Instantly extracts and scaffolds the pure assembly `hun.macros.inc` file directly into your workspace root.
+   - Armed with a robust duplicate warning modal shield, it safely deploys high-status prologue/epilogue macros (`FUNC_START_FULL`, etc.) without risk of overriding custom changes.
+   - **Usage:** Simply append `.include "hun.macros.inc"` at the absolute summit of your `.s` or `.S` assembly files to fire under full macro protection.
+
+2. **`Hun-ASM: Create .NET 10 Tuxedo Orchestrator (hun-build.cs)`**
+   - Deploys a state-of-the-art, C-free, single-file `.NET 10 File-based App` orchestrator (`hun-build.cs`) into your project root.
+   - Engineered with advanced recursive radar tracking (`SearchOption.AllDirectories`), it sweeps every corner of your workspace to fish out separate `.s` and `.S` source files, filtering out OS-level case-insensitive duplicates dynamically.
+   - **Usage:** Run `chmod +x hun-build.cs` to assign executive privileges, then trigger `./hun-build.cs` or `dotnet hun-build.cs` to dynamically compile and execute the total unified binary in 1 millisecond.
+
 ### Diagnostics in detail
 
 - `ldp`/`stp` offset alignment and encodable-range checks
@@ -292,6 +306,20 @@ MIT License
 - **듀얼 아키텍처 독립 선포 (ARM64 & RISC-V)**: 단일 아키텍처의 쇠사슬을 끊어냈습니다. `.riscv` 또는 `.v` 파일을 여는 순간, 오직 RISC-V만을 위한 청정한 한글/영문 문법 렌즈가 즉각 발동합니다.
 
 - **RISC-V 전용 식별자 (`hun-riscv`)**: 독자적인 확장자 지원을 통해 ARM64와의 간섭을 완벽히 차단하고, 가장 정갈한 순수 기계어 조립 환경을 하사합니다.
+
+### 👑 오케스트레이션  (인프라 자동 생성)
+
+본 확장팩은 백성들이 프로젝트 단위의 무기고 인프라를 즉각 구축할 수 있도록 명령 팔레트(`Ctrl+Shift+P` 또는 `Cmd+Shift+P`)를 통한 초첨단 자동 생성 커맨드를 하사합니다:
+
+1. **`Hun-ASM: 공용 매크로 인클루드 파일 생성 (.inc)`**
+   - 순수 어셈블리 규격의 `hun.macros.inc` 파일을 작업 공간 루트에 즉시 배출합니다.
+   - 강력한 중복 검사 모달 방패막이가 장착되어 있어, 이미 파일이 존재할 경우 실수로 코드가 덮어써 지는 대참사를 원천 차단합니다.
+   - **사용법:** 소스 파일(.s 또는 .S) 최상단에 `.include "hun.macros.inc"`를 한 줄 얹어주시면 대제독이 설계한 웅장한 함수 프롤로그 매크로들을 즉시 사격할 수 있습니다.
+
+2. **`Hun-ASM: 닷넷 10 오케스트레이터 생성 (hun-build.cs)`**
+   - 구질구질한 CMakeLists.txt나 빌드 설정 파일 없이, 단 한 장의 소스 파일로 모든 빌드를 총괄하는 최첨단 .NET 10 파일 기반 앱 턱시도 기어(`hun-build.cs`)를 하사합니다.
+   - 강력한 전방위 레이더망(`SearchOption.AllDirectories`)을 가동하여 하위 폴더의 모든 독립 어셈블리 파일들을 재귀적으로 수색하며, 맥OS 파일 시스템의 대소문자 혼선 파일 중복 포획 문제를 `Distinct()` 필터로 완벽하게 박멸합니다.
+   - **사용법:** 터미널에서 `chmod +x hun-build.cs`로 특명 권한을 장전한 뒤, `./hun-build.cs` 또는 `dotnet hun-build.cs`를 땅 때리면 분리된 모든 파일이 통합 컴파일되어 즉시 쾌속 실행됩니다!
 
 ### 기본 진단 (Diagnostics)
 

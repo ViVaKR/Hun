@@ -4,7 +4,7 @@
   "license": "MIT",
   "displayName": "Hun ARM64 한글 어셈블리 강조",
   "description": "훈(Hun) 프로젝트 전용 - 한글 니모닉과 섹션 매크로를 인식하는 문법 강조, Syntax highlighting for Hun ARM64 Assembly with Korean mnemonics, ARM64 registers, directives, labels and section macros.",
-  "version": "2.7.26",
+  "version": "2.7.35",
   "main": "src/extension.js",
   "homepage": "https://vivakr.github.io/Hun",
   "activationEvents": [
@@ -44,6 +44,18 @@
     "vadimcn.vscode-lldb"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "hun-asm.createMacroFile",
+        "title": "Hun-ASM: 공용 매크로 인클루드 파일 생성 (.inc)",
+        "category": "Hun-ASM"
+      },
+      {
+        "command": "hun-asm.createDotnetOrchestrator",
+        "title": "Hun-ASM: 닷넷 10 오케스트레이터 생성 (hun-build.cs)",
+        "category": "Hun-ASM"
+      }
+    ],
     "languages": [
       {
         "id": "hun-asm",

@@ -1,0 +1,70 @@
+#!/usr/bin/env -S dotnet --
+// =========================================================================
+// 👑 [Hun-ASM] .NET Native AOT File-based 턱시도 오케스트레이터 (dharma-build.cs)
+// =========================================================================
+#:property TargetFramework=net10.0
+#:property PublishAot=true
+#:property OptimizationPreference=Speed
+
+using System;
+using System.IO;
+using System.Diagnostics;
+using System.Linq;
+
+Console.WriteLine("👑 [Hun-ASM] .NET Native AOT 턱시도 사격 통제 기어 가동! 👑");
+
+// 1. 현재 작업 폴더 하위의 모든 .s 및 .S 어셈블리 소스 파일을 맹렬하게 제귀 수색!
+// 🩹 hun-build.cs.template 파일 수색 레이어 정밀 교정
+var currentDir = Directory.GetCurrentDirectory();
+var asmFiles = Directory.GetFiles(currentDir, "*.s", SearchOption.AllDirectories)
+    .Concat(Directory.GetFiles(currentDir, "*.S", SearchOption.AllDirectories))
+    .Where(f => !f.Contains("artifacts") && !f.Contains("obj")) // 빌드 잔재 필터링
+    .Select(f => Path.GetRelativePath(currentDir, f))
+    .Distinct(StringComparer.OrdinalIgnoreCase) // 🎯 [핵심 방패막이] 맥OS의 대소문자 중복 파일 포획을 완벽 차단!
+    .ToList();
+
+if (asmFiles.Count == 0)
+{
+    Console.WriteLine("🛑 어이 친구, 이 벌판엔 사격할 어셈블리 파일(.s)이 한 개도 없구만! 하하하.");
+    return;
+}
+
+Console.WriteLine($"📍 발견된 명사수 파일 수: {asmFiles.Count}개");
+
+foreach (var file in asmFiles)
+{
+    Console.WriteLine($"-> [편입] {file}");
+}
+
+// 2. Clang 사격 명령 조립 및 집도
+string outputFile = "hun-dharma-bin";
+string clangArgs = $"-arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -o {outputFile} " + string.Join(" ", asmFiles);
+
+Console.WriteLine("\n🚀 Clang 통합 총공격 개시...");
+var buildStart = Stopwatch.StartNew();
+
+var psiBuild = new ProcessStartInfo("clang", clangArgs)
+{
+    RedirectStandardOutput = true,
+    RedirectStandardError = true,
+    UseShellExecute = false
+};
+
+using var procBuild = Process.Start(psiBuild);
+procBuild?.WaitForExit();
+buildStart.Stop();
+
+if (procBuild?.ExitCode != 0)
+{
+    Console.WriteLine("❌ 사격 실패! 컴파일러 에러를 확인하게나:\n" + procBuild?.StandardError.ReadToEnd());
+    return;
+}
+
+Console.WriteLine($"✨ 사격 성공! 기계어 바이너리 탄생함. ({buildStart.ElapsedMilliseconds}ms) -> ./{outputFile}");
+
+// 3. 링킹 성공 즉시 다이렉트 쾌속 타격!
+Console.WriteLine("\n⚡ 즉시 실행 타격 감행!\n------------------------------------------------");
+var psiRun = new ProcessStartInfo($"./{outputFile}") { UseShellExecute = false };
+using var procRun = Process.Start(psiRun);
+procRun?.WaitForExit();
+Console.WriteLine("------------------------------------------------\n🏁 작전 종료 완료!");
