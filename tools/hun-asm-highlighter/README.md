@@ -40,6 +40,22 @@ The extension introduces next-generation workspace scaffolding commands to insta
    - Engineered with advanced recursive radar tracking (`SearchOption.AllDirectories`), it sweeps every corner of your workspace to fish out separate `.s` and `.S` source files, filtering out OS-level case-insensitive duplicates dynamically.
    - **Usage:** Run `chmod +x hun-build.cs` to assign executive privileges, then trigger `./hun-build.cs` or `dotnet hun-build.cs` to dynamically compile and execute the total unified binary in 1 millisecond.
 
+3. **Companion CLI: `armcli` (full project scaffolding, via Homebrew)**
+   - The two commands above scaffold individual files into an existing workspace. For a **complete, ready-to-build project** — Zig orchestrator, assembly entry point, and optional Rust/Go/.NET libraries, all wired together — use the standalone `armcli` CLI:
+     ```bash
+     brew tap ViVaKR/armcli
+     brew install armcli
+     armcli init -n MyProject -o . --rust --go --dotnet
+     ```
+   - Every generated project ships with **two build orchestrators**, and you pick whichever fits your setup:
+
+     |          | `zig build run`                                                                | `dotnet ./hun-build.cs`                                                                         |
+     | -------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+     | Requires | Zig, plus only the toolchain(s) for languages you selected (`--rust`/`--go`/`--dotnet`) | **.NET SDK 10 always**, regardless of `--dotnet` — the orchestrator itself is a .NET file-based app |
+     | Best for | Standard builds, incremental caching, cross-platform (macOS/Linux)               | Quick local iteration on macOS                                                                  |
+
+   - See [armcli on GitHub](https://github.com/ViVaKR/armcli) for the full command reference.
+
 ### Diagnostics in detail
 
 - `ldp`/`stp` offset alignment and encodable-range checks

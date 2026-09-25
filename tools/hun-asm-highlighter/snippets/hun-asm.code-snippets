@@ -48,23 +48,43 @@
     ],
     "description": "x19/x20 보존이 필요한 함수 뼈대 (32바이트, 16의 배수 정렬 확인됨)",
   },
-  "Init Hun (FUNC_START_FULL / FUNC_EXIT_FULL 매크로 사용)": {
+
+  "FUNC Full Init (FUNC_START_FULL / FUNC_EXIT_FULL 매크로)": {
     "scope": "hun-asm",
-    "prefix": "_huninit_macro_full",
+    "prefix": "_func_full",
     "body": [
-      ".include \"section_macros.inc\"",
+      ".include \"hun.macros.inc\"",
       "",
       "// [코드 구역]",
       "// __TEXT,__text, regular, pure_instructions",
       "CODE_SECTION",
-      "FUNC_START_FULL ${1:func_name}, ${2:128}",
+      "FUNC_START_FULL ${1:func_name}, ${2:160}",
       "",
       "\t$0",
       "\tmov x0, #0",
-      "FUNC_EXIT_FULL ${2:128}",
+      "FUNC_EXIT_FULL ${2:160}",
     ],
-    "description": "section_macros.inc 의 FUNC_START_FULL/FUNC_EXIT_FULL 매크로를 쓰는 우아한 버전",
+    "description": "hun.macros.inc 의 FUNC_START_FULL/FUNC_EXIT_FULL 매크로",
   },
+
+  "Init Hun (FUNC_START_FULL / FUNC_EXIT_FULL 매크로)": {
+    "scope": "hun-asm",
+    "prefix": "_huninit_macro_full",
+    "body": [
+      ".include \"hun.macros.inc\"",
+      "",
+      "// [코드 구역]",
+      "// __TEXT,__text, regular, pure_instructions",
+      "CODE_SECTION",
+      "FUNC_START_FULL ${1:func_name}, ${2:160}",
+      "",
+      "\t$0",
+      "\tmov x0, #0",
+      "FUNC_EXIT_FULL ${2:160}",
+    ],
+    "description": "hun.macros.inc 의 FUNC_START_FULL/FUNC_EXIT_FULL 매크로를 쓰는 우아한 버전",
+  },
+
   "Init Hun (FUNC_START / FUNC_EXIT 매크로 사용)": {
     "scope": "hun-asm",
     "prefix": "_huninit_macro",
