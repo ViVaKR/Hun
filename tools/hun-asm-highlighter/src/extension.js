@@ -125,6 +125,29 @@ function buildMnemonicMarkdown(originalWord, info) {
     md.appendMarkdown(`### \`${info.english.toUpperCase()}\`\n\n`);
   }
 
+  // 🎯 [Base ↔ SIMD&FP 동명이인 대응] ADD/STR/AND 처럼 같은 니모닉이 범용
+  //    레지스터(GPR) 버전과 SIMD&FP 버전으로 나뉘는 경우, getMnemonicInfo()는
+  //    variants 배열을 함께 돌려준다. 이 경우 각 레지스터 클래스를 구분해서
+  //    순서대로 보여준다 (하나의 니모닉 = 서로 다른 인코딩이라는 점을 명시).
+  if (Array.isArray(info.variants) && info.variants.length > 0) {
+    info.variants.forEach((v, idx) => {
+      md.appendMarkdown(`**[${v.regClass}]**\n\n`);
+      md.appendMarkdown(`${v.description}\n\n`);
+      if (v.syntax) {
+        md.appendMarkdown('**Syntax:**\n');
+        md.appendCodeblock(v.syntax, 'arm64');
+      }
+      if (v.example) {
+        md.appendMarkdown('\n**Example:**\n');
+        md.appendCodeblock(v.example, 'arm64');
+      }
+      if (idx < info.variants.length - 1) {
+        md.appendMarkdown('\n---\n\n');
+      }
+    });
+    return md;
+  }
+
   md.appendMarkdown(`${info.description}\n\n`);
 
   if (info.syntax) {
@@ -198,9 +221,19 @@ const SECTION_MACRO_RE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_SECTION$/;
 const FUNC_MACRO_RE = /^FUNC_[A-Z0-9_]*$/;
 const isMacroCall = (name) => SECTION_MACRO_RE.test(name) || FUNC_MACRO_RE.test(name);
 
-// 데이터 선언 라인 정규식 (.align 구문은 블록 정렬에서 철저히 제외!)
-const DATA_DECL_RE =
-  /^(\s*)(?:([\p{L}_.$][\p{L}0-9_.$]*)\s*:\s*)?((?!\.align\b)\.\p{L}[\p{L}0-9]*)\s+(.*)$/u;
+// 데이터 선언 라인 정규식 ("구조 지시어"는 블록 정렬에서 철저히 제외!)
+// 🩹 [일반화] 원래 .align 하나만 예외였다가, .equ 버그를 계기로 "데이터 값을
+// 나열하지 않는 지시어"들을 한 곳(STRUCTURAL_DIRECTIVE_NAMES)에서 관리하도록
+// 통합함. 새 지시어가 필요하면 이 목록 하나만 추가하면 DATA_DECL_RE 제외와
+// collectInstructionEdits의 플러시레프트 처리에 동시에 반영된다.
+const STRUCTURAL_DIRECTIVE_NAMES =
+  'align|p2align|equ|set|global|globl|extern|section|include|macro|endmacro|endm|ifdef|ifndef|else|endif|zerofill|text|data|bss|const';
+const STRUCTURAL_DIRECTIVE_RE = new RegExp(`^\\.(?:${STRUCTURAL_DIRECTIVE_NAMES})\\b`);
+
+const DATA_DECL_RE = new RegExp(
+  `^(\\s*)(?:([\\p{L}_.$][\\p{L}0-9_.$]*)\\s*:\\s*)?((?!\\.(?:${STRUCTURAL_DIRECTIVE_NAMES})\\b)\\.\\p{L}[\\p{L}0-9]*)\\s+(.*)$`,
+  'u'
+);
 
 
 // 데이터 선언 블록 정렬 함수 (기존 로직 유지)
@@ -330,8 +363,12 @@ function collectInstructionEdits(document) {
       // 빈 줄이나 주석 전용 줄을 만나면 블록을 끊는다!
       if (!t || t.startsWith('//') || t.startsWith('/*')) break;
 
-      // .align 구문은 단독 처리 후 블록을 끊는다!
-      if (t.startsWith('.align')) {
+      // 🩹 [구조 지시어 일괄 처리] .align/.equ/.set/.global/.section/.include/
+      // .macro/.ifdef/... 등은 데이터 값을 나열하는 게 아니라 심볼·영역을
+      // 선언하거나 흐름을 제어하는 지시어라서, 옆 데이터/명령어 테이블의 칼럼
+      // 폭에 절대 끌려가면 안 된다. 항상 단독으로 플러시레프트 처리하고
+      // 블록을 끊는다. (목록은 STRUCTURAL_DIRECTIVE_NAMES 한 곳에서 관리)
+      if (STRUCTURAL_DIRECTIVE_RE.test(t)) {
         if (t !== text) {
           edits.push(vscode.TextEdit.replace(line.range, t));
         }

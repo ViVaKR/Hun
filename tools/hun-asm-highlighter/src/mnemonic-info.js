@@ -74,6 +74,7 @@ function resolveEnglish(rawToken) {
  *   description: string,
  *   syntax?: string,
  *   example?: string,
+ *   variants?: Array<{ regClass: string, description: string, syntax?: string, example?: string }>,
  *   kind: 'instruction' | 'condition' | 'mnemonic-only' | 'unknown'
  * }}
  */
@@ -102,6 +103,25 @@ function getMnemonicInfo(rawToken) {
   // 1) arm64-data.js 의 풍부한 명령어 데이터 (최우선)
   const instr = instructionByEnglish.get(english);
   if (instr) {
+    // 🎯 [Base ↔ SIMD&FP 동명이인 대응] ADD/STR/AND 처럼 같은 니모닉이
+    //    범용 레지스터(GPR) 버전과 SIMD&FP 버전으로 나뉘는 경우,
+    //    arm64-data.js 는 단일 description 대신 variants 배열을 갖는다.
+    //    description/syntax/example 은 구버전 소비자(혹시 모를 외부 호출)를
+    //    위해 첫 번째 variant 값으로 채워 하위 호환을 유지하고,
+    //    variants 배열 자체는 그대로 넘겨서 buildMnemonicMarkdown()이
+    //    두 레지스터 클래스를 구분해서 렌더링할 수 있게 한다.
+    if (Array.isArray(instr.variants) && instr.variants.length > 0) {
+      const first = instr.variants[0];
+      return {
+        english: instr.name,
+        hangulAliases: hangulAliasesByEnglish.get(english) || [],
+        description: first.description,
+        syntax: first.syntax,
+        example: first.example,
+        variants: instr.variants,
+        kind: 'instruction',
+      };
+    }
     return {
       english: instr.name,
       hangulAliases: hangulAliasesByEnglish.get(english) || [],

@@ -7,7 +7,7 @@
 .set    SECTION_MACROS_INC, 1
 
 // ------------------------------------------------------
-// [코드 구역] __TEXT,__text
+// [코드 구역] __TEXT,__text, regular, pure_instructions
 // 명령어는 무조건 4바이트 (2^2) 정렬
 // 실제 기계어 명령어가 위치. pure_instructions = 순수 명령어 구역
 // ------------------------------------------------------
@@ -113,7 +113,7 @@
     .if    (\stack_size % 16) != 0
         .error "FUNC_START_FULL: stack_size는 16의 배수여야 합니다. ARM64 SP 정렬 규칙"
     .endif
-    
+
 .global _\name
 .align 2
 
@@ -121,7 +121,7 @@ _\name:
 	// 1. 기본 독서실 총무(x29)와 다음갈곳(x30) 방 배정 및 스택 거대 확보
 	stp x29, x30, [sp, #-\stack_size]!
 	mov x29, sp
-    
+
 	// 2. x19부터 x28까지 총 10개의 독서실 레지스터를 16바이트 간격으로 풀 백업!
 	stp x19, x20, [sp, #16]
 	stp x21, x22, [sp, #32]
@@ -141,10 +141,10 @@ _\name:
 	ldp x23, x24, [sp, #48]
 	ldp x25, x26, [sp, #64]
 	ldp x27, x28, [sp, #80]
-    
+
 	// 2. 독서실 총무와 다음갈곳을 복구하며 확보했던 거대 스택 통째로 닫기
 	ldp x29, x30, [sp], #\stack_size
-    ret
+  ret
 .endmacro
 
 // 프롤로그: 표준 프레임 설정 및 x19, x20 안전 백업 필수 보장
@@ -169,7 +169,7 @@ _\name:
 .macro FUNC_EXIT stack_size
 	ldp x19, x20, [sp, #16]
 	ldp x29, x30, [sp], #\stack_size
-    ret
+  ret
 .endmacro
 
 // [초경량형] x19, x20 백업 없이 오직 프레임 포인터(x29, x30)만 생성
@@ -190,7 +190,7 @@ _\name:
 // 에필로그 (초경량형): 내부에서 x19, x20을 안 쓰고 오직 프레임 포인터만 복원할 때
 .macro FUNC_EXIT_LIGHT stack_size
 	ldp x29, x30, [sp], #\stack_size
-    ret
+  ret
 .endmacro
 
 .endif

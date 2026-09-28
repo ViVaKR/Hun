@@ -2,15 +2,37 @@
 const arm64Instructions = [
   {
     name: "MOV",
-    description: "✓ Move register or immediate value. Copies the value of the source operand to the destination register.\n\n✓ 레지스터 또는 즉시값을 이동합니다. 원본 피연산자의 값을 대상 레지스터로 복사합니다.",
-    syntax: "MOV <Wd|Xd>, <Wn|Xn>  or  MOV <Wd|Xd>, #<imm>",
-    example: "MOV X0, X1\nMOV W2, #10"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Move register or immediate value. Copies the value of the source operand to the destination register.\n\n✓ 레지스터 또는 즉시값을 이동합니다. 원본 피연산자의 값을 대상 레지스터로 복사합니다.",
+        syntax: "MOV <Wd|Xd>, <Wn|Xn>  or  MOV <Wd|Xd>, #<imm>",
+        example: "MOV X0, X1\nMOV W2, #10"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Move (vector). Copies an entire vector register, or a single element between vector registers. An alias of ORR (vector, register) when Vn == Vm, or of DUP/INS for element moves.\n\n✓ 벡터 레지스터 전체를 복사하거나, 벡터 레지스터 간의 단일 요소를 이동합니다. Vn과 Vm이 같을 때는 ORR (vector, register)의, 요소 단위 이동일 때는 DUP/INS의 별칭입니다.",
+        syntax: "MOV <Vd>.<T>, <Vn>.<T>  or  MOV <Vd>.<Ts>[<index>], <Vn>.<Ts>[<index>]",
+        example: "MOV V0.16B, V1.16B\nMOV V0.S[1], V1.S[0]"
+      }
+    ]
   },
   {
     name: "LDR",
-    description: "✓ Load Register. Loads a word or doubleword from memory into a register.\n\n✓ 레지스터로 값을 적재합니다. 메모리에서 워드 또는 더블워드를 읽어 레지스터에 저장합니다.",
-    syntax: "LDR <Wt|Xt>, [<Xn|SP>], #<simm>\nLDR <Wt|Xt>, [<Xn|SP>, #<pimm>]",
-    example: "LDR X0, [X1]\nLDR W2, [SP, #8]"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Load Register. Loads a word or doubleword from memory into a register.\n\n✓ 레지스터로 값을 적재합니다. 메모리에서 워드 또는 더블워드를 읽어 레지스터에 저장합니다.",
+        syntax: "LDR <Wt|Xt>, [<Xn|SP>], #<simm>\nLDR <Wt|Xt>, [<Xn|SP>, #<pimm>]",
+        example: "LDR X0, [X1]\nLDR W2, [SP, #8]"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Load Register (SIMD&FP). Loads a byte, halfword, word, doubleword, or quadword from memory into a SIMD&FP register.\n\n✓ 레지스터로 값을 적재합니다(SIMD&FP). 메모리에서 바이트/하프워드/워드/더블워드/쿼드워드를 읽어 SIMD&FP 레지스터에 저장합니다.",
+        syntax: "LDR <St|Dt|Qt>, [<Xn|SP>], #<simm>\nLDR <St|Dt|Qt>, [<Xn|SP>, #<pimm>]",
+        example: "LDR D0, [X1]\nLDR Q2, [SP, #16]"
+      }
+    ]
   },
   {
     name: "LDRB",
@@ -44,9 +66,20 @@ const arm64Instructions = [
   },
   {
     name: "STR",
-    description: "✓ Store Register. Stores a word or doubleword from a register into memory.\n\n✓ 레지스터 값을 메모리에 저장합니다. 레지스터의 워드 또는 더블워드를 메모리에 씁니다.",
-    syntax: "STR <Wt|Xt>, [<Xn|SP>], #<simm>\nSTR <Wt|Xt>, [<Xn|SP>, #<pimm>]",
-    example: "STR X0, [X1]\nSTR W2, [SP, #8]"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Store Register. Stores a word or doubleword from a register into memory.\n\n✓ 레지스터 값을 메모리에 저장합니다. 레지스터의 워드 또는 더블워드를 메모리에 씁니다.",
+        syntax: "STR <Wt|Xt>, [<Xn|SP>], #<simm>\nSTR <Wt|Xt>, [<Xn|SP>, #<pimm>]",
+        example: "STR X0, [X1]\nSTR W2, [SP, #8]"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Store Register (SIMD&FP). Stores a byte, halfword, word, doubleword, or quadword from a SIMD&FP register into memory.\n\n✓ 레지스터 값을 메모리에 저장합니다(SIMD&FP). SIMD&FP 레지스터의 바이트/하프워드/워드/더블워드/쿼드워드 값을 메모리에 씁니다.",
+        syntax: "STR <St|Dt|Qt>, [<Xn|SP>], #<simm>\nSTR <St|Dt|Qt>, [<Xn|SP>, #<pimm>]",
+        example: "STR D0, [X1]\nSTR Q2, [SP, #16]"
+      }
+    ]
   },
   {
     name: "STRB",
@@ -64,28 +97,72 @@ const arm64Instructions = [
   // ---- 정렬 제약 없는 Load/Store (Unscaled offset) ----
   {
     name: "LDUR",
-    description: "✓ Load Register (Unscaled offset). Loads a word/doubleword from memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by LDR. Useful for reading unaligned struct fields or arbitrary byte positions.\n\n✓ 레지스터를 적재합니다 (정렬 제약 없는 오프셋). LDR과 달리 오프셋이 전송 크기의 배수일 필요가 없는, 임의의 바이트 오프셋을 그대로 사용해 메모리에서 값을 읽습니다. 정렬되지 않은 구조체 필드나 임의 바이트 위치를 읽을 때 유용합니다.",
-    syntax: "LDUR <Wt|Xt>, [<Xn|SP>, #<simm>]",
-    example: "LDUR X0, [X1, #3]    // 오프셋 3처럼 8의 배수가 아니어도 OK (LDR은 불가)"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Load Register (Unscaled offset). Loads a word/doubleword from memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by LDR. Useful for reading unaligned struct fields or arbitrary byte positions.\n\n✓ 레지스터를 적재합니다 (정렬 제약 없는 오프셋). LDR과 달리 오프셋이 전송 크기의 배수일 필요가 없는, 임의의 바이트 오프셋을 그대로 사용해 메모리에서 값을 읽습니다. 정렬되지 않은 구조체 필드나 임의 바이트 위치를 읽을 때 유용합니다.",
+        syntax: "LDUR <Wt|Xt>, [<Xn|SP>, #<simm>]",
+        example: "LDUR X0, [X1, #3]    // 오프셋 3처럼 8의 배수가 아니어도 OK (LDR은 불가)"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Load Register (Unscaled offset, SIMD&FP). Loads a SIMD&FP register from memory using a raw byte offset that does not need to be a multiple of the transfer size.\n\n✓ 레지스터를 적재합니다 (정렬 제약 없는 오프셋, SIMD&FP). SIMD&FP 레지스터로, 전송 크기의 배수가 아니어도 되는 임의의 바이트 오프셋을 사용해 메모리에서 값을 읽습니다.",
+        syntax: "LDUR <St|Dt|Qt>, [<Xn|SP>, #<simm>]",
+        example: "LDUR D0, [X1, #3]"
+      }
+    ]
   },
   {
     name: "STUR",
-    description: "✓ Store Register (Unscaled offset). Stores a word/doubleword to memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by STR.\n\n✓ 레지스터를 저장합니다 (정렬 제약 없는 오프셋). STR과 달리 오프셋이 전송 크기의 배수일 필요가 없는, 임의의 바이트 오프셋으로 메모리에 값을 씁니다.",
-    syntax: "STUR <Wt|Xt>, [<Xn|SP>, #<simm>]",
-    example: "STUR X0, [X1, #-8]   // 음수 오프셋도 자유롭게 사용 가능"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Store Register (Unscaled offset). Stores a word/doubleword to memory using a raw byte offset that does NOT need to be a multiple of the transfer size, unlike the offset used by STR.\n\n✓ 레지스터를 저장합니다 (정렬 제약 없는 오프셋). STR과 달리 오프셋이 전송 크기의 배수일 필요가 없는, 임의의 바이트 오프셋으로 메모리에 값을 씁니다.",
+        syntax: "STUR <Wt|Xt>, [<Xn|SP>, #<simm>]",
+        example: "STUR X0, [X1, #-8]   // 음수 오프셋도 자유롭게 사용 가능"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Store Register (Unscaled offset, SIMD&FP). Stores a SIMD&FP register to memory using a raw byte offset that does not need to be a multiple of the transfer size.\n\n✓ 레지스터를 저장합니다 (정렬 제약 없는 오프셋, SIMD&FP). SIMD&FP 레지스터 값을, 전송 크기의 배수가 아니어도 되는 임의의 바이트 오프셋으로 메모리에 씁니다.",
+        syntax: "STUR <St|Dt|Qt>, [<Xn|SP>, #<simm>]",
+        example: "STUR D0, [X1, #-8]"
+      }
+    ]
   },
 
   {
     name: "ADD",
-    description: "✓ Add (register or immediate). Adds two operands and stores the result in the destination register.\n\n✓ 덧셈 (레지스터 또는 즉시값). 두 피연산자를 더하여 결과를 대상 레지스터에 저장합니다.",
-    syntax: "ADD <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ADD <Wd|Xd>, <Wn|Xn>, #<imm>",
-    example: "ADD X0, X1, X2\nADD W0, W1, #5"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Add (register or immediate). Adds two operands and stores the result in the destination register.\n\n✓ 덧셈 (레지스터 또는 즉시값). 두 피연산자를 더하여 결과를 대상 레지스터에 저장합니다.",
+        syntax: "ADD <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ADD <Wd|Xd>, <Wn|Xn>, #<imm>",
+        example: "ADD X0, X1, X2\nADD W0, W1, #5"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Add (vector). Adds corresponding elements of two vector registers and writes the results to the destination vector, element by element.\n\n✓ 덧셈 (벡터). 두 벡터 레지스터의 대응하는 요소끼리 더하여 결과 벡터에 요소 단위로 저장합니다.",
+        syntax: "ADD <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+        example: "ADD V0.4S, V1.4S, V2.4S"
+      }
+    ]
   },
   {
     name: "SUB",
-    description: "✓ Subtract (register or immediate). Subtracts the second operand from the first operand.\n\n✓ 뺄셈 (레지스터 또는 즉시값). 두 번째 피연산자를 첫 번째 피연산자에서 뺍니다.",
-    syntax: "SUB <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  SUB <Wd|Xd>, <Wn|Xn>, #<imm>",
-    example: "SUB X0, X1, X2\nSUB W0, W1, #4"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Subtract (register or immediate). Subtracts the second operand from the first operand.\n\n✓ 뺄셈 (레지스터 또는 즉시값). 두 번째 피연산자를 첫 번째 피연산자에서 뺍니다.",
+        syntax: "SUB <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  SUB <Wd|Xd>, <Wn|Xn>, #<imm>",
+        example: "SUB X0, X1, X2\nSUB W0, W1, #4"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Subtract (vector). Subtracts corresponding elements of two vector registers and writes the results to the destination vector, element by element.\n\n✓ 뺄셈 (벡터). 두 벡터 레지스터의 대응하는 요소끼리 빼서 결과 벡터에 요소 단위로 저장합니다.",
+        syntax: "SUB <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+        example: "SUB V0.4S, V1.4S, V2.4S"
+      }
+    ]
   },
   {
     name: "CMP",
@@ -115,15 +192,37 @@ const arm64Instructions = [
   // ---- 데이터 전송 (Pair / PC-relative) ----
   {
     name: "LDP",
-    description: "✓ Load Pair of Registers. Loads two words or doublewords from consecutive memory locations into two registers in a single instruction. Commonly used to restore callee-saved registers in epilogues.\n\n✓ 레지스터 쌍을 적재합니다. 연속된 메모리 위치에서 워드/더블워드 두 개를 한 번에 읽어 두 레지스터에 저장합니다. 함수 에필로그에서 callee-saved 레지스터를 복원할 때 흔히 사용됩니다.",
-    syntax: "LDP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>], #<imm>\nLDP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>, #<imm>]",
-    example: "LDP X19, X20, [SP, #16]\nLDP X29, X30, [SP], #48"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Load Pair of Registers. Loads two words or doublewords from consecutive memory locations into two registers in a single instruction. Commonly used to restore callee-saved registers in epilogues.\n\n✓ 레지스터 쌍을 적재합니다. 연속된 메모리 위치에서 워드/더블워드 두 개를 한 번에 읽어 두 레지스터에 저장합니다. 함수 에필로그에서 callee-saved 레지스터를 복원할 때 흔히 사용됩니다.",
+        syntax: "LDP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>], #<imm>\nLDP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>, #<imm>]",
+        example: "LDP X19, X20, [SP, #16]\nLDP X29, X30, [SP], #48"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Load Pair of Registers (SIMD&FP). Loads a pair of SIMD&FP registers from consecutive memory locations in a single instruction.\n\n✓ 레지스터 쌍을 적재합니다(SIMD&FP). 연속된 메모리 위치에서 SIMD&FP 레지스터 두 개를 한 번에 읽어 저장합니다.",
+        syntax: "LDP <St1|Dt1|Qt1>, <St2|Dt2|Qt2>, [<Xn|SP>], #<imm>\nLDP <St1|Dt1|Qt1>, <St2|Dt2|Qt2>, [<Xn|SP>, #<imm>]",
+        example: "LDP D0, D1, [SP], #16"
+      }
+    ]
   },
   {
     name: "STP",
-    description: "✓ Store Pair of Registers. Stores two words or doublewords to consecutive memory locations in a single instruction. Commonly used to save callee-saved registers / FP+LR in prologues.\n\n✓ 레지스터 쌍을 저장합니다. 두 레지스터의 값을 연속된 메모리 위치에 한 번에 씁니다. 함수 프롤로그에서 callee-saved 레지스터나 FP+LR을 저장할 때 흔히 사용됩니다.)",
-    syntax: "STP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>, #<imm>]!\nSTP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>], #<imm>",
-    example: "STP x29, x30, [sp, #-48]!\nSTP X19, X20, [SP, #16]"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Store Pair of Registers. Stores two words or doublewords to consecutive memory locations in a single instruction. Commonly used to save callee-saved registers / FP+LR in prologues.\n\n✓ 레지스터 쌍을 저장합니다. 두 레지스터의 값을 연속된 메모리 위치에 한 번에 씁니다. 함수 프롤로그에서 callee-saved 레지스터나 FP+LR을 저장할 때 흔히 사용됩니다.)",
+        syntax: "STP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>, #<imm>]!\nSTP <Wt1|Xt1>, <Wt2|Xt2>, [<Xn|SP>], #<imm>",
+        example: "STP x29, x30, [sp, #-48]!\nSTP X19, X20, [SP, #16]"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Store Pair of Registers (SIMD&FP). Stores a pair of SIMD&FP registers to consecutive memory locations in a single instruction.\n\n✓ 레지스터 쌍을 저장합니다(SIMD&FP). SIMD&FP 레지스터 두 개의 값을 연속된 메모리 위치에 한 번에 씁니다.",
+        syntax: "STP <St1|Dt1|Qt1>, <St2|Dt2|Qt2>, [<Xn|SP>, #<imm>]!\nSTP <St1|Dt1|Qt1>, <St2|Dt2|Qt2>, [<Xn|SP>], #<imm>",
+        example: "STP D0, D1, [SP, #-16]!"
+      }
+    ]
   },
   {
     name: "ADRP",
@@ -141,9 +240,20 @@ const arm64Instructions = [
   // ---- 산술 ----
   {
     name: "MUL",
-    description: "✓ Multiply. Multiplies two registers and writes the (truncated) result to the destination register. Alias for MADD with a zero addend.\n\n✓ **곱셈**. 두 레지스터를 곱한 결과(잘림 처리됨)를 대상 레지스터에 저장합니다. 덧셈 항이 0인 MADD의 별칭입니다.)",
-    syntax: "MUL <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
-    example: "MUL X0, X1, X2"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Multiply. Multiplies two registers and writes the (truncated) result to the destination register. Alias for MADD with a zero addend.\n\n✓ **곱셈**. 두 레지스터를 곱한 결과(잘림 처리됨)를 대상 레지스터에 저장합니다. 덧셈 항이 0인 MADD의 별칭입니다.)",
+        syntax: "MUL <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+        example: "MUL X0, X1, X2"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Multiply (vector). Multiplies corresponding elements of two vector registers and writes the results to the destination vector, element by element.\n\n✓ 곱셈 (벡터). 두 벡터 레지스터의 대응하는 요소끼리 곱하여 결과 벡터에 요소 단위로 저장합니다.",
+        syntax: "MUL <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
+        example: "MUL V0.4S, V1.4S, V2.4S"
+      }
+    ]
   },
   {
     name: "MADD",
@@ -171,29 +281,73 @@ const arm64Instructions = [
   },
   {
     name: "NEG",
-    description: "✓ Negate. Computes the two's-complement negation of a register (equivalent to SUB Xd, XZR, Xn) and writes it to the destination.\n\n✓ 부호를 반전합니다. 레지스터 값의 2의 보수를 계산합니다(SUB Xd, XZR, Xn과 동일)하여 대상 레지스터에 저장합니다.)",
-    syntax: "NEG <Wd|Xd>, <Wn|Xn>",
-    example: "NEG X0, X1"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Negate. Computes the two's-complement negation of a register (equivalent to SUB Xd, XZR, Xn) and writes it to the destination.\n\n✓ 부호를 반전합니다. 레지스터 값의 2의 보수를 계산합니다(SUB Xd, XZR, Xn과 동일)하여 대상 레지스터에 저장합니다.)",
+        syntax: "NEG <Wd|Xd>, <Wn|Xn>",
+        example: "NEG X0, X1"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Negate (vector). Computes the two's-complement negation of each element in a vector register, element by element.\n\n✓ 부호를 반전합니다 (벡터). 벡터 레지스터의 각 요소에 대해 2의 보수를 계산하여 요소 단위로 저장합니다.",
+        syntax: "NEG <Vd>.<T>, <Vn>.<T>",
+        example: "NEG V0.4S, V1.4S"
+      }
+    ]
   },
 
   // ---- 논리 연산 ----
   {
     name: "AND",
-    description: "✓ Bitwise AND (register or immediate). ANDs two operands bit by bit and writes the result to the destination register.\n\n✓ 비트 단위 AND(레지스터 또는 즉시값). 두 피연산자를 비트 단위로 AND 연산하여 결과를 대상 레지스터에 저장합니다.",
-    syntax: "AND <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  AND <Wd|Xd>, <Wn|Xn>, #<imm>",
-    example: "AND X0, X1, X2\nAND W0, W1, #0xF"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Bitwise AND (register or immediate). ANDs two operands bit by bit and writes the result to the destination register.\n\n✓ 비트 단위 AND(레지스터 또는 즉시값). 두 피연산자를 비트 단위로 AND 연산하여 결과를 대상 레지스터에 저장합니다.",
+        syntax: "AND <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  AND <Wd|Xd>, <Wn|Xn>, #<imm>",
+        example: "AND X0, X1, X2\nAND W0, W1, #0xF"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Bitwise AND (vector). ANDs two vector registers bit by bit; only the 8B/16B (whole-register) arrangement is valid.\n\n✓ 비트 단위 AND (벡터). 두 벡터 레지스터를 비트 단위로 AND 연산합니다. 8B/16B(전체 레지스터) 배열만 유효합니다.",
+        syntax: "AND <Vd>.<T>, <Vn>.<T>, <Vm>.<T>   // T: 8B or 16B",
+        example: "AND V0.16B, V1.16B, V2.16B"
+      }
+    ]
   },
   {
     name: "ORR",
-    description: "✓ Bitwise OR (register or immediate). ORs two operands bit by bit and writes the result to the destination register.\n\n✓ 비트 단위 OR(레지스터 또는 즉시값). 두 피연산자를 비트 단위로 OR 연산하여 결과를 대상 레지스터에 저장합니다.",
-    syntax: "ORR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ORR <Wd|Xd>, <Wn|Xn>, #<imm>",
-    example: "ORR X0, X1, X2"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Bitwise OR (register or immediate). ORs two operands bit by bit and writes the result to the destination register.\n\n✓ 비트 단위 OR(레지스터 또는 즉시값). 두 피연산자를 비트 단위로 OR 연산하여 결과를 대상 레지스터에 저장합니다.",
+        syntax: "ORR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  ORR <Wd|Xd>, <Wn|Xn>, #<imm>",
+        example: "ORR X0, X1, X2"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Bitwise OR (vector). ORs two vector registers bit by bit (register form), or ORs an immediate pattern into a vector register (immediate form); only the 8B/16B arrangement is valid.\n\n✓ 비트 단위 OR (벡터). 두 벡터 레지스터를 비트 단위로 OR 연산하거나(register form), 벡터 레지스터에 즉시값 패턴을 OR로 병합합니다(immediate form). 8B/16B 배열만 유효합니다.",
+        syntax: "ORR <Vd>.<T>, <Vn>.<T>, <Vm>.<T>   // T: 8B or 16B",
+        example: "ORR V0.16B, V1.16B, V2.16B"
+      }
+    ]
   },
   {
     name: "EOR",
-    description: "✓ Bitwise Exclusive OR (register or immediate). XORs two operands bit by bit; commonly used to zero a register (EOR Xd, Xd, Xd).\n\n✓ 비트 단위 배타적 OR(레지스터 또는 즉치값). 두 피연산자를 비트 단위로 XOR 연산합니다. 레지스터를 0으로 만들 때(EOR Xd, Xd, Xd) 흔히 사용됩니다.",
-    syntax: "EOR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  EOR <Wd|Xd>, <Wn|Xn>, #<imm>",
-    example: "EOR X0, X0, X0   // X0 = 0"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Bitwise Exclusive OR (register or immediate). XORs two operands bit by bit; commonly used to zero a register (EOR Xd, Xd, Xd).\n\n✓ 비트 단위 배타적 OR(레지스터 또는 즉치값). 두 피연산자를 비트 단위로 XOR 연산합니다. 레지스터를 0으로 만들 때(EOR Xd, Xd, Xd) 흔히 사용됩니다.",
+        syntax: "EOR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>  or  EOR <Wd|Xd>, <Wn|Xn>, #<imm>",
+        example: "EOR X0, X0, X0   // X0 = 0"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Bitwise Exclusive OR (vector). XORs two vector registers bit by bit; only the 8B/16B arrangement is valid. Commonly used to zero a vector register (EOR Vd.16B, Vd.16B, Vd.16B).\n\n✓ 비트 단위 배타적 OR (벡터). 두 벡터 레지스터를 비트 단위로 XOR 연산합니다. 8B/16B 배열만 유효합니다. 벡터 레지스터를 0으로 만들 때(EOR Vd.16B, Vd.16B, Vd.16B) 흔히 사용됩니다.",
+        syntax: "EOR <Vd>.<T>, <Vn>.<T>, <Vm>.<T>   // T: 8B or 16B",
+        example: "EOR V0.16B, V0.16B, V0.16B   // V0 = 0"
+      }
+    ]
   },
   {
     name: "MVN",
@@ -385,9 +539,20 @@ const arm64Instructions = [
   // ---- 논리 연산 (NOT 결합형) ----
   {
     name: "BIC",
-    description: "✓ Bitwise Bit Clear. Computes Xn AND (NOT Xm) and writes the result to the destination; used to force specific bits of a value to zero using a mask.\n\n✓ 비트 클리어. Xn AND (NOT Xm)을 계산하여 결과를 저장합니다. 마스크를 이용해 값의 특정 비트들을 강제로 0으로 만들 때 사용합니다.",
-    syntax: "BIC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
-    example: "BIC X0, X1, X2    // X1의 비트 중 X2에서 1인 자리를 0으로 지움"
+    variants: [
+      {
+        regClass: "GPR",
+        description: "✓ Bitwise Bit Clear. Computes Xn AND (NOT Xm) and writes the result to the destination; used to force specific bits of a value to zero using a mask.\n\n✓ 비트 클리어. Xn AND (NOT Xm)을 계산하여 결과를 저장합니다. 마스크를 이용해 값의 특정 비트들을 강제로 0으로 만들 때 사용합니다.",
+        syntax: "BIC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>",
+        example: "BIC X0, X1, X2    // X1의 비트 중 X2에서 1인 자리를 0으로 지움"
+      },
+      {
+        regClass: "SIMD&FP",
+        description: "✓ Bitwise Bit Clear (vector). Computes Vn AND (NOT Vm) element-wise (register form), or clears bits matching an immediate pattern in a vector register (immediate form).\n\n✓ 비트 클리어 (벡터). Vn AND (NOT Vm)을 요소 단위로 계산하거나(register form), 벡터 레지스터에서 즉시값 패턴과 일치하는 비트를 0으로 만듭니다(immediate form).",
+        syntax: "BIC <Vd>.<T>, <Vn>.<T>, <Vm>.<T>   // T: 8B or 16B",
+        example: "BIC V0.16B, V1.16B, V2.16B"
+      }
+    ]
   },
   {
     name: "ORN",
@@ -1485,6 +1650,18 @@ const arm64NeonInstructions = [
     description: "✓ Multiply-Subtract (vector). Per-lane: Vd = Vd - (Vn * Vm).\n\n✓ 벡터 곱셈-뺄셈. 레인별로 Vd = Vd - (Vn * Vm)을 계산합니다.",
     syntax: "MLS <Vd>.<T>, <Vn>.<T>, <Vm>.<T>",
     example: "MLS V0.4S, V1.4S, V2.4S"
+  },
+  {
+    name: "MOVI",
+    description: "✓ Move immediate (vector). Places an immediate constant into every vector element of the destination SIMD&FP register - the standard way to zero or fill a vector before a loop, no separate load needed. Also has a plain 64-bit scalar form (writing straight into a Dd register) alongside the usual vector forms.\n\n✓ 즉시값 이동 (벡터). 목적지 SIMD&FP 레지스터의 모든 벡터 요소에 즉시 상수를 채워 넣습니다. 루프 시작 전에 벡터를 0이나 특정 값으로 초기화할 때, 별도의 메모리 로드 없이 쓰는 표준적인 방법입니다. 벡터 형태 외에, Dd 레지스터 하나에 그대로 값을 채우는 64비트 스칼라 형태도 지원합니다.",
+    syntax: "MOVI <Vd>.<T>, #<imm8>{, LSL #<amount>}  or  MOVI <Vd>.<T>, #<imm8>, MSL #<amount>  or  MOVI <Vd>.2D, #<imm>  or  MOVI <Dd>, #<imm>",
+    example: "MOVI V0.16B, #1                    // 배열 초기화용 벡터를 전부 1로 채움 (LSL #0)\nMOVI V1.4S, #0xFF, MSL #8          // 0x0000FFFF가 4개 레인에 채워짐\nMOVI D2, #0xFFFFFFFF00000000       // 64비트 스칼라 형태"
+  },
+  {
+    name: "MVNI",
+    description: "✓ Move inverted immediate (vector). Places the bitwise inverse of an immediate constant into every vector element of the destination SIMD&FP register. The complement of MOVI - useful for building a bitmask that's mostly 1s, or an AND-mask to clear specific bits, without a separate NOT step.\n\n✓ 반전된 즉시값 이동 (벡터). 목적지 SIMD&FP 레지스터의 모든 벡터 요소에, 즉시 상수의 비트를 뒤집은 값을 채워 넣습니다. MOVI의 반대짝으로, 대부분 1로 채워진 비트마스크나 특정 비트를 지우는 AND 마스크를 만들 때 별도의 NOT 연산 없이 바로 쓸 수 있습니다.",
+    syntax: "MVNI <Vd>.<T>, #<imm8>{, LSL #<amount>}  or  MVNI <Vd>.<T>, #<imm8>, MSL #<amount>",
+    example: "MVNI V0.4S, #0xFF                 // 0xFFFFFF00가 4개 레인에 채워짐 (LSL #0)\nMVNI V1.4S, #0xFF, MSL #8          // 0xFFFF00FF (MSL: 시프트로 밀린 자리를 0이 아닌 1로 채움)"
   },
   {
     name: "FMLA",

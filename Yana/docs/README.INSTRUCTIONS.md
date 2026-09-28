@@ -70,6 +70,16 @@
 
 ---
 
+### 기타
+
+- `.equ`, `.set` : 상수정의 (.set 은 .equ 의 별칭)
+- `.align`, `p2align` : 정렬지시
+- .global/.globl, .extern : 심볼 가시성 선언
+- .section, .text, .data, .bass, .const : 섹션 전환
+- .include, .macro, .endmacro/.endm : 파일 포함, 매크로 정의 경계
+- .ifdef, ifndef, else, endif : 조건부 어셈블 분기
+- .zerofill : Mach-O BSS 심볼 선언 (라벨: 값 형태가 아니라 인자로 심볼명을 받는 특이 구문)
+
 ## 🏯 훈민정음 어셈블리 (Hunmin ASM) 명령어 번역본 및 해설서
 
 1. 사칙연산 및 기본 산술 명령어 (Add / Subtract / Multiply / Divide)
