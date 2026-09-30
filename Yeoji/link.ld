@@ -5,16 +5,15 @@ SECTIONS
     /* QEMU virt 머신의 커널 로드 주소 규격 */
     . = 0x40080000;
 
-    .text : {
-        // 🔑 boot.S의 _start 코드가 무조건 0x40080000 자리에
-        // 오도록 락(Lock)을 때림
+.text : {
+        /* 🔑 boot.S의 _start 코드가 무조건 0x40080000 자리에 오도록 락(Lock)을 때림 */
         KEEP(*(.text.boot))
         *(.text*)
     }
     .rodata : { *(.rodata*) }
-    .data   : { *(.data*) }
+.data   : { *(.data*) }
 
-    .bss : {
+.bss : {
         . = ALIGN(16);      /* 16바이트 정렬 원칙! */
 	__bss_start = .;    /* 🔑 청소 시작 주소 심볼 선언! */
         *(.bss*)

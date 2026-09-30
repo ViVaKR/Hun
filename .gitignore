@@ -1,7 +1,7 @@
 # ==========================================
 # 🌌 [훈 제국] 프로젝트 통합 .gitignore
 # ==========================================
-
+.vscode/
 # 참조
 **/docs/refs/
 
@@ -77,4 +77,4 @@ Yeoji/kernel.elf
 Yeoji/*.o
 tools/hun-asm-highlighter/releases/*.vsix
 
-.vscode/
+Copy-Files.ps1
