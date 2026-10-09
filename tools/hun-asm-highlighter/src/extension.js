@@ -21,12 +21,17 @@ const { arm64Registers, arm64FpSimdRegisters } = require('./data/arm64-data');
 // 자동완성
 const { createSymbolIndex } = require('./symbol-index');
 
-// RISC-V
-// extension.js 상단 require 구역에 추가
+// RISC-V (기존 mnemonics-riscv에서는 백업용 니모닉 맵만 남김)
 const {
-  RISCV_MNEMONIC_MAP,
-  RISCV_ABI_REGISTER_NAMES
+  RISCV_MNEMONIC_MAP
 } = require('./mnemonics-riscv');
+
+// 👑 RISC-V 최신예 백과사전 군단 (명령어 + 32개 레지스터 + M-Mode CSR 전담)
+const {
+  riscvInstructions,
+  riscvRegisters,
+  riscvCsrRegisters
+} = require('./data/riscv-data');
 
 // 🩹 [스칼라 뷰 파생] arm64-data.js 에는 V0~V31(128비트 벡터) 항목만 있고,
 // 그 하위 비트 폭 스칼라 뷰인 D0(64b)/S0(32b)/H0(16b)/B0(8b)/Q0(128b)는
