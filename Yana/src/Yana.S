@@ -2,8 +2,8 @@
 
 CODE_SECTION
 FUNC_START_FULL main, 128
-  
-	// 1. 메뉴 테이블 크기 및 개수 동적 계산 (구조체 크기 = 16바이트
+
+	// 1. 메뉴 테이블 크기 및 개수 동적 계산, 구조체 크기 = 16바이트
 	adrp x10, _menu_table@PAGE
 	add  x10, x10, _menu_table@PAGEOFF
 	adrp x11, _menu_table_end@PAGE
@@ -45,7 +45,7 @@ FUNC_START_FULL main, 128
 	mov  x21, #0                        // x21 (루프 인덱스 i = 0)
 	adrp x19, _menu_table@PAGE          // 테스트
 	add  x19, x19, _menu_table@PAGEOFF  // x19 = 배열 시작 주소
-  
+
 .L_loop_start:
 	cmp  x21, x20                // i == 총 개수?
 	b.eq .L_check_final_newline  // 다 그렸으면 무조건 최종 줄바꿈 하러 가기!
@@ -74,12 +74,12 @@ FUNC_START_FULL main, 128
 	msub x4, x3, x2, x1   // x4 = x1 - (x3 * 5) -> 즉, 5로 나눈 나머지!
 	cmp  x4, #0           // 5의 배수인가? 즉, 나머지가 0인가? (즉, 5번째 항목)
 	b.ne .L_skip_newline  //  ❌ 나머지가 0이 아니면, 5의 배수가 아니면 옆으로 계속 붙여라
-  
+
 	// 5의 배수면 줄바꿈 쾅!
 	adrp x0, _newline_str@PAGE
 	add  x0, x0, _newline_str@PAGEOFF
 	bl   _printf                       // 줄바꿈(\n) 을 쾅! (커서가 다음 줄 맨 앞으로 이동)
-  
+
 .L_skip_newline:
 	add x19, x19, #16  // 16바이트 더하기 다음 구조체 항목으로 주소 이동 (16바이트 더하기)
 	add x21, x21, #1   // i++
@@ -109,12 +109,12 @@ FUNC_START_FULL main, 128
 	add  x0, x0, _fmt_scanf_1@PAGEOFF
 	adrp x1, _user_input@PAGE
 	add  x1, x1, _user_input@PAGEOFF
-    
+
 	sub sp, sp, #16
 	str x1, [sp, #0]
 	bl  _scanf
 	add sp, sp, #16
-  
+
 	// scanf 가 몇 개 필드를 성공적으로 읽었는지 체크
 	cmp  w0, #-1       // EOF(CTRL + D) 면 아예 프로그램 종료, 32비트 int 반환값
 	b.eq .L_terminate
@@ -132,11 +132,11 @@ FUNC_START_FULL main, 128
 	sub  x10, x10, #1       // 디스플레이된 선택 번호에서 실제 인덱스로 표현하기 위한 조치
 	cmp  x10, x20           // x10 = 사용자가 선택한 번호, x20 총 배열의 갯수
 	b.hs .L_invalid_choice  // 범위를 벗어나면 에러 레이블로
-  
+
 	// exit 선택시
 	cmp  x10, #0
 	b.eq .L_terminate
-  
+
 	adrp x10, _menu_table@PAGE
 	add  x10, x10, _menu_table@PAGEOFF
 
@@ -157,7 +157,7 @@ FUNC_START_FULL main, 128
 
 	cmp  x22, #15      // _hanoi
 	b.eq .L_run_hanoi
-  
+
 	cmp  x22, #19           // _quicksort
 	b.eq .L_exec_quicksort
 
@@ -180,7 +180,7 @@ FUNC_START_FULL main, 128
 .L_bad_input_done:
 	adrp x0, _err_format@PAGE
 	add  x0, x0, _err_format@PAGEOFF
-  
+
 	sub sp, sp, #16
 	sub x1, x20, #1
 	add x9, x1, #1
@@ -244,13 +244,13 @@ FUNC_START_FULL main, 128
 	mov x2, #'C'  // to   = 'C' (0x43)
 	mov x3, #'B'  // via  = 'B' (0x42)
 	b   .L_exec
-  
+
 // ------------------------------------------------//
 .L_exec:
 	blr x23
 	bl  .L_insert_line
 	b   .L_flush_buffer
-// ------------------------------------------------// 
+// ------------------------------------------------//
 
 // 선긋기
 .L_insert_line:
@@ -273,7 +273,7 @@ FUNC_START_FULL main, 128
 	b.ne .L_flush_buffer
 	cmp  w0, #-1          // 혹시 모를 EOF (파일끝) 처리
 	b.eq .L_display_menu
-  
+
 	// 2단계: 버퍼가 완전히 깨끗해진 "지금" 안내 메시지를 띄우고 기다리기
 	// ==========================================
 	// ★ [검문소] 여기에 홀딩 로직을 똭 채워넣습니다!
@@ -315,5 +315,5 @@ _menu_exit:
 	add  x0, x0, _exit_message@PAGEOFF
 	bl   _printf
 	mov  x0, #0
-  
+
 FUNC_EXIT_FULL 128

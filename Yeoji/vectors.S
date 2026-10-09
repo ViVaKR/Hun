@@ -5,8 +5,6 @@ CODE_SECTION
 .global _install_vectors
 .extern exc_c_handler
 
-// 레지스터 전체(x0~x30) 백업/복원 매크로 — C 핸들러가 뭘 건드려도 안전하게
-
 .macro SAVE_ALL
 	sub sp, sp, #256
 	stp x0, x1, [sp, #16*0]
@@ -143,7 +141,7 @@ _exc_dispatch:
 	// SAVE_ALL 이 저장해둔 레지스터 프레임주소를 5번째 인자로 토스
 	mov x4, sp
 	bl  exc_c_handler
-  
+
 	// 정정: exec_c_handler 의 진짜 리턴값(1=복구해서 계속, 0=정지)만으로 판단
 	cmp x0, #1
 
@@ -153,7 +151,7 @@ _exc_dispatch:
 
 _exc_halt:
 	b .  // 무한 정지 — 원인 파악 후 리셋
-  
+
 // -------------------------------------------------------------
 // void _install_vectors(void);
 // VBAR_EL1에 이 벡터 테이블의 주소를 등록
@@ -162,5 +160,6 @@ _install_vectors:
 	adrp x0, vector_table_el1
 	add  x0, x0, :lo12:vector_table_el1
 	msr  vbar_el1, x0
-	isb                                  // ★ 필수! 명령어 파이프라인을 동기화해서 새 VBAR가 즉시 반영되게 함
+	isb
+	// ★ 필수! 명령어 파이프라인을 동기화해서 새 VBAR가 즉시 반영되게 함
 	ret

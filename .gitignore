@@ -78,3 +78,4 @@ Yeoji/*.o
 tools/hun-asm-highlighter/releases/*.vsix
 
 Copy-Files.ps1
+*Backup*.md

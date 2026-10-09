@@ -14,7 +14,7 @@
 //  이 함수는 그 문제를 한 곳에서 해결해서, 어떤 메뉴/데모에서든
 //  "bl _safe_read_int" 한 줄만 부르면 항상 안전하게 정수를 받는다.
 //  ============================================================
- 
+
 .include "section_macros.inc"
 
 // [초기화된 변수]
@@ -58,12 +58,12 @@ CODE_SECTION
 .equ FRAME_SIZE, 112 // 96 + 8(quad 1개) = 104 -> 16 바이트 정렬위해 112
 FUNC_START_FULL func_name, FRAME_SIZE
 
-  // 지역 변수 num의 주소를 한 번만 계산해서 x19에 캐싱
-  // (scanf/printf/getchar 를 몇번 호출해도 x19는 안전하게 보존됨)
+	// 지역 변수 num의 주소를 한 번만 계산해서 x19에 캐싱
+	// (scanf/printf/getchar 를 몇번 호출해도 x19는 안전하게 보존됨)
 	add x19, x29, #NUM_OFFSET  // FP _ 96
 
 .L_safe_read_retry:
-  // scanf("lld, &num")
+	// scanf("lld, &num")
 	adrp x0, fmt_scan_int_local@PAGE
 	add  x0, x0, fmt_scan_int_local@PAGEOFF
 	mov  x1, x19
@@ -71,13 +71,13 @@ FUNC_START_FULL func_name, FRAME_SIZE
 	str  x1, [sp, #0]
 	bl   _scanf
 	add  sp, sp, #16
-  
-  // scanf 리턴값 확인: 성공적으로 변환한 개수가 1이어야 정상
+
+	// scanf 리턴값 확인: 성공적으로 변환한 개수가 1이어야 정상
 	cmp  x0, #1
-	b.ne .L_safe_read_flush // 1 이 아니면 실패 -> 버퍼 청소 후 재시도
-  
-  // 성공: 지역변수에서 값을 읽어서 리턴 준비
-	ldr x0, [x19] 
+	b.ne .L_safe_read_flush  // 1 이 아니면 실패 -> 버퍼 청소 후 재시도
+
+	// 성공: 지역변수에서 값을 읽어서 리턴 준비
+	ldr x0, [x19]
 	b   .L_safe_read_done
 
 .L_safe_read_flush:
@@ -86,17 +86,17 @@ FUNC_START_FULL func_name, FRAME_SIZE
 
 .L_safe_read_clear_loop:
 	bl   _getchar
-	cmp  x0, #10 // 10 = '\n' 아스키 코드
+	cmp  x0, #10                  // 10 = '\n' 아스키 코드
 	b.eq .L_safe_read_clear_done
-	cmp  x0, #-1 // EOF 방어 (파일 끝/입력 스트림 종료)
+	cmp  x0, #-1                  // EOF 방어 (파일 끝/입력 스트림 종료)
 	b.ne .L_safe_read_clear_loop
- 
+
 .L_safe_read_clear_done:
 	adrp x0, err_invalid_num_local@PAGE
 	add  x0, x0, err_invalid_num_local@PAGEOFF
 	bl   _printf
-  
+
 	b .L_safe_read_retry  // 처음 부터 다시 물어봄
-  
+
 .L_safe_read_done:
 FUNC_EXIT_FULL FRAME_SIZE
