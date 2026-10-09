@@ -68,21 +68,62 @@ Add the following to your VS Code `settings.json` for the ultimate assembly work
 
 ---
 
-## 👑 Sovereign Orchestration Commands
+## 👑 Sovereign Orchestration & Companion CLI
 
+The Hun ecosystem provides both VS Code palette commands and Homebrew CLI tools to scaffold pure bare-metal assembly infrastructure in milliseconds.
+
+### 1. In-Editor Scaffolding (Command Palette)
 Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) and type `Hun-ASM`:
+* **`Hun-ASM: Create Shared Macro Include File (.inc)`** — Deploys `hun.macros.inc` into your workspace root.
+* **`Hun-ASM: Create .NET 10 Tuxedo Orchestrator (hun-build.cs)`** — Deploys a zero-dependency, single-file `.NET 10 File-based App` build orchestrator.
 
-1. **`Hun-ASM: Create Shared Macro Include File (.inc)`**
-   Instantly deploys `hun.macros.inc` into your workspace root with duplicate protection.
-2. **`Hun-ASM: Create .NET 10 Tuxedo Orchestrator (hun-build.cs)`**
-   Deploys a zero-dependency, single-file `.NET 10 File-based App` build orchestrator (`hun-build.cs`) into your project root to recursively compile and execute assembly files in 1 millisecond.
-3. **Companion CLI: `armcli` (Homebrew)**
-   For full multi-language scaffolding (Zig + Assembly + Rust/Go/.NET):
-   ```bash
-   brew tap ViVaKR/armcli
-   brew install armcli
-   armcli init -n MyProject -o . --rust --go --dotnet
-   ```
+### 2. Companion Homebrew CLIs (`armcli` & `riscvcli`)
+For **complete multi-language project generation**, install our sovereign CLIs via Homebrew:
+
+```bash
+# Tap the sovereign armory
+brew tap ViVaKR/armcli
+brew tap ViVaKR/riscvcli
+
+# Install both architecture commanders
+brew install armcli riscvcli
+```
+
+#### 🛡️ `armcli` — AArch64 / ARM64 Project Generator
+Scaffolds complete ARM64 workspaces wired with Zig, .NET 10, PowerShell 7, and optional FFI runtime libraries:
+```bash
+# Scaffold with Rust, Go, .NET libraries and PowerShell orchestrator
+armcli init -n DemoARM -o . --rust --go --dotnet --pwsh
+
+# Fast assembly file generation
+armcli new my_func -t function
+```
+
+#### 🏹 `riscvcli` — RV64GC / RV32 Bare-Metal QEMU Generator
+Scaffolds pristine RISC-V bare-metal projects (`Boot.riscv`, `Main.riscv`, `link.ld`, UART platform runtime, and 3-way orchestrators):
+```bash
+# Standard QEMU virt bare-metal project
+riscvcli init -n FineThanksAndYou -o .
+
+# Full options: Rust(no_std) staticlib + PowerShell 7 orchestrator
+riscvcli init -n CoreRISCV -o . --rust --pwsh --xlen 64
+
+# Single file generation (function, loop, bare, uart)
+riscvcli new my_loop -t loop --xlen 64
+riscvcli new my_bare -t bare --rv       # Pure .rv without cpp preprocessor
+
+# System toolchain & QEMU health check
+riscvcli doctor
+```
+
+#### ⚡ Triple-Orchestrator Execution Matrix
+Every project scaffolded by `armcli` and `riscvcli` ships ready to build and run across three distinct orchestrators:
+
+| Orchestrator | Execution Command | Requirements | Best For |
+| :--- | :--- | :--- | :--- |
+| **Zig Engine** | `zig build run` | Zig 0.13+ (Internal LLVM/Clang) | Zero-dependency bare-metal builds |
+| **.NET 10 Tuxedo** | `dotnet ./hun-build.cs` | .NET 10 SDK (`dotnet`) | Blazing-fast 1ms single-file compilation |
+| **PowerShell 7** | `pwsh ./hun-build.ps1` | PowerShell 7 (`pwsh`) | Cross-platform shell automation & CI/CD |
 
 ---
 
@@ -93,6 +134,7 @@ Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) and type `Hun-ASM`:
 * **CSR & ABI 레지스터 완벽 지원**: `mstatus`, `mtvec`, `mepc` 등 M-Mode 특권 레지스터 및 ABI 관용 레지스터(`ra`, `sp`, `a0`~`a7`, `t0`~`t6` 등)의 역할과 보존 규약(Caller/Callee-saved) 해설 제공.
 * **링커 스크립트(`.ld`) 군사 보호 구역 설정**: `.ld` 파일에 대한 어셈블러 정적 진단 오탐(False Positive)을 원천 차단하고, `.rodata`, `.srodata` 등 소형 데이터/읽기 전용 섹션 하이라이팅 지원.
 * **공통 지시어(`.equ`, `.global`, `.asciz`) 크로스 플랫폼 호버 연동**: ARM64와 RISC-V 문서 전역에서 심볼 상수와 지시어 백과사전이 즉각 발동하도록 통합.
+* **쌍두독수리 CLI 지원 명시 (`armcli` & `riscvcli`)**: `--pwsh`, `--rust`, `--go`, `--dotnet` 전천후 오케스트레이션 및 프로젝트 템플릿 완벽 가이드 탑재.
 
 <details>
 <summary>📜 이전 변경 이력 보기 (v1.0.1 ~ v2.7.8)</summary>
@@ -129,6 +171,7 @@ Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) and type `Hun-ASM`:
 - **F5 원클릭 무설정 디버깅**: CodeLLDB 기반 자동 빌드 타깃 탐색 및 `main`/`_main` 자동 브레이크포인트.
 - **엄격한 인코딩 정적 진단**: 16바이트 스택 정렬, 레지스터 폭 불일치, `.L_` 로컬 라벨 무결성 검증.
 - **초고속 전역 심볼 인덱스**: 프로젝트 전체 라벨 실시간 추적 및 Ctrl+T 전역 심볼 검색.
+- **무기고 CLI 연동**: `armcli` 및 `riscvcli`를 통한 원클릭 프로젝트 생성 및 3종 오케스트레이터(`zig`, `dotnet`, `pwsh`) 완벽 호환.
 
 ---
 
@@ -140,3 +183,5 @@ MIT License © BM. KIM BUM JUN (대제독)
 
 - 📖 **[Browse the Mnemonic Dictionary →](https://vivakr.github.io/Hun/)**
 - [Hun Project Main Repository](https://github.com/ViVaKR/Hun)
+- [armcli GitHub](https://github.com/ViVaKR/armcli)
+- [riscvcli GitHub](https://github.com/ViVaKR/riscvcli)
