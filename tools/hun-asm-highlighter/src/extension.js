@@ -6,7 +6,7 @@ const vscode = require('vscode');
 const { validateDocument } = require('./diagnostics');
 
 // 🔗 [단일 진실 공급원] hover / completion 이 항상 같은 설명을 보여주도록
-//    MNEMONIC_MAP(mnemonics.js) + arm64Instructions/arm64FpInstructions/
+//    MNEMONIC_MAP1mnemonics.js) + arm64Instructions/arm64FpInstructions/
 //    arm64ConditionCodes(data/arm64-data.js) 를 하나로 합쳐 조회하는 레이어.
 //    (예전엔 hover는 MNEMONIC_MAP만, completion은 두 소스를 각각 따로 순회
 //     하면서 'mov'/'MOV'가 별개 후보로 중복 등장하는 문제가 있었음.)
@@ -20,6 +20,13 @@ const { arm64Registers, arm64FpSimdRegisters } = require('./data/arm64-data');
 
 // 자동완성
 const { createSymbolIndex } = require('./symbol-index');
+
+// RISC-V
+// extension.js 상단 require 구역에 추가
+const {
+  RISCV_MNEMONIC_MAP,
+  RISCV_ABI_REGISTER_NAMES
+} = require('./mnemonics-riscv');
 
 // 🩹 [스칼라 뷰 파생] arm64-data.js 에는 V0~V31(128비트 벡터) 항목만 있고,
 // 그 하위 비트 폭 스칼라 뷰인 D0(64b)/S0(32b)/H0(16b)/B0(8b)/Q0(128b)는
@@ -60,6 +67,8 @@ const ALL_ARM_REGISTERS = [...arm64Registers, ...(arm64FpSimdRegisters || []), .
 const REGISTER_INDEX = new Map(ALL_ARM_REGISTERS.map((r) => [r.name.toUpperCase(), r]));
 
 const LANGUAGE_ID = 'hun-asm';
+const LANGUAGE_RISC_ID = 'hun-riscv';
+
 // 🆕 [RISC-V 연결] diagnostics(진단)만 우선 hun-riscv까지 확장.
 //    hover/자동완성/정의이동/아웃라인/포맷터는 아직 ARM64 전용 로직(레지스터,
 //    니모닉 설명 등)이라 그대로 LANGUAGE_ID('hun-asm')만 바라보게 남겨둔다.
@@ -71,8 +80,8 @@ const LABEL_DEF_RE = /^\s*([\p{L}_.$][\p{L}0-9_.$]*)\s*:/u;
 
 // 1. .equ 심볼 포획용 정규식 추가 (상수 이름 포획)
 const EQU_DEF_RE = /^\s*([\p{L}_.\(][\p{L}0-9_.\)]*)\s+\.equ\b/u;
-// const EQU_HOVER_RE = /(?:^\s*\.equ\s+([\p{L}_.][\p{L}0-9_.]*)\s*,\s*(.+))|(?:^\s*([\p{L}_.][\p{L}0-9_.]*)\s+\.equ\s+(.+))/u;
-const EQU_HOVER_RE = /(?:^\s*\\.equ\s+([\p{L}_.][\p{L}0-9_.]*)\s*,\s*(.+))|(?:^\s*([\p{L}_.][\p{L}0-9_.]*)\s+\\.equ\s+(.+))/u;
+// const EQU_HOVER_RE = /(?:^\s*\\.equ\s+([\p{L}_.][\p{L}0-9_.]*)\s*,\s*(.+))|(?:^\s*([\p{L}_.][\p{L}0-9_.]*)\s+\\.equ\s+(.+))/u;
+const EQU_HOVER_RE = /(?:^\s*\.equ\s+([\p{L}_.][\p{L}0-9_.]*)\s*,\s*(.+))|(?:^\s*([\p{L}_.][\p{L}0-9_.]*)\s+\.equ\s+(.+))/u;
 
 /** @type {vscode.DiagnosticCollection} */
 let diagnosticCollection;
@@ -568,55 +577,146 @@ function activate(context) {
   };
 
   context.subscriptions.push(
-    vscode.languages.registerHoverProvider(LANGUAGE_ID, {
+    vscode.languages.registerHoverProvider([LANGUAGE_ID, LANGUAGE_RISC_ID], {
       provideHover(document, position) {
-        // 점(.)기호와 다국어 식별자가 쪼개지지 않도록 범위 설정 포획
-        // 🎯 점(.)을 뺀 순수 식별자만 잡도록 단어 감지 범위를 양보 및 조정합니다!
-        // const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_]+/u);
         const range = document.getWordRangeAtPosition(position, /[\p{L}0-9_.]+/u);
         if (!range) return;
-
-        // 백성이 쓴 원본 형태
         const originalWord = document.getText(range);
-        const wordUpper = originalWord.trim().toUpperCase(); // 대소문자 무력화 방어 장갑
+        const wordLower = originalWord.trim().toLowerCase();
+        const wordUpper = originalWord.trim().toUpperCase();
 
-        // 1) 니모닉(한글 별칭 + 영문 + FP + 조건부 분기) 통합 조회
-        const info = getMnemonicInfo(originalWord);
-        if (info) {
-          return new vscode.Hover(buildMnemonicMarkdown(originalWord, info), range);
-        }
+        // =================================================================
+        // 🚀 [A] RISC-V 문서(hun-riscv)일 때의 호버 처리
+        // =================================================================
+        if (document.languageId === LANGUAGE_RISC_ID) {
 
-        // [2순위 수색] ARM64 레지스터 검사 (정수 + FP/SIMD + 파생 스칼라 뷰 통합 인덱스)
-        // const wordUpper = originalWord.trim().toUpperCase();
-        const armReg = REGISTER_INDEX.get(wordUpper);
-        if (armReg) {
-          const md = new vscode.MarkdownString();
-          // ⭐️ 이 두 줄이 반드시 들어가 있어야 수식이 작동합니다!
-          md.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션
-          md.supportHtml = true;  // <br> 등의 HTML 태그 허용 옵션
-          md.appendMarkdown(`### ARM64 Register: \`${armReg.name.toLowerCase()}\`\n\n`);
-          md.appendMarkdown(`**Type:** ${armReg.type}\n\n`);
-          md.appendMarkdown(`**Description:** ${armReg.description}`);
-          return new vscode.Hover(md, range);
-        }
-
-        // 🎯 [3순위 수색 - v2.5.2 신설 요새]
-        // 링커 스크립트 핵심 지시어 및 기호 포획!
-        const linkerInfo = LINKER_KEYWORDS_MAP[wordUpper] || LINKER_KEYWORDS_MAP[originalWord.trim()];
-        if (linkerInfo) {
-          const md = new vscode.MarkdownString();
-          md.isTrusted = true;
-          md.supportHtml = true;
-          md.appendMarkdown(`### Linker Directive: \`${linkerInfo.name}\`\n\n`);
-          md.appendMarkdown(`${linkerInfo.description}\n\n`);
-          if (linkerInfo.syntax) {
-            md.appendMarkdown('**Syntax:**\n');
-            md.appendCodeblock(linkerInfo.syntax, 'linker');
+          // 0) 점(.)으로 시작하는 공통 지시어(.equ, .global, .asciz 등) 최우선 소환!
+          if (wordLower.startsWith('.')) {
+            const info = getMnemonicInfo(originalWord);
+            if (info) {
+              return new vscode.Hover(buildMnemonicMarkdown(originalWord, info), range);
+            }
           }
-          return new vscode.Hover(md, range);
+
+          // 👑 1순위 [최고화질]: riscv-data.js 상세 백과사전 (풍부한 설명 + Syntax + Example)
+          if (Array.isArray(riscvInstructions)) {
+            const riscvInstr = riscvInstructions.find(i => i.name === wordUpper);
+            if (riscvInstr) {
+              const md = new vscode.MarkdownString();
+              md.isTrusted = true;
+              md.supportHtml = true;
+              md.appendMarkdown(`### RISC-V Instruction: \`${riscvInstr.name}\`\n\n`);
+              md.appendMarkdown(`${riscvInstr.description}\n\n`);
+              if (riscvInstr.syntax) {
+                md.appendMarkdown('**Syntax:**\n');
+                md.appendCodeblock(riscvInstr.syntax, 'riscv');
+              }
+              if (riscvInstr.example) {
+                md.appendMarkdown('\n**Example:**\n');
+                md.appendCodeblock(riscvInstr.example, 'riscv');
+              }
+              return new vscode.Hover(md, range);
+            }
+          }
+
+          // 🛡️ 2순위 [안전망]: 상세 사전에 없는 기타 니모닉 (기존 1줄짜리 RISCV_MNEMONIC_MAP)
+          if (RISCV_MNEMONIC_MAP && RISCV_MNEMONIC_MAP[wordLower]) {
+            const item = RISCV_MNEMONIC_MAP[wordLower];
+            const md = new vscode.MarkdownString();
+            md.isTrusted = true;
+            md.supportHtml = true;
+            md.appendMarkdown(`### RISC-V Instruction: \`${wordLower}\`\n\n`);
+            md.appendMarkdown(`${item.desc}\n`);
+            return new vscode.Hover(md, range);
+          }
+
+          // 🏛️ 3순위: 베어메탈 특권 CSR 레지스터 (mstatus, mtvec, mepc 등)
+          if (Array.isArray(riscvCsrRegisters)) {
+            const csr = riscvCsrRegisters.find(c => c.name === wordUpper);
+            if (csr) {
+              const md = new vscode.MarkdownString();
+              md.isTrusted = true;
+              md.supportHtml = true;
+              md.appendMarkdown(`### RISC-V CSR: \`${csr.name.toLowerCase()}\`\n\n`);
+              md.appendMarkdown(`**Type:** ${csr.type}\n\n`);
+              md.appendMarkdown(`${csr.description}`);
+              return new vscode.Hover(md, range);
+            }
+          }
+
+          // 🏷️ 4순위: RISC-V ABI 레지스터 (zero, ra, sp, t0~t6, a0~a7, s0~s11 등)
+          if (Array.isArray(riscvRegisters)) {
+            const reg = riscvRegisters.find(r => r.name === wordUpper || r.alt === wordUpper);
+            if (reg) {
+              const md = new vscode.MarkdownString();
+              md.isTrusted = true;
+              md.supportHtml = true;
+              md.appendMarkdown(`### RISC-V Register: \`${reg.name.toLowerCase()}\` (${reg.alt || ''})\n\n`);
+              md.appendMarkdown(`**Type:** ${reg.type}\n\n`);
+              md.appendMarkdown(`${reg.description}`);
+              return new vscode.Hover(md, range);
+            }
+          }
+
+          // 🔢 5순위: 일반 숫자 레지스터 형태 (x0 ~ x31)
+          const xRegMatch = /^x([0-9]{1,2})$/i.exec(wordLower);
+          if (xRegMatch && parseInt(xRegMatch[1], 10) <= 31) {
+            const md = new vscode.MarkdownString();
+            md.isTrusted = true;
+            md.supportHtml = true;
+            md.appendMarkdown(`### RISC-V Register: \`${wordLower}\`\n\n`);
+            md.appendMarkdown(`**Type:** Base Integer Register (32/64-bit)\n\n`);
+            md.appendMarkdown(`하드웨어 물리 레지스터 **${wordLower.toUpperCase()}** 번입니다.`);
+            return new vscode.Hover(md, range);
+          }
         }
 
-        // [4순위 수색 - 대제독 보강] 마우스를 올린 단어가.equ로 정의된 상수(Symbol)인지 문서 전체 스캔!
+
+        // =================================================================
+        // ⚔️ [B] ARM64 문서(hun-asm)일 때의 호버 처리 (기존 로직)
+        // =================================================================
+        if (document.languageId === LANGUAGE_ID) {
+
+
+          const info = getMnemonicInfo(originalWord);
+          if (info) {
+            return new vscode.Hover(buildMnemonicMarkdown(originalWord, info), range);
+          }
+
+          // [2순위 수색] ARM64 레지스터 검사
+          // 정수 + FP/SIMD + 파생 스칼라 뷰 통합 인덱스
+          const armReg = REGISTER_INDEX.get(wordUpper);
+          if (armReg) {
+            const md = new vscode.MarkdownString();
+            // ⭐️ 이 두 줄이 반드시 들어가 있어야 수식이 작동합니다!
+            md.isTrusted = true;    // 수학 공식($...$) 및 커맨드 링크 활성화 필수 옵션
+            md.supportHtml = true;  // <br> 등의 HTML 태그 허용 옵션
+            md.appendMarkdown(`### ARM64 Register: \`${armReg.name.toLowerCase()}\`\n\n`);
+            md.appendMarkdown(`**Type:** ${armReg.type}\n\n`);
+            md.appendMarkdown(`**Description:** ${armReg.description}`);
+            return new vscode.Hover(md, range);
+          }
+
+          // 🎯 [3순위 수색 - v2.5.2 신설 요새]
+          // 링커 스크립트 핵심 지시어 및 기호 포획!
+          const linkerInfo = LINKER_KEYWORDS_MAP[wordUpper] || LINKER_KEYWORDS_MAP[originalWord.trim()];
+          if (linkerInfo) {
+            const md = new vscode.MarkdownString();
+            md.isTrusted = true;
+            md.supportHtml = true;
+            md.appendMarkdown(`### Linker Directive: \`${linkerInfo.name}\`\n\n`);
+            md.appendMarkdown(`${linkerInfo.description}\n\n`);
+            if (linkerInfo.syntax) {
+              md.appendMarkdown('**Syntax:**\n');
+              md.appendCodeblock(linkerInfo.syntax, 'linker');
+            }
+            return new vscode.Hover(md, range);
+          }
+        }
+
+        // =================================================================
+        // 🏛️ [공통 수색] .equ 상수(Symbol) 정의 검사 (ARM64 / RISC-V 공통)
+        // =================================================================
         for (let i = 0; i < document.lineCount; i++) {
           const lineText = document.lineAt(i).text;
           const m = EQU_HOVER_RE.exec(lineText);
@@ -631,15 +731,18 @@ function activate(context) {
               md.isTrusted = true;
               md.supportHtml = true;
 
-              md.appendMarkdown(`### 📌 Constant Symbol: \`\${constName}\`\n\n`);
-              md.appendMarkdown(`**Equated Value:** \`\${constValue.trim()}\`\n\n`);
+              // md.appendMarkdown(`### 📌 Constant Symbol: \`\${constName}\`\n\n`);
+              // md.appendMarkdown(`**Equated Value:** \`\${constValue.trim()}\`\n\n`);
+
+              md.appendMarkdown(`### 📌 Constant Symbol: \`${constName}\`\n\n`);
+              md.appendMarkdown(`**Equated Value:** \`${constValue.trim()}\`\n\n`);
+
               md.appendMarkdown(`*Defined at line ${i + 1}*`);
 
               return new vscode.Hover(md, range);
             }
           }
         }
-
         return;
       },
     })

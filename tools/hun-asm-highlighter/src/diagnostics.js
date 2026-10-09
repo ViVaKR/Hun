@@ -310,6 +310,9 @@ function checkLocalLabelReferences(trimmed, rawText, lineIdx, definedLocalLabels
 // 것을 우선한다. RISC-V 고유의 정렬/인코딩 검사(예: addi immediate 12비트 범위)는
 // 추후 별도 checkRiscvXxx 함수들로 확장 예정.
 function validateDocument(document) {
+
+  if (document.fileName.endsWith('.ld')) return;
+
   const isRiscv = document.languageId === 'hun-riscv';
   const knownSet = isRiscv ? RISCV_KNOWN_SET : ARM64_KNOWN_SET;
 
