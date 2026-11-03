@@ -39,6 +39,13 @@
 1. [GitHub Releases](https://github.com/ViVaKR/Hun/releases)에서 최신 `yeoji-forest-x.x.x.vsix` 파일 다운로드
 2. `Cmd+Shift+P` (Win: `Ctrl+Shift+P`) → `Extensions: Install from VSIX...` 선택 후 다운로드한 파일 지정
 
+---
+
+### 🌲 v2.1.7 변경 사항 (Release Notes)
+* **테마 본질 집중 패치:** 불필요하게 복잡했던 JSON 중첩 스코프를 정돈하여 Everforest의 깊고 편안한 대지 색감에 더욱 몰입할 수 있도록 개선
+* **파일 명칭 표준화:** 파일 경로 및 설정(`package.json`)의 공백을 제거하여 크로스 플랫폼 환경에서의 안정성과 빌드 편의성 극대화
+* **시스템 프로그래밍 최적화:** ARM/RISC-V 어셈블리 및 각종 설정 파일 구문 시인성 유지 점검 완료
+
 ### 🌲 v1.1.0 변경 사항 (Release Notes)
 * **TOML 완벽 지원:** `Cargo.toml` 등 TOML 설정 파일의 섹션, 키, 문자열 하이라이팅 스코프 탑재
 * **YAML 하이라이팅 추가:** Docker, Kubernetes, GitHub Actions 설정 파일 지원

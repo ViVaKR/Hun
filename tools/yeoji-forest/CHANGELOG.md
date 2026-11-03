@@ -1,9 +1,9 @@
 # Change Log
 
-All notable changes to the "yeoji-forest" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [2.1.7] - 2026-11-03
 
-## [Unreleased]
-
-- Initial release
+### 🌿 Everforest 테마 맥락 강화 및 디테일 패치
+- **다크 테마 코드 베이스 최적화:** 중복되던 심층 JSON Key 레벨(레벨 3~8) 스코프를 과감히 정리하여 에디터 렌더링 부하를 줄이고, Everforest 고유의 차분한 숲속 톤을 더욱 강조
+- **파일 구조 및 명칭 정돈:** 테마 파일명을 직관적이고 다루기 편하도록 공백 없는 표준 영문 형태로 전면 개편 (`yeoji-forest-dark-theme.json`, `yeoji-forest-light-theme.json`)
+- **ARM/RISC-V 어셈블리 가독성 사수:** 핵심 자산인 어셈블리 레지스터 및 니모닉 토큰 하이라이팅의 완벽한 결속력 유지
