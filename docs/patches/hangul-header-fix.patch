@@ -1,0 +1,64 @@
+diff --git a/Hangul/HGCharacter.h b/Hangul/HGCharacter.h
+index 6706e98..ff93046 100644
+--- a/Hangul/HGCharacter.h
++++ b/Hangul/HGCharacter.h
+@@ -13,9 +13,9 @@
+     libhangul의 ctype 함수를 Apple Coding Guideline에 따라 재명명. 연관된 함수를 확인하려면 hangul/hangul.h 와 hangul/hangulctype.c 를 확인한다.
+ */
+ 
+-@import Foundation;
++#import <Foundation/Foundation.h>
+ 
+-#include "hangul.h"
++#include <Hangul/hangul.h>
+ 
+ //! @brief  libhangul 의 글자 단위인 ucschar의 alias
+ typedef ucschar HGUCSChar;
+diff --git a/Hangul/HGHanja.h b/Hangul/HGHanja.h
+index ea6d6b0..0c2bd7a 100644
+--- a/Hangul/HGHanja.h
++++ b/Hangul/HGHanja.h
+@@ -13,9 +13,9 @@
+  libhangul의 한자 관련 코드를 Objective-C 객체 모델로 감싼다. 관련 libhangul 함수를 보기 위해서 hangul/hangul.h와 hangul/hanja.c 를 본다.
+  */
+ 
+-@import Foundation;
++#import <Foundation/Foundation.h>
+ 
+-#include "hangul.h"
++#include <Hangul/hangul.h>
+ 
+ NS_ASSUME_NONNULL_BEGIN
+ 
+diff --git a/Hangul/HGInputContext.h b/Hangul/HGInputContext.h
+index e384fae..cf864c4 100644
+--- a/Hangul/HGInputContext.h
++++ b/Hangul/HGInputContext.h
+@@ -13,11 +13,11 @@
+     libhangul의 hangul input context 코드를 Objective-C 객체 모델로 감싼다. 관련 libhangul 함수를 보기 위해서 hangul/hangul.h와 hangul/hangulinputcontext.c 를 본다.
+ */
+ 
+-@import Foundation;
++#import <Foundation/Foundation.h>
+ 
+-#include "hangul.h"
++#include <Hangul/hangul.h>
+ 
+-#import "HGCharacter.h"
++#import <Hangul/HGCharacter.h>
+ 
+ NS_ASSUME_NONNULL_BEGIN
+ 
+diff --git a/Hangul/Hangul-Umbrella.h b/Hangul/Hangul-Umbrella.h
+index 4ab99e8..4750157 100644
+--- a/Hangul/Hangul-Umbrella.h
++++ b/Hangul/Hangul-Umbrella.h
+@@ -6,7 +6,7 @@
+ //  Copyright © 2018 youknowone.org. All rights reserved.
+ //
+ 
+-@import Foundation;
++#import <Foundation/Foundation.h>
+ 
+ //! Project version number for Hangul.
+ FOUNDATION_EXPORT double HangulVersionNumber;
